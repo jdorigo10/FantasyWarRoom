@@ -50,7 +50,9 @@ const NAMES = {
   QB: ["Patrick Mahomes", "Josh Allen", "Jalen Hurts", "Lamar Jackson", "Joe Burrow", "C.J. Stroud", "Jordan Love", "Anthony Richardson", "Dak Prescott", "Kyler Murray"],
   RB: ["Christian McCaffrey", "Breece Hall", "Bijan Robinson", "Jahmyr Gibbs", "Jonathan Taylor", "Saquon Barkley", "Kyren Williams", "De'Von Achane", "Travis Etienne", "Derrick Henry", "Isiah Pacheco", "James Cook"],
   WR: ["CeeDee Lamb", "Tyreek Hill", "Justin Jefferson", "Ja'Marr Chase", "Amon-Ra St. Brown", "A.J. Brown", "Puka Nacua", "Garrett Wilson", "Marvin Harrison Jr.", "Davante Adams", "Chris Olave", "Drake London"],
-  TE: ["Sam LaPorta", "Travis Kelce", "Trey McBride", "Mark Andrews", "Dalton Kincaid", "George Kittle", "Kyle Pitts", "Evan Engram", "Jake Ferguson", "David Njoku"]
+  TE: ["Sam LaPorta", "Travis Kelce", "Trey McBride", "Mark Andrews", "Dalton Kincaid", "George Kittle", "Kyle Pitts", "Evan Engram", "Jake Ferguson", "David Njoku"],
+  K: ["Justin Tucker", "Brandon Aubrey", "Harrison Butker"],
+  DST: ["Ravens", "Cowboys", "Jets", "49ers"]
 };
 
 function randomInt(min: number, max: number) {
@@ -63,8 +65,6 @@ function generatePlayers(): Player[] {
 
   // Generate top tier players with better stats
   (Object.keys(NAMES) as Position[]).forEach(pos => {
-    if (pos === 'K' || pos === 'DST') return; 
-    
     NAMES[pos].forEach((name, index) => {
       const isTopTier = index < 3;
       const baseProj = isTopTier ? 300 : 200;
@@ -75,7 +75,7 @@ function generatePlayers(): Player[] {
         position: pos,
         team: TEAMS[randomInt(0, TEAMS.length - 1)],
         byeWeek: randomInt(5, 14),
-        adp: (index + 1) * (pos === 'QB' ? 2 : 1) + (pos === 'RB' ? 0 : 5), // Rough logic
+        adp: (index + 1) * (pos === 'QB' ? 2 : 1) + (pos === 'RB' ? 0 : 5), 
         auctionValue: Math.max(1, 60 - index * 3),
         projectedPoints: baseProj + randomInt(-20, 50),
         lastSeasonPoints: baseProj + randomInt(-40, 40),
@@ -124,7 +124,7 @@ export const MOCK_PLAYERS = generatePlayers();
 
 export const INITIAL_SETTINGS: DraftSettings = {
   teamCount: 12,
-  position: 1, // 1st pick
+  position: 1, 
   scoring: "PPR",
   rounds: 15
 };
