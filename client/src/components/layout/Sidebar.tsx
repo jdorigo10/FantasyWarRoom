@@ -1,25 +1,24 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Grid3X3, Settings, Trophy, BarChart3, Terminal } from "lucide-react";
+import { LayoutDashboard, Users, Grid3X3, Settings, ShieldAlert, Terminal } from "lucide-react";
 
 export function Sidebar() {
   const [location] = useLocation();
 
   const navItems = [
-    { icon: LayoutDashboard, label: "Analysis Room", href: "/" },
+    { icon: LayoutDashboard, label: "Draft Tool", href: "/" },
     { icon: Grid3X3, label: "Draft Board", href: "/board" },
     { icon: Users, label: "Roster View", href: "/team" },
-    { icon: BarChart3, label: "Market Trends", href: "/analytics" },
-    { icon: Settings, label: "App Settings", href: "/settings" },
+    { icon: Settings, label: "Settings", href: "/settings" },
   ];
 
   return (
     <div className="w-16 md:w-56 h-screen border-r border-[#333333] bg-[#252526] flex flex-col flex-shrink-0 font-sans">
       <div className="h-14 flex items-center px-4 border-b border-[#333333] bg-[#1e1e1e]">
-        <Terminal className="h-5 w-5 text-primary mr-3" />
+        <ShieldAlert className="h-5 w-5 text-primary mr-3" />
         <span className="hidden md:inline font-display font-bold text-sm tracking-widest text-white uppercase">
-          Draft<span className="text-primary">Alpha</span>
+          Fantasy <span className="text-primary">WarRoom</span>
         </span>
       </div>
 
@@ -45,8 +44,8 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 bg-[#1e1e1e] border-t border-[#333333] hidden md:block">
-        <div className="text-[9px] font-mono text-muted-foreground uppercase mb-1">Local Host</div>
-        <div className="text-[10px] text-primary font-bold truncate">win11-analyzer-v2.0</div>
+        <div className="text-[9px] font-mono text-muted-foreground uppercase mb-1">System Node</div>
+        <div className="text-[10px] text-primary font-bold truncate">warroom-win11-v2.1</div>
       </div>
     </div>
   );
