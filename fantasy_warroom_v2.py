@@ -27,7 +27,8 @@ class FantasyWarRoomApp(ctk.CTk):
             "accent": "#2ea043",
             "text": "#adbac7",
             "text_bright": "#ffffff",
-            "danger": "#f85149"
+            "danger": "#f85149",
+            "border": "#30363d"
         }
 
         self.mock_players = [
