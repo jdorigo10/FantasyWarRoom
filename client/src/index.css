@@ -8,10 +8,10 @@
   --font-display: 'Chakra Petch', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
   
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -40,118 +40,39 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
-  
-  --color-sidebar: hsl(var(--sidebar));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
-
-  --color-value-high: hsl(var(--value-high));
-  --color-value-mid: hsl(var(--value-mid));
-  --color-value-low: hsl(var(--value-low));
 }
 
 :root {
-  /* Dark Tech Theme */
-  --background: 224 20% 8%; /* Very dark blue-grey */
-  --foreground: 210 20% 90%;
+  /* Desktop Tool Theme (VSCode/CustomTkinter vibe) */
+  --background: 0 0% 11%;
+  --foreground: 0 0% 90%;
   
-  --card: 224 20% 12%;
-  --card-foreground: 210 20% 90%;
+  --card: 0 0% 15%;
+  --card-foreground: 0 0% 90%;
   
-  --popover: 224 20% 12%;
-  --popover-foreground: 210 20% 90%;
+  --popover: 0 0% 15%;
+  --popover-foreground: 0 0% 90%;
   
-  --primary: 150 100% 45%; /* Neon Green */
-  --primary-foreground: 224 30% 10%;
+  --primary: 150 100% 45%; 
+  --primary-foreground: 0 0% 10%;
   
-  --secondary: 224 25% 20%;
-  --secondary-foreground: 210 20% 90%;
+  --secondary: 0 0% 20%;
+  --secondary-foreground: 0 0% 90%;
   
-  --muted: 224 25% 20%;
-  --muted-foreground: 215 20% 65%;
-  
-  --accent: 190 90% 50%; /* Cyan */
-  --accent-foreground: 224 30% 10%;
-  
-  --destructive: 0 90% 60%; /* Neon Red */
-  --destructive-foreground: 210 20% 98%;
-
-  --border: 224 25% 20%;
-  --input: 224 25% 20%;
-  --ring: 150 100% 45%;
-  
-  --radius: 0.25rem; /* Sharper corners for tech feel */
-  
-  --sidebar: 224 25% 10%;
-  --sidebar-foreground: 210 20% 90%;
-  --sidebar-primary: 150 100% 45%;
-  --sidebar-primary-foreground: 224 30% 10%;
-  --sidebar-accent: 224 25% 18%;
-  --sidebar-accent-foreground: 210 20% 90%;
-  --sidebar-border: 224 25% 20%;
-  --sidebar-ring: 150 100% 45%;
-  
-  /* Analytics Colors */
-  --chart-1: 150 100% 45%; /* Green */
-  --chart-2: 190 90% 50%;  /* Cyan */
-  --chart-3: 280 80% 60%;  /* Purple */
-  --chart-4: 35 90% 60%;   /* Orange */
-  --chart-5: 0 90% 60%;    /* Red */
-
-  --value-high: 150 100% 45%;
-  --value-mid: 45 90% 50%;
-  --value-low: 0 90% 60%;
-}
-
-.dark {
-  /* Same as root because we default to dark mode for this app */
-  --background: 224 20% 8%;
-  --foreground: 210 20% 90%;
-  
-  --card: 224 20% 12%;
-  --card-foreground: 210 20% 90%;
-  
-  --popover: 224 20% 12%;
-  --popover-foreground: 210 20% 90%;
-  
-  --primary: 150 100% 45%;
-  --primary-foreground: 224 30% 10%;
-  
-  --secondary: 224 25% 20%;
-  --secondary-foreground: 210 20% 90%;
-  
-  --muted: 224 25% 20%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 60%;
   
   --accent: 190 90% 50%;
-  --accent-foreground: 224 30% 10%;
+  --accent-foreground: 0 0% 10%;
   
-  --destructive: 0 90% 60%;
-  --destructive-foreground: 210 20% 98%;
-  
-  --border: 224 25% 20%;
-  --input: 224 25% 20%;
+  --destructive: 0 85% 60%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
   --ring: 150 100% 45%;
   
-  --sidebar: 224 25% 10%;
-  --sidebar-foreground: 210 20% 90%;
-  --sidebar-primary: 150 100% 45%;
-  --sidebar-primary-foreground: 224 30% 10%;
-  --sidebar-accent: 224 25% 18%;
-  --sidebar-accent-foreground: 210 20% 90%;
-  --sidebar-border: 224 25% 20%;
-  --sidebar-ring: 150 100% 45%;
+  --radius: 0.25rem;
 }
 
 @layer base {
@@ -161,23 +82,21 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight;
-  }
   
-  /* Custom scrollbar for tech feel */
+  /* Desktop application style scrollbars */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
+    background: #1e1e1e;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 4px;
+    background: #333333;
+    border: 2px solid #1e1e1e;
+    border-radius: 5px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
+    background: #444444;
   }
 }
