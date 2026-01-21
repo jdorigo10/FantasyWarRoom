@@ -15,6 +15,13 @@ export interface Player {
   notes: string;
 }
 
+export interface DraftSettings {
+  teamCount: number;
+  position: number;
+  scoring: "Standard" | "PPR" | "Half-PPR";
+  rounds: number;
+}
+
 const TEAMS = ["ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
 
 const MOCK_NAMES: Record<string, string[]> = {
@@ -52,3 +59,10 @@ function generatePlayers(): Player[] {
 }
 
 export const MOCK_PLAYERS = generatePlayers();
+
+export const INITIAL_SETTINGS: DraftSettings = {
+  teamCount: 12,
+  position: 1,
+  scoring: "PPR",
+  rounds: 15
+};
