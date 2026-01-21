@@ -9,22 +9,26 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
-import { Database, Globe, Cpu, CheckCircle2, ShieldAlert, BarChart3, Search } from "lucide-react";
+import { Database, ShieldAlert, Activity, BarChart, History, TrendingUp, Search, Layers, ShieldCheck } from "lucide-react";
+import { INITIALIZATION_STEPS } from "@/lib/mockData";
+
+const STEP_ICONS: Record<string, any> = {
+  rankings: Search,
+  ppg: BarChart,
+  sos: Layers,
+  offense: TrendingUp,
+  defense: ShieldCheck,
+  injury: Activity,
+  history_adp: History,
+  history_ppg: History,
+  trends: Database
+};
 
 export default function Dashboard() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [loadingStep, setLoadingStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [location] = useLocation();
-  const { settings } = useDraftStore();
-
-  const steps = [
-    { icon: Globe, label: "Connecting to ESPN Data Endpoints..." },
-    { icon: Search, label: "Scraping Live Draft Results (ESPN ADP)..." },
-    { icon: Database, label: "Retrieving ESPN Insider Projections..." },
-    { icon: Cpu, label: "Analyzing 5-Year Trends & Strength of Schedule..." },
-    { icon: CheckCircle2, label: "Synchronizing WarRoom Tactical Engine..." }
-  ];
 
   useEffect(() => {
     if (isInitializing) {
@@ -32,44 +36,48 @@ export default function Dashboard() {
         setProgress((prev) => {
           if (prev >= 100) {
             clearInterval(interval);
-            setTimeout(() => setIsInitializing(false), 1200);
+            setTimeout(() => setIsInitializing(false), 800);
             return 100;
           }
-          const next = prev + (Math.random() * 15);
+          const next = prev + (Math.random() * 8 + 2);
           const currentProgress = Math.min(next, 100);
-          setLoadingStep(Math.floor((currentProgress / 100) * steps.length));
+          setLoadingStep(Math.floor((currentProgress / 100) * INITIALIZATION_STEPS.length));
           return currentProgress;
         });
-      }, 400);
+      }, 250);
       return () => clearInterval(interval);
     }
   }, [isInitializing]);
 
   if (isInitializing) {
-    const currentStepIndex = Math.min(loadingStep, steps.length - 1);
-    const currentStep = steps[currentStepIndex];
+    const currentStepIndex = Math.min(loadingStep, INITIALIZATION_STEPS.length - 1);
+    const currentStep = INITIALIZATION_STEPS[currentStepIndex];
+    const Icon = STEP_ICONS[currentStep.key] || Database;
 
     return (
       <div className="h-screen w-full bg-[#0d1117] flex items-center justify-center p-6 font-sans">
-        <Card className="w-full max-w-md bg-[#161b22] border-[#30363d] p-10 shadow-2xl">
+        <Card className="w-full max-w-lg bg-[#161b22] border-[#30363d] p-10 shadow-2xl">
           <div className="flex flex-col items-center text-center space-y-8">
-            <div className="h-20 w-20 bg-primary/20 rounded-2xl flex items-center justify-center animate-pulse border border-primary/30">
-              <ShieldAlert className="h-10 w-10 text-primary" />
+            <div className="h-16 w-16 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+              <ShieldAlert className="h-8 w-8 text-primary" />
             </div>
             
-            <div className="space-y-3">
-              <h1 className="text-3xl font-display font-bold text-white tracking-tighter italic">WARROOM INITIALIZATION</h1>
-              <p className="text-[#8b949e] text-xs uppercase tracking-[0.2em] font-mono">Syncing ESPN Data Feed</p>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-display font-bold text-white tracking-tight uppercase italic">WarRoom Data Sync</h1>
+              <p className="text-[#8b949e] text-[10px] uppercase tracking-[0.3em] font-mono">ESPN Global Feed / NFL Analytics</p>
             </div>
 
             <div className="w-full space-y-6">
-              <Progress value={progress} className="h-1.5 bg-black/40" />
-              <div className="flex flex-col items-center space-y-2">
-                <div className="flex items-center space-x-3 text-sm text-primary font-mono h-6">
-                  {React.createElement(currentStep.icon, { className: "h-4 w-4" })}
-                  <span>{currentStep.label}</span>
+              <Progress value={progress} className="h-1 bg-black/40" />
+              <div className="flex flex-col items-center space-y-3">
+                <div className="flex items-center space-x-3 text-sm text-primary font-mono h-6 transition-all duration-300">
+                  <Icon className="h-4 w-4 animate-pulse" />
+                  <span className="opacity-80">{currentStep.label}</span>
                 </div>
-                <span className="text-[10px] text-[#6e7681] font-mono uppercase tracking-widest">{Math.floor(progress)}% COMPLETE</span>
+                <div className="flex justify-between w-full text-[10px] text-[#6e7681] font-mono uppercase tracking-widest px-1">
+                  <span>Step {currentStepIndex + 1} / {INITIALIZATION_STEPS.length}</span>
+                  <span>{Math.floor(progress)}%</span>
+                </div>
               </div>
             </div>
           </div>
@@ -79,21 +87,14 @@ export default function Dashboard() {
   }
 
   const renderContent = () => {
-    if (location === "/board") {
+    if (location === "/rankings") {
       return (
         <div className="flex-1 overflow-hidden p-6">
           <Card className="h-full bg-[#161b22] border-[#30363d] flex flex-col shadow-xl">
             <div className="p-6 border-b border-[#30363d] flex items-center justify-between bg-[#0d1117]/50">
                <div>
-                  <h2 className="text-xl font-display font-bold text-white tracking-tight">DRAFT BOARD</h2>
-                  <p className="text-xs text-[#8b949e] font-mono mt-1 uppercase tracking-wider">Live ESPN Rankings & Analytics</p>
-               </div>
-               <div className="flex space-x-2">
-                  {["ALL", "QB", "RB", "WR", "TE", "DST", "K", "FLEX"].map(pos => (
-                     <Button key={pos} variant="outline" size="sm" className="bg-[#21262d] border-[#30363d] text-xs h-8 hover:bg-[#30363d]">
-                        {pos}
-                     </Button>
-                  ))}
+                  <h2 className="text-xl font-display font-bold text-white tracking-tight">PLAYER RANKINGS</h2>
+                  <p className="text-xs text-[#8b949e] font-mono mt-1 uppercase tracking-wider">Master Data: ESPN + Historical Trends</p>
                </div>
             </div>
             <div className="flex-1 min-h-0">
@@ -104,10 +105,30 @@ export default function Dashboard() {
       );
     }
 
+    if (location === "/strategy") {
+      return (
+        <div className="flex-1 overflow-hidden p-6">
+          <Card className="h-full bg-[#161b22] border-[#30363d] flex flex-col p-8 space-y-6">
+            <h2 className="text-xl font-display font-bold text-white tracking-tight">DRAFT STRATEGY</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-[#0d1117] border-[#30363d] p-6">
+                <h3 className="text-primary font-mono text-sm mb-4">OPTIMAL VALUE TARGETS</h3>
+                <p className="text-[#8b949e] text-sm">Based on Projected PPG vs ADP disparity across ESPN platforms.</p>
+              </Card>
+              <Card className="bg-[#0d1117] border-[#30363d] p-6">
+                <h3 className="text-primary font-mono text-sm mb-4">SOS ANALYSIS</h3>
+                <p className="text-[#8b949e] text-sm">Teams with the softest early-season schedules (Weeks 1-6).</p>
+              </Card>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
     if (location === "/settings") {
        return (
          <div className="p-10 max-w-2xl mx-auto space-y-8">
-            <h1 className="text-2xl font-display font-bold text-white">SYSTEM VISUALS</h1>
+            <h1 className="text-2xl font-display font-bold text-white uppercase tracking-tight italic">WARROOM SETTINGS</h1>
             <Card className="bg-[#161b22] border-[#30363d] p-8 space-y-6">
                <div className="space-y-4">
                   <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Interface Accent</label>
@@ -122,13 +143,14 @@ export default function Dashboard() {
        );
     }
 
+    // Default to Draft Tool (location === "/" or "/board" basically)
     return (
       <div className="flex-1 overflow-hidden p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
         <div className="lg:col-span-8 h-full flex flex-col space-y-6 min-h-0">
           <div className="bg-[#161b22] rounded-lg border border-[#30363d] p-6 flex flex-col min-h-0 shadow-xl">
             <h2 className="text-sm font-display font-bold tracking-[0.2em] text-primary uppercase mb-6 flex items-center">
                <div className="h-2 w-2 rounded-full bg-primary animate-pulse mr-3" />
-               COMMAND CENTER: MOCK DRAFT
+               COMMAND CENTER: DRAFT TOOL
             </h2>
             <div className="flex-shrink-0 mb-6">
                <DraftBoard />

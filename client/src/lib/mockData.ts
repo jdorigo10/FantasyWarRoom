@@ -12,6 +12,10 @@ export interface Player {
   ppg: number;
   adp: number;
   risk: "Low" | "Medium" | "High";
+  injuryHistory: "Clear" | "Minor" | "Significant";
+  offensiveRank: number;
+  defensiveRank: number;
+  sos: number; // 1-32, 1 being easiest
   notes: string;
 }
 
@@ -50,6 +54,10 @@ function generatePlayers(): Player[] {
         ppg: Number((Math.random() * 10 + 15).toFixed(1)),
         adp: Number((rankCounter + Math.random() * 5).toFixed(1)),
         risk: Math.random() > 0.8 ? "High" : "Low",
+        injuryHistory: Math.random() > 0.7 ? "Significant" : "Clear",
+        offensiveRank: Math.floor(Math.random() * 32) + 1,
+        defensiveRank: Math.floor(Math.random() * 32) + 1,
+        sos: Math.floor(Math.random() * 32) + 1,
         notes: "ESPN projected top tier."
       });
     });
@@ -66,3 +74,15 @@ export const INITIAL_SETTINGS: DraftSettings = {
   scoring: "PPR",
   rounds: 15
 };
+
+export const INITIALIZATION_STEPS = [
+  { label: "ESPN Player Draft Rankings", key: "rankings" },
+  { label: "ESPN Player Projected PPG", key: "ppg" },
+  { label: "NFL Strength of Schedules", key: "sos" },
+  { label: "Projected Offensive Ranking (1-32)", key: "offense" },
+  { label: "Projected Defensive Ranking (1-32)", key: "defense" },
+  { label: "Player Injury History", key: "injury" },
+  { label: "Past 5 years Fantasy Preseason ADP", key: "history_adp" },
+  { label: "Past 5 years Fantasy Season PPG", key: "history_ppg" },
+  { label: "NFL Trends (Age, Experience, Situation)", key: "trends" }
+];
