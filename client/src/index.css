@@ -22,7 +22,7 @@
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
   
-  --color-primary: hsl(var(--primary));
+  --color-primary: var(--primary);
   --color-primary-foreground: hsl(var(--primary-foreground));
   
   --color-secondary: hsl(var(--secondary));
@@ -53,7 +53,8 @@
   --popover: 0 0% 15%;
   --popover-foreground: 0 0% 90%;
   
-  --primary: 150 100% 45%; 
+  --primary: var(--primary-custom, #2ea043);
+  --primary-custom: #2ea043;
   --primary-foreground: 0 0% 10%;
   
   --secondary: 0 0% 20%;

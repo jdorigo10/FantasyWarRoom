@@ -37,8 +37,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     // Apply theme and accent color
+    document.documentElement.classList.toggle('dark', settings.theme === 'dark');
     document.documentElement.classList.toggle('light', settings.theme === 'light');
-    document.documentElement.style.setProperty('--primary', settings.accentColor);
+    
+    // Set the primary color for Tailwind to pick up
+    // We update the CSS variable that the primary color maps to
+    const root = document.documentElement;
+    if (root) {
+      root.style.setProperty('--primary', settings.accentColor);
+      root.style.setProperty('--ring', settings.accentColor);
+    }
   }, [settings.theme, settings.accentColor]);
 
   useEffect(() => {
@@ -227,7 +235,7 @@ export default function Dashboard() {
                 settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
                 <div className="space-y-4">
                   <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">League Configuration</label>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-[10px] text-[#8b949e] uppercase font-mono">Team Count</label>
                       <select 
@@ -239,33 +247,22 @@ export default function Dashboard() {
                         {[8, 10, 12, 14, 16].map(num => <option key={num} value={num}>{num} Teams</option>)}
                       </select>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] text-[#8b949e] uppercase font-mono">Your Pick</label>
-                      <select 
-                        className={cn("w-full rounded p-2 text-sm transition-colors",
-                          settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
-                        value={settings.position}
-                        onChange={(e) => updateSettings({ position: parseInt(e.target.value) })}
-                      >
-                        {Array.from({length: settings.teamCount}).map((_, i) => <option key={i+1} value={i+1}>Pick {i+1}</option>)}
-                      </select>
-                    </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] text-[#8b949e] uppercase font-mono">Scoring Format</label>
-                    <div className="flex gap-2">
-                      {["PPR", "Half-PPR", "Standard"].map(type => (
-                        <Button 
-                          key={type} 
-                          variant={settings.scoring === type ? 'default' : 'outline'}
-                          className={cn("flex-1 text-[10px] h-8", 
-                            settings.scoring === type ? "bg-primary text-white" : "")}
-                          onClick={() => updateSettings({ scoring: type as any })}
-                        >
-                          {type}
-                        </Button>
-                      ))}
+                    <div className="space-y-2">
+                      <label className="text-[10px] text-[#8b949e] uppercase font-mono">Scoring Format</label>
+                      <div className="flex gap-2">
+                        {["PPR", "Half-PPR", "Standard"].map(type => (
+                          <Button 
+                            key={type} 
+                            variant={settings.scoring === type ? 'default' : 'outline'}
+                            className={cn("flex-1 text-[10px] h-8", 
+                              settings.scoring === type ? "bg-primary text-white" : "")}
+                            onClick={() => updateSettings({ scoring: type as any })}
+                          >
+                            {type}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -278,31 +275,32 @@ export default function Dashboard() {
                 <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Team Rosters</label>
                 <span className="text-[10px] font-mono text-[#8b949e]">{settings.teamCount} Teams Registered</span>
               </div>
-              <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
-                {settings.teams.map((team, idx) => (
-                  <div key={team.id} className={cn("flex items-center space-x-3 p-3 rounded-lg border transition-all",
-                    settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
-                    <div className="flex-shrink-0 w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary font-mono">
-                      {idx + 1}
+              <div className="flex-1 overflow-y-auto pr-2 scrollbar-hide">
+                <div className="grid grid-cols-2 gap-3">
+                  {settings.teams.map((team, idx) => (
+                    <div key={team.id} className={cn("flex items-center space-x-3 p-3 rounded-lg border transition-all",
+                      settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
+                      <div className="flex-shrink-0 w-6 h-6 rounded bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary font-mono">
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <Input 
+                          value={team.name}
+                          onChange={(e) => updateTeamName(team.id, e.target.value)}
+                          className={cn("h-7 bg-transparent border-none text-[11px] focus-visible:ring-0 px-0 truncate",
+                            settings.theme === 'dark' ? "text-white" : "text-gray-900")}
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          checked={team.isUser} 
+                          onCheckedChange={() => toggleUserTeam(team.id)}
+                          className="border-primary data-[state=checked]:bg-primary h-4 w-4"
+                        />
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <Input 
-                        value={team.name}
-                        onChange={(e) => updateTeamName(team.id, e.target.value)}
-                        className={cn("h-8 bg-transparent border-none text-xs focus-visible:ring-0 px-0",
-                          settings.theme === 'dark' ? "text-white" : "text-gray-900")}
-                      />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-[10px] text-[#8b949e] uppercase font-mono tracking-tighter">User?</span>
-                      <Checkbox 
-                        checked={team.isUser} 
-                        onCheckedChange={() => toggleUserTeam(team.id)}
-                        className="border-primary data-[state=checked]:bg-primary"
-                      />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </Card>
           </div>
