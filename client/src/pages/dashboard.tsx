@@ -126,24 +126,76 @@ export default function Dashboard() {
     }
 
     if (location === "/settings") {
-       return (
-         <div className="p-10 max-w-2xl mx-auto space-y-8">
-            <h1 className="text-2xl font-display font-bold text-white uppercase tracking-tight italic">WARROOM SETTINGS</h1>
+      return (
+        <div className="p-10 max-w-2xl mx-auto space-y-8">
+          <h1 className="text-2xl font-display font-bold text-white uppercase tracking-tight italic">WARROOM SETTINGS</h1>
+          
+          <div className="grid gap-6">
             <Card className="bg-[#161b22] border-[#30363d] p-8 space-y-6">
-               <div className="space-y-4">
-                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Interface Accent</label>
-                  <div className="flex space-x-4">
-                     {["#2ea043", "#388bfd", "#f85149", "#f0883e"].map(color => (
-                        <div key={color} className="h-10 w-10 rounded-full border-2 border-transparent hover:border-white cursor-pointer transition-all" style={{ backgroundColor: color }} />
-                     ))}
-                  </div>
-               </div>
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Theme Mode</label>
+                <div className="flex space-x-4">
+                  <Button variant="outline" className="bg-[#21262d] border-[#30363d]">Dark Mode</Button>
+                  <Button variant="outline" className="bg-white text-black hover:bg-gray-100">Light Mode</Button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Accent Color</label>
+                <div className="flex flex-wrap gap-4">
+                  {[
+                    { name: "Green", color: "#2ea043" },
+                    { name: "Red", color: "#f85149" },
+                    { name: "Orange", color: "#f0883e" },
+                    { name: "Yellow", color: "#d29922" },
+                    { name: "Purple", color: "#8957e5" },
+                    { name: "Blue", color: "#388bfd" }
+                  ].map(item => (
+                    <div key={item.name} className="flex flex-col items-center space-y-2">
+                      <div 
+                        className="h-10 w-10 rounded-full border-2 border-transparent hover:border-white cursor-pointer transition-all" 
+                        style={{ backgroundColor: item.color }} 
+                      />
+                      <span className="text-[10px] text-[#8b949e]">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </Card>
-         </div>
-       );
+
+            <Card className="bg-[#161b22] border-[#30363d] p-8 space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Team Count</label>
+                  <select className="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-sm text-white">
+                    {[8, 10, 12, 14, 16].map(num => <option key={num} value={num}>{num} Teams</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Draft Pick</label>
+                  <select className="w-full bg-[#0d1117] border border-[#30363d] rounded p-2 text-sm text-white">
+                    {Array.from({length: 12}).map((_, i) => <option key={i+1} value={i+1}>Pick {i+1}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">League Type</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {["PPR", "1/2 Point PPR", "No PPR"].map(type => (
+                    <Button key={type} variant="outline" className="bg-[#21262d] border-[#30363d] text-xs">
+                      {type}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      );
     }
 
-    // Default to Draft Tool (location === "/" or "/board" basically)
+    // Default to Draft Tool
     return (
       <div className="flex-1 overflow-hidden p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
         <div className="lg:col-span-8 h-full flex flex-col space-y-6 min-h-0">
@@ -152,9 +204,6 @@ export default function Dashboard() {
                <div className="h-2 w-2 rounded-full bg-primary animate-pulse mr-3" />
                COMMAND CENTER: DRAFT TOOL
             </h2>
-            <div className="flex-shrink-0 mb-6">
-               <DraftBoard />
-            </div>
             <div className="flex-1 min-h-0 bg-[#0d1117] rounded border border-[#30363d]">
                <PlayerTable />
             </div>

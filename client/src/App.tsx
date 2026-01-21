@@ -10,10 +10,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
-      <Route path="/board" component={Dashboard} />
-      <Route path="/team" component={Dashboard} />
-      <Route path="/analytics" component={Dashboard} />
-      <Route path="/league" component={Dashboard} />
+      <Route path="/rankings" component={Dashboard} />
+      <Route path="/strategy" component={Dashboard} />
       <Route path="/settings" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>
