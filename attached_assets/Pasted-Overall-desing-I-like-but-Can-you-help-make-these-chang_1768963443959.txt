@@ -1,0 +1,27 @@
+Overall desing I like, but Can you help make these changes actually...
+
+Must use ESPN for player average draft position (ADP) and lsit of players
+(for no wmocks can be used as we fill in the backend data loading functions)
+
+I want the tool to load in and pull all the data it needs on startup and have anice app laoding screen that gives progress and lets user know what it is loading/scanning/scrapping.
+
+In the app I want it multiple tabs in the menu on the left side...
+
+- Draft Board: list of players (by postion, ALL, QB, RB, WR, TE, DST, K) and have filter for teams positions (including FLEX = RB and WR). it should display player based on the ESPN draft rabkings, and on each line display the following
+  - ranking
+  - name (empty heart button next to it so user can favorite player if they want)
+  - positon
+  - team (maybe even the logo/icon)
+  - projected Points Per Game
+  - ADP
+  - Strength of Schedule (ranking 1-32 for the upcoming season)
+  - Project offenseive ranking (rankin 1-32 based on how well teams offense is supposed to be this year), for Defense/ST have the ranking be projected defensive ranking
+  - Injury concern (very low, low, medium, high, very high)
+  - draft value (custom metric that wikl take into account the players ADP and there projected points per game)
+  - trend/odds (custom metric that will be based on past performacne by player or players in similar situations/ages/scenarios and how they performed. can be a little bar graph that is like a stock up,medium,down)
+
+- Mock Draft: tool that allows user to have a mock draft (at a configured team count 8-16, and drfat pick number), it will display the draft and selection as well as users current team to the right (with a prjected PPG under team). Then underneath teh team it will have suggested players to draft or target based on needs and currnet team in roder to have the most optimal tema in tersm of projected points per game. undernetah the draft display have the players we can pick from
+
+- Settings to change just the display visuals (ie color)
+
+Include anything (tabs, data, displays) that you see may be useful or better than what I described. For now the data can be mocked out (in a sperate MockData file) and later we can connect the loading fucntions at the begnining startup to their sources
