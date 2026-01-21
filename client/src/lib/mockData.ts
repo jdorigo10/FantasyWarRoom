@@ -19,11 +19,20 @@ export interface Player {
   notes: string;
 }
 
+export interface Team {
+  id: string;
+  name: string;
+  isUser: boolean;
+}
+
 export interface DraftSettings {
   teamCount: number;
   position: number;
   scoring: "Standard" | "PPR" | "Half-PPR";
   rounds: number;
+  theme: "light" | "dark";
+  accentColor: string;
+  teams: Team[];
 }
 
 const TEAMS = ["ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
@@ -72,7 +81,14 @@ export const INITIAL_SETTINGS: DraftSettings = {
   teamCount: 12,
   position: 1,
   scoring: "PPR",
-  rounds: 15
+  rounds: 15,
+  theme: "dark",
+  accentColor: "#2ea043",
+  teams: Array.from({ length: 12 }, (_, i) => ({
+    id: `team-${i + 1}`,
+    name: `Team ${i + 1}`,
+    isUser: i === 0
+  }))
 };
 
 export const INITIALIZATION_STEPS = [
