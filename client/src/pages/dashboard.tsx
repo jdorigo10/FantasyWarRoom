@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [location] = useLocation();
-  const { settings, players, pickedPlayers, makePick, myRoster } = useDraftStore();
+  const { settings } = useDraftStore();
 
   const steps = [
     { icon: Globe, label: "Connecting to ESPN Data Endpoints..." },
@@ -36,8 +36,9 @@ export default function Dashboard() {
             return 100;
           }
           const next = prev + (Math.random() * 15);
-          setLoadingStep(Math.floor((next / 100) * steps.length));
-          return Math.min(next, 100);
+          const currentProgress = Math.min(next, 100);
+          setLoadingStep(Math.floor((currentProgress / 100) * steps.length));
+          return currentProgress;
         });
       }, 400);
       return () => clearInterval(interval);
@@ -45,6 +46,9 @@ export default function Dashboard() {
   }, [isInitializing]);
 
   if (isInitializing) {
+    const currentStepIndex = Math.min(loadingStep, steps.length - 1);
+    const currentStep = steps[currentStepIndex];
+
     return (
       <div className="h-screen w-full bg-[#0d1117] flex items-center justify-center p-6 font-sans">
         <Card className="w-full max-w-md bg-[#161b22] border-[#30363d] p-10 shadow-2xl">
@@ -62,8 +66,8 @@ export default function Dashboard() {
               <Progress value={progress} className="h-1.5 bg-black/40" />
               <div className="flex flex-col items-center space-y-2">
                 <div className="flex items-center space-x-3 text-sm text-primary font-mono h-6">
-                  {React.createElement(steps[Math.min(loadingStep, steps.length - 1)].icon, { className: "h-4 w-4" })}
-                  <span>{steps[Math.min(loadingStep, loadingStep)].label}</span>
+                  {React.createElement(currentStep.icon, { className: "h-4 w-4" })}
+                  <span>{currentStep.label}</span>
                 </div>
                 <span className="text-[10px] text-[#6e7681] font-mono uppercase tracking-widest">{Math.floor(progress)}% COMPLETE</span>
               </div>
