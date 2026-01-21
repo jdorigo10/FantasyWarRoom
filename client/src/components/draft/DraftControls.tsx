@@ -20,14 +20,15 @@ export function DraftControls() {
   // If R1 (Even): Pick 1 is Team 1.
   // If R2 (Odd): Pick 1 is Team 12.
   
-  let currentTeam: number;
+  let currentTeamIndex: number;
   if (roundIsEven) {
-      currentTeam = pick;
+      currentTeamIndex = pick - 1;
   } else {
-      currentTeam = settings.teamCount - pick + 1;
+      currentTeamIndex = settings.teamCount - pick;
   }
   
-  const isUser = currentTeam === settings.position;
+  const currentTeam = settings.teams[currentTeamIndex];
+  const isUser = currentTeam?.isUser;
 
   return (
     <div className="bg-card border-b border-border p-4 flex items-center justify-between">
@@ -44,7 +45,7 @@ export function DraftControls() {
          <div>
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">On The Clock</div>
             <div className={cn("text-lg font-bold flex items-center gap-2", isUser ? "text-primary animate-pulse" : "text-foreground")}>
-               Team {currentTeam} {isUser && "(YOU)"}
+               {currentTeam?.name || `Team ${currentTeamIndex + 1}`} {isUser && "(YOU)"}
             </div>
          </div>
       </div>

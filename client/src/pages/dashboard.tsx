@@ -109,12 +109,22 @@ export default function Dashboard() {
   }
 
   const handleTeamCountChange = (count: number) => {
-    const newTeams = Array.from({ length: count }, (_, i) => ({
-      id: `team-${i + 1}`,
-      name: `Team ${i + 1}`,
-      isUser: i === 0
-    }));
-    updateSettings({ teamCount: count, teams: newTeams });
+    if (confirm("Changing team count will reset the current draft. Continue?")) {
+      const newTeams = Array.from({ length: count }, (_, i) => ({
+        id: `team-${i + 1}`,
+        name: `Team ${i + 1}`,
+        isUser: i === 0
+      }));
+      updateSettings({ teamCount: count, teams: newTeams, viewedTeamId: "team-1" });
+      resetDraft();
+    }
+  };
+
+  const handleScoringChange = (scoring: "Standard" | "PPR" | "Half-PPR") => {
+    if (confirm("Changing scoring format will reset the current draft. Continue?")) {
+      updateSettings({ scoring });
+      resetDraft();
+    }
   };
 
   const updateTeamName = (id: string, name: string) => {
@@ -123,7 +133,11 @@ export default function Dashboard() {
   };
 
   const toggleUserTeam = (id: string) => {
-    const updatedTeams = settings.teams.map(t => t.id === id ? { ...t, isUser: !t.isUser } : t);
+    // Only allow one user team
+    const updatedTeams = settings.teams.map(t => ({
+      ...t,
+      isUser: t.id === id
+    }));
     updateSettings({ teams: updatedTeams });
   };
 
@@ -257,7 +271,7 @@ export default function Dashboard() {
                             variant={settings.scoring === type ? 'default' : 'outline'}
                             className={cn("flex-1 text-[10px] h-8", 
                               settings.scoring === type ? "bg-primary text-white" : "")}
-                            onClick={() => updateSettings({ scoring: type as any })}
+                            onClick={() => handleScoringChange(type as any)}
                           >
                             {type}
                           </Button>

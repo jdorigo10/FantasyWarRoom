@@ -9,10 +9,29 @@ interface TeamRosterProps {
 }
 
 export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
-  const { players, myRoster } = useDraftStore();
+  const { players, picks, settings, updateSettings } = useDraftStore();
 
-  const getPlayer = (id: string) => players.find(p => p.id === id);
-  const rosterPlayers = myRoster.map(getPlayer).filter(Boolean) as typeof players;
+  const viewedTeam = settings.teams.find(t => t.id === settings.viewedTeamId) || settings.teams[0];
+  const teamPicks = picks.filter(p => {
+    // Standard visual grid mapping: round and team.
+    // In our simplified logic, picks are just sequential. 
+    // We need to know which team made which pick based on index.
+    const pickIndex = picks.indexOf(p);
+    const round = Math.floor(pickIndex / settings.teamCount);
+    const posInRound = pickIndex % settings.teamCount;
+    
+    let pickTeamIndex: number;
+    if (round % 2 === 0) {
+      pickTeamIndex = posInRound;
+    } else {
+      pickTeamIndex = settings.teamCount - 1 - posInRound;
+    }
+    
+    return settings.teams[pickTeamIndex]?.id === viewedTeam.id;
+  });
+
+  const rosterPlayers = teamPicks.map(p => players.find(pl => pl.id === p.playerId)).filter(Boolean) as typeof players;
+  
   const avgPpg = rosterPlayers.length > 0 
     ? (rosterPlayers.reduce((sum, p) => sum + p.ppg, 0) / rosterPlayers.length).toFixed(1)
     : "0.0";
@@ -21,7 +40,18 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
     <div className="flex flex-col h-full space-y-6 overflow-hidden">
       <Card className="bg-[#161b22] border-[#30363d] flex flex-col min-h-0 shadow-xl">
         <div className="p-6 border-b border-[#30363d]">
-          <h2 className="text-sm font-display font-bold tracking-[0.2em] text-primary uppercase mb-2">MY ROSTER</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-display font-bold tracking-[0.2em] text-primary uppercase">ROSTER VIEW</h2>
+            <select 
+              className="bg-[#0d1117] border border-[#30363d] text-[10px] text-white rounded px-2 py-1 focus:ring-primary/20"
+              value={settings.viewedTeamId}
+              onChange={(e) => updateSettings({ viewedTeamId: e.target.value })}
+            >
+              {settings.teams.map(t => (
+                <option key={t.id} value={t.id}>{t.name} {t.isUser ? "(YOU)" : ""}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-[#8b949e] uppercase font-mono">Projected PPG</span>
             <span className="text-2xl font-mono font-bold text-white">{avgPpg}</span>

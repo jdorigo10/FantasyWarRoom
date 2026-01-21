@@ -25,9 +25,17 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   currentPickIndex: 0,
   myRoster: [],
 
-  updateSettings: (newSettings) => set((state) => ({
-    settings: { ...state.settings, ...newSettings }
-  })),
+  updateSettings: (newSettings) => set((state) => {
+    const updated = { ...state.settings, ...newSettings };
+    
+    // Auto-update viewedTeamId if user team changed
+    if (newSettings.teams) {
+      const userTeam = newSettings.teams.find(t => t.isUser);
+      if (userTeam) updated.viewedTeamId = userTeam.id;
+    }
+    
+    return { settings: updated };
+  }),
 
   makePick: (playerId) => set((state) => {
     const isUserPick = isUserTurn(state.currentPickIndex, state.settings);

@@ -33,6 +33,7 @@ export interface DraftSettings {
   theme: "light" | "dark";
   accentColor: string;
   teams: Team[];
+  viewedTeamId: string; // ID of the team currently being viewed in the roster panel
 }
 
 const TEAMS = ["ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
@@ -88,7 +89,8 @@ export const INITIAL_SETTINGS: DraftSettings = {
     id: `team-${i + 1}`,
     name: `Team ${i + 1}`,
     isUser: i === 0
-  }))
+  })),
+  viewedTeamId: "team-1"
 };
 
 export const INITIALIZATION_STEPS = [
