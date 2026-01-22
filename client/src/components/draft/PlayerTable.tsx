@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Plus, Info, AlertTriangle, Thermometer, UserMinus, Clock, Baby, TrendingUp as TrendingUpIcon, TrendingDown, RefreshCcw } from "lucide-react";
+import { Search, Plus, Info, AlertTriangle, Thermometer, UserMinus, Clock, Baby, TrendingUp as TrendingUpIcon, TrendingDown, RefreshCcw, PlusSquare, Bandage, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PlayerTableProps {
@@ -90,14 +90,35 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
   const getTagIcons = (player: any) => {
     const icons = [];
-    if (player.risk === "High") icons.push({ icon: AlertTriangle, label: "High Risk", color: "text-red-500" });
-    if (player.injuryHistory === "Significant") icons.push({ icon: Thermometer, label: "Injury Risk", color: "text-orange-500" });
-    if (player.rank < 10) icons.push({ icon: TrendingUpIcon, label: "Trending Up", color: "text-green-500" });
-    if (player.rank > 100) icons.push({ icon: TrendingDown, label: "Trending Down", color: "text-red-400" });
-    if (player.byeWeek === 14) icons.push({ icon: UserMinus, label: "Suspension Risk", color: "text-yellow-600" });
-    if (player.rank % 7 === 0) icons.push({ icon: Baby, label: "Rookie", color: "text-blue-400" });
-    if (player.rank % 9 === 0) icons.push({ icon: Clock, label: "Veteran/Old", color: "text-gray-500" });
-    if (player.rank % 11 === 0) icons.push({ icon: RefreshCcw, label: "New Team", color: "text-purple-400" });
+    
+    // Status (Mutually Exclusive: Injured vs Injury Risk)
+    if (player.id === "p-5" || player.id === "p-12") { // Mock injured players
+      icons.push({ icon: PlusSquare, label: "Injured", color: "text-red-500" });
+    } else if (player.injuryHistory === "Significant") {
+      icons.push({ icon: Bandage, label: "Injury Risk", color: "text-orange-400" });
+    }
+
+    // Age/Experience (Mutually Exclusive: Rookie vs Old vs New Team)
+    if (player.rank % 7 === 0) {
+      icons.push({ icon: Baby, label: "Rookie", color: "text-blue-400" });
+    } else if (player.rank % 9 === 0) {
+      icons.push({ icon: Clock, label: "Old", color: "text-gray-500" });
+    } else if (player.rank % 11 === 0) {
+      icons.push({ icon: RefreshCcw, label: "New Team", color: "text-purple-400" });
+    }
+
+    // Trends (Mutually Exclusive: Up vs Down)
+    if (player.rank < 15) {
+      icons.push({ icon: TrendingUpIcon, label: "Trending Up", color: "text-green-500" });
+    } else if (player.rank > 120) {
+      icons.push({ icon: TrendingDown, label: "Trending Down", color: "text-red-400" });
+    }
+
+    // Suspension
+    if (player.byeWeek === 14) {
+      icons.push({ icon: Lock, label: "Suspended", color: "text-yellow-500" });
+    }
+
     return icons;
   };
 
