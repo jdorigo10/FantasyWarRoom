@@ -94,10 +94,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-[#161b22] text-[10px] font-bold text-[#8b949e] uppercase tracking-wider border-b border-[#30363d]">
           <div className="col-span-1">RK</div>
-          <div className="col-span-1 flex items-center justify-center">
-             <div className="h-4 w-[1px] bg-[#30363d]" />
-          </div>
-          <div className="col-span-5">PLAYER</div>
+          <div className="col-span-6">PLAYER</div>
           <div className="col-span-1 text-center">BYE</div>
           <div className="col-span-1 text-right pr-2">ADP</div>
           <div className="col-span-1 text-right pr-4">PPG</div>
@@ -120,10 +117,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
               >
                 <div className="col-span-1 font-mono text-[11px] text-[#6e7681]">#{player.rank}</div>
-                <div className="col-span-1 flex items-center justify-center">
-                   <div className="h-8 w-[1px] bg-[#30363d]/50" />
-                </div>
-                <div className="col-span-5">
+                <div className="col-span-6">
                   <div className="text-sm font-semibold text-[#c9d1d9] flex items-center gap-2">
                     {player.name}
                     {isPicked && pickInfo && (
