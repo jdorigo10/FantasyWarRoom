@@ -260,45 +260,55 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     <div className="col-span-1 flex items-center justify-center">
                        <div className="h-8 w-[1px] bg-[#30363d]/50" />
                     </div>
-                    <div className="col-span-2 flex justify-center gap-1 px-1">
-                      <TooltipProvider>
-                        {tags.map((tag, i) => (
-                          <Tooltip key={i}>
-                            <TooltipTrigger>
-                              <tag.icon className={cn("h-3.5 w-3.5", tag.color)} />
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-[#161b22] border-[#30363d] text-[10px] text-white p-2">
-                              {tag.label}
-                            </TooltipContent>
-                          </Tooltip>
-                        ))}
-                      </TooltipProvider>
-                    </div>
                   </>
                 )}
 
-                {!showExtendedStats && (
-                  <>
-                    <div className="col-span-1 flex items-center justify-center">
-                       <div className="h-8 w-[1px] bg-[#30363d]/50" />
-                    </div>
-                    <div className="col-span-2 flex justify-center px-2">
-                      {!isPicked ? (
-                        <Button 
-                          size="sm" 
-                          className="h-7 w-full bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
-                          onClick={() => makePick(player.id)}
-                        >
-                          Draft
-                        </Button>
-                      ) : (
-                        <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center gap-1.5">
-                          <div className="h-1 w-1 rounded-full bg-[#484f58]" />
-                          Taken
-                        </div>
-                      )}
-                    </div>
-                  </>
+                {showExtendedStats ? (
+                  <div className="col-span-2 flex justify-center items-center">
+                    <TooltipProvider>
+                      <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-center gap-1 cursor-help p-1 hover:bg-white/5 rounded transition-colors w-full h-full min-h-[28px] items-center">
+                            {tags.map((tag, i) => (
+                              <tag.icon key={i} className={cn("h-3.5 w-3.5", tag.color)} />
+                            ))}
+                            {tags.length === 0 && <span className="text-[10px] text-[#484f58] font-mono uppercase italic">None</span>}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="bg-[#161b22] border-[#30363d] p-3 shadow-2xl min-w-[200px] z-50">
+                          <div className="space-y-2.5">
+                            <p className="text-[10px] font-bold text-primary uppercase tracking-widest border-b border-[#30363d] pb-2 mb-2">Tactical Intelligence</p>
+                            {tags.map((tag, i) => (
+                              <div key={i} className="flex items-start gap-3">
+                                <tag.icon className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", tag.color)} />
+                                <span className="text-[10px] text-[#c9d1d9] leading-relaxed">{tag.label}</span>
+                              </div>
+                            ))}
+                            {tags.length === 0 && (
+                              <p className="text-[10px] text-[#8b949e] italic text-center py-1">No tactical alerts found.</p>
+                            )}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ) : (
+                  <div className="col-span-2 flex justify-center px-2">
+                    {!isPicked ? (
+                      <Button 
+                        size="sm" 
+                        className="h-7 w-full bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
+                        onClick={() => makePick(player.id)}
+                      >
+                        Draft
+                      </Button>
+                    ) : (
+                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center gap-1.5">
+                        <div className="h-1 w-1 rounded-full bg-[#484f58]" />
+                        Taken
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             );
