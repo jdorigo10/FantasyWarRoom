@@ -27,6 +27,7 @@ const STEP_ICONS: Record<string, any> = {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { StrategyView } from "@/components/draft/StrategyView";
 
 export default function Dashboard() {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -170,27 +171,7 @@ export default function Dashboard() {
     }
 
     if (location === "/strategy") {
-      return (
-        <div className="flex-1 overflow-hidden p-6">
-          <Card className={cn("h-full flex flex-col p-8 space-y-6 transition-colors duration-500",
-            settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-            <h2 className={cn("text-xl font-display font-bold tracking-tight transition-colors duration-500",
-              settings.theme === 'dark' ? "text-white" : "text-gray-900")}>DRAFT STRATEGY</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className={cn("p-6 transition-colors duration-500",
-                settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
-                <h3 className="text-primary font-mono text-sm mb-4">OPTIMAL VALUE TARGETS</h3>
-                <p className="text-[#8b949e] text-sm">Based on Projected PPG vs ADP disparity across ESPN platforms.</p>
-              </Card>
-              <Card className={cn("p-6 transition-colors duration-500",
-                settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
-                <h3 className="text-primary font-mono text-sm mb-4">SOS ANALYSIS</h3>
-                <p className="text-[#8b949e] text-sm">Teams with the softest early-season schedules (Weeks 1-6).</p>
-              </Card>
-            </div>
-          </Card>
-        </div>
-      );
+      return <StrategyView />;
     }
 
     if (location === "/settings") {
