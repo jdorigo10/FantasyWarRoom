@@ -17,38 +17,38 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
   const TEAM_NAMES: Record<string, string> = {
     "All": "All Teams",
-    "ARI": "Arizona Cardinals",
-    "ATL": "Atlanta Falcons",
-    "BAL": "Baltimore Ravens",
-    "BUF": "Buffalo Bills",
-    "CAR": "Carolina Panthers",
-    "CHI": "Chicago Bears",
-    "CIN": "Cincinnati Bengals",
-    "CLE": "Cleveland Browns",
-    "DAL": "Dallas Cowboys",
-    "DEN": "Denver Broncos",
-    "DET": "Detroit Lions",
-    "GB": "Green Bay Packers",
-    "HOU": "Houston Texans",
-    "IND": "Indianapolis Colts",
-    "JAX": "Jacksonville Jaguars",
-    "KC": "Kansas City Chiefs",
-    "LV": "Las Vegas Raiders",
-    "LAC": "Los Angeles Chargers",
-    "LAR": "Los Angeles Rams",
-    "MIA": "Miami Dolphins",
-    "MIN": "Minnesota Vikings",
-    "NE": "New England Patriots",
-    "NO": "New Orleans Saints",
-    "NYG": "New York Giants",
-    "NYJ": "New York Jets",
-    "PHI": "Philadelphia Eagles",
-    "PIT": "Pittsburgh Steelers",
-    "SEA": "Seattle Seahawks",
-    "SF": "San Francisco 49ers",
-    "TB": "Tampa Bay Buccaneers",
-    "TEN": "Tennessee Titans",
-    "WAS": "Washington Commanders"
+    "ARI": "Arizona",
+    "ATL": "Atlanta",
+    "BAL": "Baltimore",
+    "BUF": "Buffalo",
+    "CAR": "Carolina",
+    "CHI": "Chicago",
+    "CIN": "Cincinnati",
+    "CLE": "Cleveland",
+    "DAL": "Dallas",
+    "DEN": "Denver",
+    "DET": "Detroit",
+    "GB": "Green Bay",
+    "HOU": "Houston",
+    "IND": "Indianapolis",
+    "JAX": "Jacksonville",
+    "KC": "Kansas City",
+    "LV": "Las Vegas",
+    "LAC": "Los Angeles",
+    "LAR": "Los Angeles",
+    "MIA": "Miami",
+    "MIN": "Minnesota",
+    "NE": "New England",
+    "NO": "New Orleans",
+    "NYG": "New York",
+    "NYJ": "New York",
+    "PHI": "Philadelphia",
+    "PIT": "Pittsburgh",
+    "SEA": "Seattle",
+    "SF": "San Francisco",
+    "TB": "Tampa Bay",
+    "TEN": "Tennessee",
+    "WAS": "Washington"
   };
 
   const TEAMS_ALL = ["All", "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
@@ -166,7 +166,9 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                      <span className="text-[#6e7681] font-mono uppercase text-[9px]">BYE {player.byeWeek}</span>
                   </div>
                 </div>
-                <div className="col-span-1 text-right font-mono text-[#8b949e] text-[11px] pr-2">{player.adp}</div>
+                <div className="col-span-1 text-right font-mono text-[#8b949e] text-[11px] pr-2">
+                  {player.adp} <span className="text-[9px] opacity-70">(R{Math.ceil(player.adp / settings.teamCount)})</span>
+                </div>
                 <div className="col-span-1 text-right font-mono text-primary font-bold text-[12px] pr-4">{player.ppg}</div>
                 <div className="col-span-1 flex items-center justify-center">
                    <div className="h-8 w-[1px] bg-[#30363d]/50" />
