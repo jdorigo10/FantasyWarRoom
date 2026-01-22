@@ -446,37 +446,39 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     )}
                     
                     {/* Tag Management */}
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:bg-white/10 rounded p-0.5 outline-none">
-                          <Plus className="h-3 w-3 text-[#8b949e]" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-40 p-2 bg-[#161b22] border-[#30363d] shadow-xl" align="start">
-                        <div className="space-y-1">
-                           <button 
-                             className={cn(
-                               "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
-                               playerTags[player.id]?.includes('favorite') ? "bg-red-500/10 text-red-500" : "text-[#c9d1d9] hover:bg-white/5"
-                             )}
-                             onClick={() => togglePlayerTag(player.id, 'favorite')}
-                           >
-                             <Heart className={cn("h-3 w-3", playerTags[player.id]?.includes('favorite') && "fill-current")} />
-                             Favorite
-                           </button>
-                           <button 
-                             className={cn(
-                               "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
-                               playerTags[player.id]?.includes('target') ? "bg-primary/10 text-primary" : "text-[#c9d1d9] hover:bg-white/5"
-                             )}
-                             onClick={() => togglePlayerTag(player.id, 'target')}
-                           >
-                             <Target className="h-3 w-3" />
-                             Target
-                           </button>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                    {showExtendedStats && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:bg-white/10 rounded p-0.5 outline-none">
+                            <Plus className="h-3 w-3 text-[#8b949e]" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-40 p-2 bg-[#161b22] border-[#30363d] shadow-xl" align="start">
+                          <div className="space-y-1">
+                             <button 
+                               className={cn(
+                                 "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
+                                 playerTags[player.id]?.includes('favorite') ? "bg-red-500/10 text-red-500" : "text-[#c9d1d9] hover:bg-white/5"
+                               )}
+                               onClick={() => togglePlayerTag(player.id, 'favorite')}
+                             >
+                               <Heart className={cn("h-3 w-3", playerTags[player.id]?.includes('favorite') && "fill-current")} />
+                               Favorite
+                             </button>
+                             <button 
+                               className={cn(
+                                 "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
+                                 playerTags[player.id]?.includes('target') ? "bg-primary/10 text-primary" : "text-[#c9d1d9] hover:bg-white/5"
+                               )}
+                               onClick={() => togglePlayerTag(player.id, 'target')}
+                             >
+                               <Target className="h-3 w-3" />
+                               Target
+                             </button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
 
                     {isPicked && pickInfo && (
                       <span className="text-[8px] font-mono text-primary border border-primary/20 px-0.5 rounded uppercase whitespace-nowrap ml-1">
