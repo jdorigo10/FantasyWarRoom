@@ -39,12 +39,49 @@ export interface DraftSettings {
 const TEAMS = ["ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
 
 const MOCK_NAMES: Record<string, string[]> = {
-  QB: ["Josh Allen", "Jalen Hurts", "Patrick Mahomes", "Lamar Jackson", "Joe Burrow", "C.J. Stroud"],
-  RB: ["Christian McCaffrey", "Breece Hall", "Bijan Robinson", "Saquon Barkley", "Jonathan Taylor"],
-  WR: ["CeeDee Lamb", "Tyreek Hill", "Justin Jefferson", "Ja'Marr Chase", "Amon-Ra St. Brown"],
-  TE: ["Sam LaPorta", "Travis Kelce", "Trey McBride", "Mark Andrews", "George Kittle"],
-  K: ["Justin Tucker", "Brandon Aubrey", "Harrison Butker"],
-  DST: ["Ravens", "Cowboys", "Jets", "49ers"]
+  QB: [
+    "Josh Allen", "Jalen Hurts", "Patrick Mahomes", "Lamar Jackson", "Joe Burrow", "C.J. Stroud",
+    "Anthony Richardson", "Dak Prescott", "Jordan Love", "Brock Purdy", "Kyler Murray", "Caleb Williams",
+    "Tua Tagovailoa", "Jared Goff", "Justin Herbert", "Kirk Cousins", "Jayden Daniels", "Trevor Lawrence",
+    "Aaron Rodgers", "Matthew Stafford"
+  ],
+  RB: [
+    "Christian McCaffrey", "Breece Hall", "Bijan Robinson", "Saquon Barkley", "Jonathan Taylor",
+    "Kyren Williams", "Jahmyr Gibbs", "Travis Etienne", "Derrick Henry", "Isiah Pacheco",
+    "Rachaad White", "Joe Mixon", "Kenneth Walker III", "James Cook", "Josh Jacobs",
+    "Alvin Kamara", "James Conner", "David Montgomery", "D'Andre Swift", "Aaron Jones",
+    "Zamir White", "Raheem Mostert", "Najee Harris", "Jonathon Brooks", "Brian Robinson Jr.",
+    "Javonte Williams", "Austin Ekeler", "Zack Moss", "Tony Pollard", "Nick Chubb",
+    "Devin Singletary", "Jaylen Warren", "Ezekiel Elliott", "Gus Edwards", "Ty Chandler",
+    "Jerome Ford", "Trey Benson", "Chuba Hubbard", "Blake Corum", "Chase Brown"
+  ],
+  WR: [
+    "CeeDee Lamb", "Tyreek Hill", "Justin Jefferson", "Ja'Marr Chase", "Amon-Ra St. Brown",
+    "A.J. Brown", "Garrett Wilson", "Puka Nacua", "Marvin Harrison Jr.", "Drake London",
+    "Davante Adams", "Chris Olave", "Mike Evans", "Nico Collins", "Jaylen Waddle",
+    "Michael Pittman Jr.", "DeVonta Smith", "D.K. Metcalf", "Stefon Diggs", "Cooper Kupp",
+    "DJ Moore", "Malik Nabers", "Brandon Aiyuk", "George Pickens", "Deebo Samuel",
+    "Zay Flowers", "Tee Higgins", "Amari Cooper", "Christian Kirk", "Tank Dell",
+    "Terry McLaurin", "Rashee Rice", "Chris Godwin", "Keenan Allen", "Jayden Reed",
+    "Hollywood Brown", "Jordan Addison", "Jaxon Smith-Njigba", "Ladd McConkey", "Courtland Sutton"
+  ],
+  TE: [
+    "Sam LaPorta", "Travis Kelce", "Trey McBride", "Mark Andrews", "George Kittle",
+    "Evan Engram", "Kyle Pitts", "Jake Ferguson", "Dalton Kincaid", "Brock Bowers",
+    "David Njoku", "Dallas Goedert", "Cole Kmet", "T.J. Hockenson", "Pat Freiermuth",
+    "Dalton Schultz", "Luke Musgrave", "Hunter Henry", "Cade Otton", "Isaiah Likely"
+  ],
+  K: [
+    "Justin Tucker", "Brandon Aubrey", "Harrison Butker", "Jake Elliott", "Younghoe Koo",
+    "Evan McPherson", "Cameron Dicker", "Matt Gay", "Jason Sanders", "Tyler Bass",
+    "Dustin Hopkins", "Jake Moody", "Ka'imi Fairbairn", "Cairo Santos", "Chris Boswell",
+    "Blake Grupe", "Greg Zuerlein", "Chase McLaughlin", "Nick Folk", "Greg Joseph"
+  ],
+  DST: [
+    "Ravens", "Cowboys", "Jets", "49ers", "Browns", "Bills", "Steelers", "Dolphins",
+    "Chiefs", "Eagles", "Saints", "Texans", "Bengals", "Lions", "Packers", "Bears",
+    "Jaguars", "Vikings", "Broncos", "Raiders"
+  ]
 };
 
 function generatePlayers(): Player[] {
