@@ -1,5 +1,12 @@
 import { create } from 'zustand';
-import { Player, DraftSettings, DraftPick, MOCK_PLAYERS, INITIAL_SETTINGS } from './mockData';
+import { Player, DraftSettings, MOCK_PLAYERS, INITIAL_SETTINGS } from './mockData';
+
+export interface DraftPick {
+  round: number;
+  pickOverall: number;
+  playerId: string;
+  pickedBy: "User" | "CPU";
+}
 
 interface DraftState {
   settings: DraftSettings;

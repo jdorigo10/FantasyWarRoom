@@ -218,6 +218,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <div className="col-span-1 text-center">ADP</div>
           {showExtendedStats && <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>DRAFT</span><span>VAL</span></div>}
           <div className="col-span-1 text-center">PPG</div>
+          {!showExtendedStats && (
+            <div className="col-span-1 flex items-center justify-center">
+              <div className="h-3 w-[1px] bg-[#30363d]" />
+            </div>
+          )}
           {showExtendedStats && (
             <>
               <div className="col-span-1 text-center">SOS</div>
@@ -278,22 +283,14 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     {getDraftValue(player) > 0 ? `+${getDraftValue(player)}` : getDraftValue(player)}
                   </div>
                 )}
-                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", showExtendedStats ? getPPGColor(player.ppg, player.position) : "text-primary")}>
+                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", getPPGColor(player.ppg, player.position))}>
                   {player.ppg}
                 </div>
                 
-                {showExtendedStats && (
-                  <>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.sos, false))}>
-                      {player.sos}
-                    </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.offensiveRank, true))}>
-                      {player.offensiveRank}
-                    </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.defensiveRank, true))}>
-                      {player.defensiveRank}
-                    </div>
-                  </>
+                {!showExtendedStats && (
+                  <div className="col-span-1 flex items-center justify-center">
+                    <div className="h-4 w-[1px] bg-[#30363d]" />
+                  </div>
                 )}
 
                 {showExtendedStats ? (

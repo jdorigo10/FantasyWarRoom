@@ -109,7 +109,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
   });
 
   // Re-evaluate bench placeholders
-  const benchSuggestedPositions = new Set<Position>();
+  const benchSuggestedPositions = new Set<string>();
 
   filledRoster.forEach((slot) => {
     if (slot.slot === "BENCH" && !slot.player) {
