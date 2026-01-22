@@ -100,4 +100,15 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #444444;
   }
+
+  /* Interactive Elements Cursor */
+  button, 
+  [role="button"],
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  .cursor-pointer,
+  label[for] {
+    cursor: pointer !important;
+  }
 }
