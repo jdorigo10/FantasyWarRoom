@@ -127,6 +127,13 @@ export default function Dashboard() {
     }
   };
 
+  const handleYearChange = (year: string) => {
+    alert("The app needs to reload in order to pull in / setup the corresponding data for the selected year: " + year);
+    updateSettings({ draftYear: year });
+    resetDraft();
+    window.location.reload();
+  };
+
   const updateTeamName = (id: string, name: string) => {
     const updatedTeams = settings.teams.map(t => t.id === id ? { ...t, name } : t);
     updateSettings({ teams: updatedTeams });
@@ -278,6 +285,27 @@ export default function Dashboard() {
                         ))}
                       </div>
                     </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className={cn("p-8 space-y-6 transition-colors duration-500",
+                settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Data Source</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] text-[#8b949e] uppercase font-mono">Draft Year</label>
+                    <select 
+                      className={cn("w-full rounded p-2 text-sm transition-colors",
+                        settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
+                      value={settings.draftYear}
+                      onChange={(e) => handleYearChange(e.target.value)}
+                    >
+                      <option value="2026-2027">2026-2027</option>
+                      <option value="2025-2026">2025-2026</option>
+                      <option value="2024-2025">2024-2025</option>
+                      <option value="2023-2024">2023-2024</option>
+                    </select>
                   </div>
                 </div>
               </Card>
