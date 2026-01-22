@@ -91,32 +91,40 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const getTagIcons = (player: any) => {
     const icons = [];
     
-    // Status (Mutually Exclusive: Injured vs Injury Risk)
+    // 1. Injured (Highest Priority)
     if (player.id === "p-5" || player.id === "p-12") { // Mock injured players
       icons.push({ icon: PlusSquare, label: "Injured", color: "text-red-500" });
-    } else if (player.injuryHistory === "Significant") {
+    }
+
+    // 2. Suspended
+    if (player.byeWeek === 14) {
+      icons.push({ icon: Lock, label: "Suspended", color: "text-yellow-500" });
+    }
+
+    // 3. Injury Risk
+    if (player.injuryHistory === "Significant" && !(player.id === "p-5" || player.id === "p-12")) {
       icons.push({ icon: Bandage, label: "Injury Risk", color: "text-orange-400" });
     }
 
-    // Age/Experience (Mutually Exclusive: Rookie vs Old vs New Team)
+    // 4. Rookie
     if (player.rank % 7 === 0) {
       icons.push({ icon: Baby, label: "Rookie", color: "text-blue-400" });
-    } else if (player.rank % 9 === 0) {
+    }
+
+    // 5. Old
+    if (player.rank % 9 === 0) {
       icons.push({ icon: Clock, label: "Old", color: "text-gray-500" });
-    } else if (player.rank % 11 === 0) {
+    }
+
+    // Others (Trends, etc)
+    if (player.rank % 11 === 0 && player.rank % 7 !== 0) {
       icons.push({ icon: RefreshCcw, label: "New Team", color: "text-purple-400" });
     }
 
-    // Trends (Mutually Exclusive: Up vs Down)
     if (player.rank < 15) {
       icons.push({ icon: TrendingUpIcon, label: "Trending Up", color: "text-green-500" });
     } else if (player.rank > 120) {
       icons.push({ icon: TrendingDown, label: "Trending Down", color: "text-red-400" });
-    }
-
-    // Suspension
-    if (player.byeWeek === 14) {
-      icons.push({ icon: Lock, label: "Suspended", color: "text-yellow-500" });
     }
 
     return icons;
@@ -235,7 +243,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-12 gap-0 px-2 py-2 bg-[#161b22] text-[11px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d]">
           <div className="col-span-1 text-center pr-0.5">RK</div>
-          <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>PLAYER</div>
+          <div className={showExtendedStats ? "col-span-4" : "col-span-6"}>PLAYER</div>
           <div className={cn("text-center", showExtendedStats ? "col-span-1 ml-2.5" : "col-span-1")}>ADP</div>
           {showExtendedStats && <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-2.5"><span>DRAFT</span><span>VAL</span></div>}
           <div className={cn("text-center", showExtendedStats ? "col-span-1 -ml-5" : "col-span-1")}>PPG</div>
@@ -244,7 +252,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               <div className="col-span-1 text-center ml-4">SOS</div>
               <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-4"><span>OFF</span><span>RK</span></div>
               <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-4"><span>DEF</span><span>RK</span></div>
-              <div className="col-span-2 text-center ml-4">TAGS</div>
+              <div className="col-span-2 text-center ml-2">TAGS</div>
             </>
           )}
           {!showExtendedStats && (
@@ -268,7 +276,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
               >
                 <div className="col-span-1 font-mono text-[11px] text-[#6e7681] text-center pr-0.5">#{player.rank}</div>
-                <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>
+                <div className={showExtendedStats ? "col-span-4" : "col-span-6"}>
                   <div className="text-[13px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
                     {player.name}
                     {isPicked && pickInfo && (
@@ -315,15 +323,15 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
 
                 {showExtendedStats ? (
-                  <div className="col-span-2 flex justify-center items-center">
+                  <div className="col-span-2 flex justify-center items-center px-1">
                     <TooltipProvider>
                       <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>
-                          <div className="flex justify-center gap-0.5 cursor-help hover:bg-white/5 rounded transition-colors w-full h-full min-h-[20px] items-center">
-                            {tags.slice(0, 3).map((tag, i) => (
+                          <div className="flex justify-center gap-0.5 cursor-help hover:bg-white/5 rounded transition-colors w-full h-full min-h-[20px] items-center px-1">
+                            {tags.slice(0, 5).map((tag, i) => (
                               <tag.icon key={i} className={cn("h-3.5 w-3.5", tag.color)} />
                             ))}
-                            {tags.length > 3 && <span className="text-[8px] text-[#484f58] font-bold">+{tags.length - 3}</span>}
+                            {tags.length > 5 && <span className="text-[8px] text-[#484f58] font-bold">+{tags.length - 5}</span>}
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side="left" className="bg-[#161b22] border-[#30363d] p-3 shadow-2xl min-w-[200px] z-50">
