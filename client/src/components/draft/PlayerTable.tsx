@@ -279,6 +279,20 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   {player.ppg}
                 </div>
                 
+                {showExtendedStats && (
+                  <>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.sos, false))}>
+                      {player.sos}
+                    </div>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.offensiveRank, true))}>
+                      {player.offensiveRank}
+                    </div>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.defensiveRank, true))}>
+                      {player.defensiveRank}
+                    </div>
+                  </>
+                )}
+
                 {showExtendedStats ? (
                   <div className="col-span-2 flex justify-center items-center">
                     <TooltipProvider>
@@ -308,7 +322,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     </TooltipProvider>
                   </div>
                 ) : (
-                  <div className="col-span-3 flex justify-end items-center pr-2">
+                  <div className="col-span-3 flex justify-center items-center px-2">
                     {!isPicked ? (
                       <Button 
                         size="sm" 
@@ -318,7 +332,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                         Draft
                       </Button>
                     ) : (
-                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center justify-end gap-1.5 w-full">
+                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center justify-center gap-1.5 w-full">
                         <div className="h-1 w-1 rounded-full bg-[#484f58]" />
                         Taken
                       </div>
