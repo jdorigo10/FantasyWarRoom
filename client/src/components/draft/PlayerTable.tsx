@@ -216,7 +216,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <div className="col-span-1 text-center">RK</div>
           <div className={showExtendedStats ? "col-span-2" : "col-span-6"}>PLAYER</div>
           <div className="col-span-1 text-center">ADP</div>
-          {showExtendedStats && <div className="col-span-1 text-center text-[8px] leading-tight">DRAFT VALUE</div>}
+          {showExtendedStats && <div className="col-span-1 text-center text-[7px] leading-[0.85] font-bold flex flex-col justify-center"><span>DRAFT</span><span>VALUE</span></div>}
           <div className="col-span-1 text-center">PPG</div>
           {showExtendedStats && (
             <>
@@ -224,8 +224,8 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <div className="h-4 w-[1px] bg-[#30363d]" />
               </div>
               <div className="col-span-1 text-center">SOS</div>
-              <div className="col-span-1 text-center text-[8px] leading-tight">OFF RANK</div>
-              <div className="col-span-1 text-center text-[8px] leading-tight">DEF RANK</div>
+              <div className="col-span-1 text-center text-[7px] leading-[0.85] font-bold flex flex-col justify-center"><span>OFF</span><span>RANK</span></div>
+              <div className="col-span-1 text-center text-[7px] leading-[0.85] font-bold flex flex-col justify-center"><span>DEF</span><span>RANK</span></div>
               <div className="col-span-1 flex items-center justify-center">
                  <div className="h-4 w-[1px] bg-[#30363d]" />
               </div>
