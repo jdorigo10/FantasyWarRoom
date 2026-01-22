@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Plus, Info } from "lucide-react";
+import { Search, Plus, Info, AlertTriangle, Thermometer, UserMinus, Clock, Baby, TrendingUp as TrendingUpIcon, TrendingDown, RefreshCcw } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PlayerTableProps {
   showExtendedStats?: boolean;
@@ -17,6 +18,28 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
   const currentFilters = showExtendedStats ? rankingsFilters : filters;
   const currentUpdateFilters = showExtendedStats ? updateRankingsFilters : updateFilters;
+
+  const getRankColor = (rank: number, invert = false) => {
+    // 1-32 range
+    const val = invert ? rank : 33 - rank;
+    if (val > 24) return "text-[#2ea043]"; // Greenish
+    if (val > 16) return "text-[#d29922]"; // Yellowish
+    if (val > 8) return "text-[#f0883e]"; // Orangish
+    return "text-[#f85149]"; // Redish
+  };
+
+  const getTagIcons = (player: any) => {
+    const icons = [];
+    if (player.risk === "High") icons.push({ icon: AlertTriangle, label: "High Risk", color: "text-red-500" });
+    if (player.injuryHistory === "Significant") icons.push({ icon: Thermometer, label: "Injury Risk", color: "text-orange-500" });
+    if (player.rank < 10) icons.push({ icon: TrendingUpIcon, label: "Trending Up", color: "text-green-500" });
+    if (player.rank > 100) icons.push({ icon: TrendingDown, label: "Trending Down", color: "text-red-400" });
+    if (player.byeWeek === 14) icons.push({ icon: UserMinus, label: "Suspension Risk", color: "text-yellow-600" });
+    if (player.rank % 7 === 0) icons.push({ icon: Baby, label: "Rookie", color: "text-blue-400" });
+    if (player.rank % 9 === 0) icons.push({ icon: Clock, label: "Veteran/Old", color: "text-gray-500" });
+    if (player.rank % 11 === 0) icons.push({ icon: RefreshCcw, label: "New Team", color: "text-purple-400" });
+    return icons;
+  };
 
   const TEAM_NAMES: Record<string, string> = {
     "All": "All Teams",
@@ -131,18 +154,28 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-[#161b22] text-[10px] font-bold text-[#8b949e] uppercase tracking-wider border-b border-[#30363d]">
           <div className="col-span-1">RK</div>
-          <div className="col-span-6">PLAYER</div>
+          <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>PLAYER</div>
           <div className="col-span-1 text-center">ADP</div>
           <div className="col-span-1 text-center">PPG</div>
+          {showExtendedStats && (
+            <>
+              <div className="col-span-1 text-center">SOS</div>
+              <div className="col-span-1 text-center">OFF</div>
+              <div className="col-span-1 text-center">DEF</div>
+            </>
+          )}
           <div className="col-span-1 flex items-center justify-center">
              <div className="h-4 w-[1px] bg-[#30363d]" />
           </div>
-          {!showExtendedStats && <div className="col-span-2 text-center">ACTION</div>}
+          <div className={showExtendedStats ? "col-span-2 text-center" : "col-span-2 text-center"}>
+            {showExtendedStats ? "TAGS" : "ACTION"}
+          </div>
         </div>
         <ScrollArea className="flex-1">
           {filteredPlayers.map((player) => {
             const isPicked = pickedPlayers.includes(player.id);
             const pickInfo = picks.find(p => p.playerId === player.id);
+            const tags = getTagIcons(player);
             
             return (
               <div 
@@ -153,7 +186,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
               >
                 <div className="col-span-1 font-mono text-[11px] text-[#6e7681]">#{player.rank}</div>
-                <div className="col-span-6">
+                <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>
                   <div className="text-sm font-semibold text-[#c9d1d9] flex items-center gap-2">
                     {player.name}
                     {isPicked && pickInfo && (
@@ -171,10 +204,41 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   {player.adp} <span className="text-[9px] opacity-70">(R{Math.ceil(player.adp / settings.teamCount)})</span>
                 </div>
                 <div className="col-span-1 text-center font-mono text-primary font-bold text-[12px]">{player.ppg}</div>
+                
+                {showExtendedStats && (
+                  <>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.sos))}>
+                      {player.sos}
+                    </div>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.offensiveRank, true))}>
+                      {player.offensiveRank}
+                    </div>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.defensiveRank, true))}>
+                      {player.defensiveRank}
+                    </div>
+                  </>
+                )}
+
                 <div className="col-span-1 flex items-center justify-center">
                    <div className="h-8 w-[1px] bg-[#30363d]/50" />
                 </div>
-                {!showExtendedStats && (
+                
+                {showExtendedStats ? (
+                  <div className="col-span-2 flex justify-center gap-1.5 px-2">
+                    <TooltipProvider>
+                      {tags.map((tag, i) => (
+                        <Tooltip key={i}>
+                          <TooltipTrigger>
+                            <tag.icon className={cn("h-3.5 w-3.5", tag.color)} />
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-[#161b22] border-[#30363d] text-[10px] text-white p-2">
+                            {tag.label}
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </TooltipProvider>
+                  </div>
+                ) : (
                   <div className="col-span-2 flex justify-center px-2">
                     {!isPicked ? (
                       <Button 
