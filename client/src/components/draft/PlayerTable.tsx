@@ -249,17 +249,17 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   isPicked && "opacity-40 grayscale-[0.5]"
                 )}
               >
-                <div className="col-span-1 font-mono text-[10px] text-[#6e7681] text-center pr-0.5">#{player.rank}</div>
+                <div className="col-span-1 font-mono text-[11px] text-[#6e7681] text-center pr-0.5">#{player.rank}</div>
                 <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>
-                  <div className="text-[12px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
+                  <div className="text-[13px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
                     {player.name}
                     {isPicked && pickInfo && (
-                      <span className="text-[7px] font-mono text-primary border border-primary/20 px-0.5 rounded uppercase whitespace-nowrap">
+                      <span className="text-[8px] font-mono text-primary border border-primary/20 px-0.5 rounded uppercase whitespace-nowrap">
                         {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
                       </span>
                     )}
                   </div>
-                  <div className="text-[9px] text-[#8b949e] flex items-center mt-0.5 gap-1 truncate opacity-80">
+                  <div className="text-[10px] text-[#8b949e] flex items-center mt-0.5 gap-1 truncate opacity-80">
                      <span className="font-bold text-[#c9d1d9]">{player.position}</span>
                      <span className="text-[#484f58]">•</span>
                      <span className="uppercase">{player.team}</span>
@@ -267,30 +267,30 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                      <span className="text-[#6e7681] uppercase">Bye {player.byeWeek}</span>
                   </div>
                 </div>
-                <div className="col-span-1 text-center font-mono text-[#8b949e] text-[10px]">
+                <div className="col-span-1 text-center font-mono text-[#8b949e] text-[11px]">
                   {player.adp}
-                  <div className="text-[7px] text-primary opacity-60">
+                  <div className="text-[8px] text-primary opacity-60">
                     (RD{Math.ceil(player.adp / settings.teamCount)})
                   </div>
                 </div>
                 {showExtendedStats && (
-                  <div className={cn("col-span-1 text-center font-mono font-bold text-[10px]", getValueColor(getDraftValue(player)))}>
+                  <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getValueColor(getDraftValue(player)))}>
                     {getDraftValue(player) > 0 ? `+${getDraftValue(player)}` : getDraftValue(player)}
                   </div>
                 )}
-                <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", showExtendedStats ? getPPGColor(player.ppg, player.position) : "text-primary")}>
+                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", showExtendedStats ? getPPGColor(player.ppg, player.position) : "text-primary")}>
                   {player.ppg}
                 </div>
                 
                 {showExtendedStats && (
                   <>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[10px]", getRankColor(player.sos, false))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.sos, false))}>
                       {player.sos}
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[10px]", getRankColor(player.offensiveRank, true))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.offensiveRank, true))}>
                       {player.offensiveRank}
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[10px]", getRankColor(player.defensiveRank, true))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.defensiveRank, true))}>
                       {player.defensiveRank}
                     </div>
                   </>
@@ -303,21 +303,21 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                         <TooltipTrigger asChild>
                           <div className="flex justify-center gap-0.5 cursor-help hover:bg-white/5 rounded transition-colors w-full h-full min-h-[20px] items-center">
                             {tags.slice(0, 3).map((tag, i) => (
-                              <tag.icon key={i} className={cn("h-3 w-3", tag.color)} />
+                              <tag.icon key={i} className={cn("h-3.5 w-3.5", tag.color)} />
                             ))}
-                            {tags.length > 3 && <span className="text-[8px] text-[#484f58] font-bold">+{tags.length - 3}</span>}
+                            {tags.length > 3 && <span className="text-[9px] text-[#484f58] font-bold">+{tags.length - 3}</span>}
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side="left" className="bg-[#161b22] border-[#30363d] p-3 shadow-2xl min-w-[200px] z-50">
                           <div className="space-y-2.5">
                             {tags.map((tag, i) => (
                               <div key={i} className="flex items-start gap-3">
-                                <tag.icon className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", tag.color)} />
-                                <span className="text-[10px] text-[#c9d1d9] leading-relaxed">{tag.label}</span>
+                                <tag.icon className={cn("h-4 w-4 shrink-0 mt-0.5", tag.color)} />
+                                <span className="text-[11px] text-[#c9d1d9] leading-relaxed">{tag.label}</span>
                               </div>
                             ))}
                             {tags.length === 0 && (
-                              <p className="text-[10px] text-[#8b949e] italic text-center py-1">No Tags</p>
+                              <p className="text-[11px] text-[#8b949e] italic text-center py-1">No Tags</p>
                             )}
                           </div>
                         </TooltipContent>
@@ -325,17 +325,17 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     </TooltipProvider>
                   </div>
                 ) : (
-                  <div className="col-span-2 flex justify-center px-2">
+                  <div className="col-span-2 flex justify-center items-center px-2">
                     {!isPicked ? (
                       <Button 
                         size="sm" 
-                        className="h-7 w-full bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
+                        className="h-7 w-full max-w-[80px] bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)] mx-auto"
                         onClick={() => makePick(player.id)}
                       >
                         Draft
                       </Button>
                     ) : (
-                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center gap-1.5">
+                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center justify-center gap-1.5 w-full">
                         <div className="h-1 w-1 rounded-full bg-[#484f58]" />
                         Taken
                       </div>
