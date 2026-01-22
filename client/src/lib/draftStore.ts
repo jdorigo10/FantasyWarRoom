@@ -8,9 +8,16 @@ interface DraftState {
   picks: DraftPick[];
   currentPickIndex: number; // Overall pick number (0-based)
   myRoster: string[]; // IDs of players picked by user
+  filters: {
+    search: string;
+    pos: string;
+    team: string;
+    showDrafted: boolean;
+  };
   
   // Actions
   updateSettings: (settings: Partial<DraftSettings>) => void;
+  updateFilters: (filters: Partial<DraftState['filters']>) => void;
   makePick: (playerId: string) => void;
   undoLastPick: () => void;
   resetDraft: () => void;
@@ -38,6 +45,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   picks: [],
   currentPickIndex: 0,
   myRoster: [],
+  filters: {
+    search: "",
+    pos: "All",
+    team: "All",
+    showDrafted: false
+  },
 
   updateSettings: (newSettings) => set((state) => {
     const updated = { ...state.settings, ...newSettings };
@@ -51,6 +64,10 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     return { settings: updated };
   }),
+
+  updateFilters: (newFilters) => set((state) => ({
+    filters: { ...state.filters, ...newFilters }
+  })),
 
   makePick: (playerId) => set((state) => {
     const isUserPick = isUserTurn(state.currentPickIndex, state.settings);
@@ -93,7 +110,13 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     pickedPlayers: [],
     picks: [],
     currentPickIndex: 0,
-    myRoster: []
+    myRoster: [],
+    filters: {
+      search: "",
+      pos: "All",
+      team: "All",
+      showDrafted: false
+    }
   }),
 
   simulatePick: () => {
