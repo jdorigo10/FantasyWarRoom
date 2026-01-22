@@ -218,11 +218,6 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <div className="col-span-1 text-center">ADP</div>
           {showExtendedStats && <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>DRAFT</span><span>VAL</span></div>}
           <div className="col-span-1 text-center">PPG</div>
-          {!showExtendedStats && (
-            <div className="col-span-1 flex items-center justify-center">
-              <div className="h-3 w-[1px] bg-[#30363d]" />
-            </div>
-          )}
           {showExtendedStats && (
             <>
               <div className="col-span-1 text-center">SOS</div>
@@ -233,10 +228,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           )}
           {!showExtendedStats && (
             <>
-              <div className="col-span-1 flex items-center justify-center">
-                 <div className="h-3 w-[1px] bg-[#30363d]" />
-              </div>
-              <div className="col-span-2 text-center">ACTION</div>
+              <div className="col-span-3 text-center">ACTION</div>
             </>
           )}
         </div>
@@ -283,16 +275,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     {getDraftValue(player) > 0 ? `+${getDraftValue(player)}` : getDraftValue(player)}
                   </div>
                 )}
-                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", getPPGColor(player.ppg, player.position))}>
+                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", showExtendedStats ? getPPGColor(player.ppg, player.position) : "text-primary")}>
                   {player.ppg}
                 </div>
                 
-                {!showExtendedStats && (
-                  <div className="col-span-1 flex items-center justify-center">
-                    <div className="h-4 w-[1px] bg-[#30363d]" />
-                  </div>
-                )}
-
                 {showExtendedStats ? (
                   <div className="col-span-2 flex justify-center items-center">
                     <TooltipProvider>
@@ -322,7 +308,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     </TooltipProvider>
                   </div>
                 ) : (
-                  <div className="col-span-2 flex justify-end items-center pr-2">
+                  <div className="col-span-3 flex justify-end items-center pr-2">
                     {!isPicked ? (
                       <Button 
                         size="sm" 
