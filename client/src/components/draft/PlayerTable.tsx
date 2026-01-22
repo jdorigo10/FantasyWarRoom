@@ -27,7 +27,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       } else {
          pickOverall = (r - 1) * settings.teamCount + (settings.teamCount - settings.position + 1);
       }
-      if (pickOverall > currentPickIndex + 1) {
+      if (pickOverall > currentPickIndex) {
          p.push({ round: r, pickOverall });
       }
     }
@@ -38,12 +38,13 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     const map = new Map();
     userFuturePicks.forEach(p => {
       const gap = p.pickOverall - (currentPickIndex + 1);
-      if (gap > 0) map.set(gap, p);
+      if (gap >= 0) map.set(gap, p);
     });
     return map;
   }, [userFuturePicks, currentPickIndex]);
 
   let availableCount = 0;
+  const currentTurnDivider = pickDividers.get(0);
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'rank', direction: 'asc' });
 
@@ -448,6 +449,13 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           )}
         </div>
         <ScrollArea className="flex-1">
+          {currentTurnDivider && (
+             <div className="bg-primary/20 border-b border-primary/30 py-2 px-2 text-center flex items-center justify-center gap-4 sticky top-0 z-20 backdrop-blur-md shadow-lg">
+               <span className="text-[11px] font-mono text-primary font-bold tracking-widest uppercase animate-pulse">
+                 ⚡ Your Turn: RD {currentTurnDivider.round} - Pick {currentTurnDivider.pickOverall} ⚡
+               </span>
+             </div>
+          )}
           {sortedPlayers.map((player) => {
             const isPicked = pickedPlayers.includes(player.id);
             const pickInfo = picks.find(p => p.playerId === player.id);
