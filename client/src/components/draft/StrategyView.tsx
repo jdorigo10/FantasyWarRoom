@@ -38,7 +38,7 @@ export function StrategyView() {
         const bestAvailable = players
           .filter(p => p.position === (pos.startsWith("RB") ? "RB" : pos.startsWith("WR") ? "WR" : pos.startsWith("QB") ? "QB" : pos.startsWith("TE") ? "TE" : pos.startsWith("DST") ? "DST" : pos.startsWith("K") ? "K" : pos))
           .filter(p => !draftedIds.has(p.id))
-          .filter(p => p.adp >= userPickOverall - 2)
+          .filter(p => userPickOverall > (p.adp + (round * 1)))
           .sort((a, b) => b.ppg - a.ppg)[0] || players.filter(p => !draftedIds.has(p.id))[0];
 
         if (bestAvailable) {
@@ -143,12 +143,12 @@ export function StrategyView() {
                       <div key={col.id} className="p-3 border-r border-[#30363d]/50 flex flex-col justify-center items-center text-center">
                         {player ? (
                           <>
-                            <div className="text-[8px] font-mono text-[#6e7681] mb-1 uppercase tracking-tighter">
+                            <div className="text-[8px] font-mono text-primary mb-1 uppercase tracking-tighter font-bold">
                               RD {player.round} - {player.pickOverall}
                             </div>
                             <span className="text-[11px] font-semibold text-[#c9d1d9] truncate w-full">{player.name}</span>
                             <div className="flex items-center space-x-1 mt-0.5">
-                              <span className="text-[9px] font-bold text-primary">{player.team}</span>
+                              <span className="text-[9px] font-bold text-[#484f58] uppercase">{player.team}</span>
                               <span className="text-[9px] text-[#8b949e] font-mono">{player.ppg}</span>
                             </div>
                           </>
