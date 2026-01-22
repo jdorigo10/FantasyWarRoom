@@ -53,7 +53,7 @@ export function StrategyView() {
         const bestAvailable = players
           .filter(p => p.position === pos)
           .filter(p => !draftedIds.has(p.id))
-          .filter(p => userPickOverall > (p.adp + (round * 1)))
+          .filter(p => p.adp > (userPickOverall - round))
           .sort((a, b) => b.ppg - a.ppg)[0] || players.filter(p => p.position === pos && !draftedIds.has(p.id))[0];
 
         if (bestAvailable) {
@@ -97,11 +97,24 @@ export function StrategyView() {
         }
       } else if (rb3) {
         scenarioPlayers["FLEX"] = rb3;
-        // Find next WR for bench if possible
-        scenarioPlayers["BENCH"] = scenarioPlayers["WR3"] || null;
+        scenarioPlayers["BENCH"] = scenarioPlayers["WR3"] || scenarioPlayers["RB4"] || null;
       } else if (wr3) {
         scenarioPlayers["FLEX"] = wr3;
-        scenarioPlayers["BENCH"] = scenarioPlayers["RB3"] || null;
+        scenarioPlayers["BENCH"] = scenarioPlayers["RB3"] || scenarioPlayers["WR4"] || null;
+      }
+
+      // Ensure all positions have a player (even if mock)
+      const starterKeys = ["QB1", "RB1", "RB2", "WR1", "WR2", "TE1", "FLEX", "DST1", "K1"];
+      starterKeys.forEach(k => {
+        if (!scenarioPlayers[k]) {
+          const pos = k.replace(/[0-9]/g, '');
+          const fallback = players.find(p => p.position === (pos === "FLEX" ? "RB" : pos) && !draftedIds.has(p.id));
+          if (fallback) scenarioPlayers[k] = fallback;
+        }
+      });
+      if (!scenarioPlayers["BENCH"]) {
+        const fallback = players.find(p => !draftedIds.has(p.id));
+        if (fallback) scenarioPlayers["BENCH"] = fallback;
       }
 
       // Calculate Total PPG for starters
