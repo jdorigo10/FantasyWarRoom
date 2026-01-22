@@ -213,7 +213,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                         </div>
                         <div className="text-[10px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
                           <span className="font-bold">{slot.player.position} • {slot.player.team}</span>
-                          <span className="text-[#6e7681] opacity-80">BYE {slot.player.byeWeek}</span>
+                          <span className="text-[#6e7681] opacity-80 uppercase">Bye {slot.player.byeWeek}</span>
                         </div>
                       </div>
                     ) : slot.placeholder ? (
@@ -224,7 +224,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                         </div>
                         <div className="text-[10px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
                           <span className="font-bold">{slot.placeholder.position} • {slot.placeholder.team}</span>
-                          <span className="opacity-80">BYE {slot.placeholder.byeWeek}</span>
+                          <span className="opacity-80 uppercase">Bye {slot.placeholder.byeWeek}</span>
                         </div>
                       </div>
                     ) : (
