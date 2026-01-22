@@ -13,7 +13,10 @@ interface PlayerTableProps {
 }
 
 export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
-  const { players, pickedPlayers, picks, makePick, settings, filters, updateFilters } = useDraftStore();
+  const { players, pickedPlayers, picks, makePick, settings, filters, updateFilters, rankingsFilters, updateRankingsFilters } = useDraftStore();
+
+  const currentFilters = showExtendedStats ? rankingsFilters : filters;
+  const currentUpdateFilters = showExtendedStats ? updateRankingsFilters : updateFilters;
 
   const TEAM_NAMES: Record<string, string> = {
     "All": "All Teams",
@@ -56,17 +59,17 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   
   const filteredPlayers = players.filter(p => {
     const isPicked = pickedPlayers.includes(p.id);
-    if (!filters.showDrafted && isPicked) return false;
+    if (!currentFilters.showDrafted && isPicked) return false;
 
-    const matchesName = p.name.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesTeam = filters.team === "All" || p.team === filters.team;
+    const matchesName = p.name.toLowerCase().includes(currentFilters.search.toLowerCase());
+    const matchesTeam = currentFilters.team === "All" || p.team === currentFilters.team;
     
     let matchesPos = true;
-    if (filters.pos !== "All") {
-      if (filters.pos === "FLEX") {
+    if (currentFilters.pos !== "All") {
+      if (currentFilters.pos === "FLEX") {
         matchesPos = ["RB", "WR", "TE"].includes(p.position);
       } else {
-        matchesPos = p.position === filters.pos;
+        matchesPos = p.position === currentFilters.pos;
       }
     }
 
@@ -82,15 +85,15 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <Input 
             placeholder="Search for Player" 
             className="h-9 pl-9 bg-[#0d1117] border-[#30363d] text-[11px] focus:ring-primary/20" 
-            value={filters.search}
-            onChange={(e) => updateFilters({ search: e.target.value })}
+            value={currentFilters.search}
+            onChange={(e) => currentUpdateFilters({ search: e.target.value })}
           />
         </div>
         
         <select 
           className="h-9 bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg px-3 focus:ring-primary/20 cursor-pointer min-w-[140px] transition-all hover:bg-[#1c2128]"
-          value={filters.team}
-          onChange={(e) => updateFilters({ team: e.target.value })}
+          value={currentFilters.team}
+          onChange={(e) => currentUpdateFilters({ team: e.target.value })}
         >
           {TEAMS_ALL.map(team => (
             <option key={team} value={team}>
@@ -103,10 +106,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
            {POSITIONS.map(pos => (
               <button
                 key={pos}
-                onClick={() => updateFilters({ pos })}
+                onClick={() => currentUpdateFilters({ pos })}
                 className={cn(
                   "px-3 py-1 text-[10px] font-bold rounded-md transition-all",
-                  filters.pos === pos ? "bg-primary text-black" : "text-[#8b949e] hover:text-white"
+                  currentFilters.pos === pos ? "bg-primary text-black" : "text-[#8b949e] hover:text-white"
                 )}
               >
                 {pos}
@@ -114,11 +117,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
            ))}
         </div>
 
-        <div className="flex items-center space-x-2 px-2 border-l border-[#30363d] ml-auto">
+        <div className="flex items-center space-x-2 px-4 border-l border-[#30363d]">
           <Checkbox 
             id="show-drafted" 
-            checked={filters.showDrafted} 
-            onCheckedChange={(checked) => updateFilters({ showDrafted: !!checked })}
+            checked={currentFilters.showDrafted} 
+            onCheckedChange={(checked) => currentUpdateFilters({ showDrafted: !!checked })}
             className="border-primary data-[state=checked]:bg-primary h-4 w-4"
           />
           <label htmlFor="show-drafted" className="text-[10px] font-mono text-[#8b949e] uppercase cursor-pointer select-none whitespace-nowrap">Show Drafted</label>

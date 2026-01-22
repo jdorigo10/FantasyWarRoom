@@ -14,10 +14,17 @@ interface DraftState {
     team: string;
     showDrafted: boolean;
   };
+  rankingsFilters: {
+    search: string;
+    pos: string;
+    team: string;
+    showDrafted: boolean;
+  };
   
   // Actions
   updateSettings: (settings: Partial<DraftSettings>) => void;
   updateFilters: (filters: Partial<DraftState['filters']>) => void;
+  updateRankingsFilters: (filters: Partial<DraftState['rankingsFilters']>) => void;
   makePick: (playerId: string) => void;
   undoLastPick: () => void;
   resetDraft: () => void;
@@ -51,6 +58,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     team: "All",
     showDrafted: false
   },
+  rankingsFilters: {
+    search: "",
+    pos: "All",
+    team: "All",
+    showDrafted: false
+  },
 
   updateSettings: (newSettings) => set((state) => {
     const updated = { ...state.settings, ...newSettings };
@@ -67,6 +80,10 @@ export const useDraftStore = create<DraftState>((set, get) => ({
 
   updateFilters: (newFilters) => set((state) => ({
     filters: { ...state.filters, ...newFilters }
+  })),
+
+  updateRankingsFilters: (newFilters) => set((state) => ({
+    rankingsFilters: { ...state.rankingsFilters, ...newFilters }
   })),
 
   makePick: (playerId) => set((state) => {
@@ -139,6 +156,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     currentPickIndex: 0,
     myRoster: [],
     filters: {
+      search: "",
+      pos: "All",
+      team: "All",
+      showDrafted: false
+    },
+    rankingsFilters: {
       search: "",
       pos: "All",
       team: "All",
