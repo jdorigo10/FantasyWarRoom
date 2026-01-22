@@ -220,16 +220,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <div className="col-span-1 text-center">PPG</div>
           {showExtendedStats && (
             <>
-              <div className="col-span-1 flex items-center justify-center">
-                 <div className="h-3 w-[1px] bg-[#30363d]" />
-              </div>
               <div className="col-span-1 text-center">SOS</div>
               <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>OFF</span><span>RK</span></div>
               <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>DEF</span><span>RK</span></div>
-              <div className="col-span-1 flex items-center justify-center">
-                 <div className="h-3 w-[1px] bg-[#30363d]" />
-              </div>
-              <div className="col-span-1 text-center">TAGS</div>
+              <div className="col-span-2 text-center">TAGS</div>
             </>
           )}
           {!showExtendedStats && (
@@ -290,9 +284,6 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 
                 {showExtendedStats && (
                   <>
-                    <div className="col-span-1 flex items-center justify-center">
-                      <div className="h-4 w-[1px] bg-[#30363d]" />
-                    </div>
                     <div className={cn("col-span-1 text-center font-mono font-bold text-[10px]", getRankColor(player.sos, false))}>
                       {player.sos}
                     </div>
@@ -302,14 +293,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     <div className={cn("col-span-1 text-center font-mono font-bold text-[10px]", getRankColor(player.defensiveRank, true))}>
                       {player.defensiveRank}
                     </div>
-                    <div className="col-span-1 flex items-center justify-center">
-                      <div className="h-4 w-[1px] bg-[#30363d]" />
-                    </div>
                   </>
                 )}
 
                 {showExtendedStats ? (
-                  <div className="col-span-1 flex justify-center items-center">
+                  <div className="col-span-2 flex justify-center items-center">
                     <TooltipProvider>
                       <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>

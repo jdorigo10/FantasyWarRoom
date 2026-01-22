@@ -78,13 +78,29 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     return { settings: updated };
   }),
 
-  updateFilters: (newFilters) => set((state) => ({
-    filters: { ...state.filters, ...newFilters }
-  })),
+  updateFilters: (newFilters) => set((state) => {
+    const filters = { ...state.filters, ...newFilters };
+    const rankingsFilters = { ...state.rankingsFilters };
+    
+    // Sync showDrafted across both filter sets
+    if ('showDrafted' in newFilters) {
+      rankingsFilters.showDrafted = newFilters.showDrafted!;
+    }
+    
+    return { filters, rankingsFilters };
+  }),
 
-  updateRankingsFilters: (newFilters) => set((state) => ({
-    rankingsFilters: { ...state.rankingsFilters, ...newFilters }
-  })),
+  updateRankingsFilters: (newFilters) => set((state) => {
+    const rankingsFilters = { ...state.rankingsFilters, ...newFilters };
+    const filters = { ...state.filters };
+    
+    // Sync showDrafted across both filter sets
+    if ('showDrafted' in newFilters) {
+      filters.showDrafted = newFilters.showDrafted!;
+    }
+    
+    return { filters, rankingsFilters };
+  }),
 
   makePick: (playerId) => set((state) => {
     const isUserPick = isUserTurn(state.currentPickIndex, state.settings);
