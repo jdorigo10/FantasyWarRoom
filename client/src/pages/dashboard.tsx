@@ -189,17 +189,11 @@ export default function Dashboard() {
                   <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Data Source</label>
                   <div className="space-y-2">
                     <label className="text-[11px] text-[#8b949e] uppercase font-mono">Draft Year</label>
-                    <select 
-                      className={cn("w-full rounded-lg p-3 text-sm transition-colors",
-                        settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
-                      value={settings.draftYear}
-                      onChange={(e) => handleYearChange(e.target.value)}
-                    >
-                      <option value="2026-2027">2026-2027</option>
-                      <option value="2025-2026">2025-2026</option>
-                      <option value="2024-2025">2024-2025</option>
-                      <option value="2023-2024">2023-2024</option>
-                    </select>
+                    <div className={cn("w-full rounded-lg p-3 text-sm transition-colors opacity-60 cursor-not-allowed flex items-center justify-between",
+                        settings.theme === 'dark' ? "bg-[#0d1117] border border-[#30363d] text-white" : "bg-gray-50 border border-gray-200 text-gray-900")}>
+                      <span>{settings.draftYear}</span>
+                      <span className="text-[10px] uppercase font-bold text-primary/60 tracking-wider">Configured</span>
+                    </div>
                   </div>
                 </div>
               </Card>
