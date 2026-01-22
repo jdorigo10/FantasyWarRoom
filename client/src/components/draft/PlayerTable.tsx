@@ -92,7 +92,8 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     const icons = [];
     
     // 1. Injured (Highest Priority)
-    if (player.id === "p-5" || player.id === "p-12") { // Mock injured players
+    const isInjured = player.id === "p-5" || player.id === "p-12";
+    if (isInjured) {
       icons.push({ icon: PlusSquare, label: "Injured", color: "text-red-500" });
     }
 
@@ -101,29 +102,35 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       icons.push({ icon: Lock, label: "Suspended", color: "text-yellow-500" });
     }
 
-    // 3. Injury Risk
-    if (player.injuryHistory === "Significant" && !(player.id === "p-5" || player.id === "p-12")) {
+    // 3. Injury Risk (Cannot have both Injured and Injury Risk)
+    if (!isInjured && player.injuryHistory === "Significant") {
       icons.push({ icon: Bandage, label: "Injury Risk", color: "text-orange-400" });
     }
 
     // 4. Rookie
-    if (player.rank % 7 === 0) {
+    const isRookie = player.rank % 7 === 0;
+    if (isRookie) {
       icons.push({ icon: Baby, label: "Rookie", color: "text-blue-400" });
     }
 
-    // 5. Old
-    if (player.rank % 9 === 0) {
+    // 5. Old (Cannot have both Rookie and Old)
+    if (!isRookie && player.rank % 9 === 0) {
       icons.push({ icon: Clock, label: "Old", color: "text-gray-500" });
     }
 
-    // Others (Trends, etc)
-    if (player.rank % 11 === 0 && player.rank % 7 !== 0) {
+    // 6. New Team (Cannot have both Rookie and New Team)
+    if (!isRookie && player.rank % 11 === 0) {
       icons.push({ icon: RefreshCcw, label: "New Team", color: "text-purple-400" });
     }
 
-    if (player.rank < 15) {
+    // 7. Trending Up
+    const isTrendingUp = player.rank < 15;
+    if (isTrendingUp) {
       icons.push({ icon: TrendingUpIcon, label: "Trending Up", color: "text-green-500" });
-    } else if (player.rank > 120) {
+    }
+
+    // 8. Trending Down (Cannot have both Trending Up and Trending Down)
+    if (!isTrendingUp && player.rank > 120) {
       icons.push({ icon: TrendingDown, label: "Trending Down", color: "text-red-400" });
     }
 
@@ -252,7 +259,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               <div className="col-span-1 text-center ml-4">SOS</div>
               <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-4"><span>OFF</span><span>RK</span></div>
               <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-4"><span>DEF</span><span>RK</span></div>
-              <div className="col-span-2 text-center ml-2">TAGS</div>
+              <div className="col-span-1 text-center ml-4">TAGS</div>
             </>
           )}
           {!showExtendedStats && (
@@ -323,11 +330,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
 
                 {showExtendedStats ? (
-                  <div className="col-span-2 flex justify-center items-center px-1">
+                  <div className="col-span-1 flex justify-center items-center px-1">
                     <TooltipProvider>
                       <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>
-                          <div className="flex justify-center gap-0.5 cursor-help hover:bg-white/5 rounded transition-colors w-full h-full min-h-[20px] items-center px-1">
+                          <div className="flex justify-center gap-0.5 cursor-help hover:bg-white/5 rounded transition-colors w-full h-full min-h-[20px] items-center">
                             {tags.slice(0, 5).map((tag, i) => (
                               <tag.icon key={i} className={cn("h-3.5 w-3.5", tag.color)} />
                             ))}
