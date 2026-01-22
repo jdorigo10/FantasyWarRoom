@@ -79,13 +79,13 @@ function generatePlayers(): Player[] {
 export const MOCK_PLAYERS = generatePlayers();
 
 export const INITIAL_SETTINGS: DraftSettings = {
-  teamCount: 12,
+  teamCount: 10,
   position: 1,
   scoring: "PPR",
   rounds: 15,
   theme: "dark",
   accentColor: "#2ea043",
-  teams: Array.from({ length: 12 }, (_, i) => ({
+  teams: Array.from({ length: 10 }, (_, i) => ({
     id: `team-${i + 1}`,
     name: `Team ${i + 1}`,
     isUser: i === 0

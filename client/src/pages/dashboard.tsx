@@ -191,7 +191,7 @@ export default function Dashboard() {
       return (
         <div className="p-10 max-w-4xl mx-auto space-y-8 overflow-y-auto max-h-full scrollbar-hide">
           <h1 className={cn("text-2xl font-display font-bold uppercase tracking-tight italic transition-colors duration-500",
-            settings.theme === 'dark' ? "text-white" : "text-gray-900")}>WARROOM SETTINGS</h1>
+            settings.theme === 'dark' ? "text-white" : "text-gray-900")}>APP SETTINGS</h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-6">
@@ -286,7 +286,7 @@ export default function Dashboard() {
             <Card className={cn("p-8 flex flex-col transition-colors duration-500",
               settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
               <div className="flex items-center justify-between mb-6">
-                <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Team Rosters</label>
+                <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Teams & Draft Order</label>
                 <span className="text-[10px] font-mono text-[#8b949e]">{settings.teamCount} Teams Registered</span>
               </div>
               <div className="flex-1 overflow-y-auto pr-2 scrollbar-hide">

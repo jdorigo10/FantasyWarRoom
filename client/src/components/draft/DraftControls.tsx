@@ -7,18 +7,17 @@ import { Play, RotateCcw, MonitorPlay, AlertTriangle } from "lucide-react";
 export function DraftControls() {
   const { currentPickIndex, simulatePick, resetDraft, undoLastPick, settings } = useDraftStore();
 
+  const handleReset = () => {
+    if (confirm("This will clear all current picks. Are you sure?")) {
+      resetDraft();
+    }
+  };
+
   const round = Math.floor(currentPickIndex / settings.teamCount) + 1;
   const pick = (currentPickIndex % settings.teamCount) + 1;
   
   // Calculate whose turn it is
   const roundIsEven = (round - 1) % 2 === 0; // Round 1 is index 0 (even)
-  
-  // Snake draft logic:
-  // R1 (Even idx): 1->12. 
-  // R2 (Odd idx): 12->1.
-  
-  // If R1 (Even): Pick 1 is Team 1.
-  // If R2 (Odd): Pick 1 is Team 12.
   
   let currentTeamIndex: number;
   if (roundIsEven) {
@@ -57,7 +56,7 @@ export function DraftControls() {
         <Button variant="secondary" size="sm" onClick={simulatePick} className="bg-secondary/20 text-secondary-foreground hover:bg-secondary/30">
            <MonitorPlay className="mr-2 h-4 w-4" /> Sim Pick
         </Button>
-        <Button variant="destructive" size="sm" onClick={resetDraft}>
+        <Button variant="destructive" size="sm" onClick={handleReset}>
            <AlertTriangle className="mr-2 h-4 w-4" /> Reset
         </Button>
       </div>

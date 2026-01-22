@@ -17,8 +17,22 @@ interface DraftState {
   simulatePick: () => void; // AI helper to pick for CPU
 }
 
+const STORAGE_KEY = 'fantasy-warroom-settings';
+
+const loadSettings = (): DraftSettings => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Failed to parse stored settings', e);
+    }
+  }
+  return INITIAL_SETTINGS;
+};
+
 export const useDraftStore = create<DraftState>((set, get) => ({
-  settings: INITIAL_SETTINGS,
+  settings: loadSettings(),
   players: MOCK_PLAYERS,
   pickedPlayers: [],
   picks: [],
@@ -34,6 +48,7 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       if (userTeam) updated.viewedTeamId = userTeam.id;
     }
     
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     return { settings: updated };
   }),
 
