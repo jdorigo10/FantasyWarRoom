@@ -79,7 +79,9 @@ export function StrategyView() {
         const pos = draftOrder[round];
         if (!pos) continue; // Skip rounds 9, 10, 11, 13
 
-        const userPickOverall = (round - 1) * settings.teamCount + settings.position;
+        const userPickOverall = round % 2 === 1
+          ? (round - 1) * settings.teamCount + settings.position
+          : round * settings.teamCount - settings.position + 1;
 
         const bestAvailable = players
           .filter(p => p.position === pos)
@@ -159,7 +161,7 @@ export function StrategyView() {
       };
     });
 
-    return results.sort((a, b) => sortDir === 'desc' ? b.totalPPG - a.totalPPG : a.totalPPG - b.totalPPG).slice(0, 100);
+    return results.sort((a, b) => sortDir === 'desc' ? b.totalPPG - a.totalPPG : a.totalPPG - b.totalPPG).slice(0, 25);
   }, [players, settings, sortDir]);
 
   const columns = [
@@ -183,7 +185,7 @@ export function StrategyView() {
         </h2>
         <div className="flex items-center space-x-2 text-[10px] text-[#8b949e] font-mono uppercase tracking-widest">
           <Info className="h-3 w-3 text-primary" />
-          <span>Top 100 Projected Scenarios (Sorted by Total PPG)</span>
+          <span>Top 25 Projected Scenarios (Sorted by Total PPG)</span>
         </div>
       </div>
 
