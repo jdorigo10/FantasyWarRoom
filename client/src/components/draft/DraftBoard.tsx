@@ -120,8 +120,14 @@ export function DraftBoard() {
                            </div>
                         </div>
                      ) : (
-                        <div className="flex h-full items-center justify-center opacity-0 group-hover:opacity-20 text-[10px]">
-                           Empty
+                        <div className="flex h-full items-center justify-center">
+                           {isUserTeam && pickOverall > currentPickIndex + 1 ? (
+                             <div className="text-[9px] font-mono text-primary/40 font-bold uppercase tracking-wider text-center leading-tight">
+                               RD {round}<br/>Pick {pickOverall}
+                             </div>
+                           ) : (
+                             <span className="opacity-0 group-hover:opacity-20 text-[10px]">Empty</span>
+                           )}
                         </div>
                      )}
                   </div>

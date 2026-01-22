@@ -16,7 +16,35 @@ interface PlayerTableProps {
 }
 
 export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
-  const { players, pickedPlayers, picks, makePick, settings, filters, updateFilters, rankingsFilters, updateRankingsFilters, playerTags, togglePlayerTag } = useDraftStore();
+  const { players, pickedPlayers, picks, makePick, settings, filters, updateFilters, rankingsFilters, updateRankingsFilters, playerTags, togglePlayerTag, currentPickIndex } = useDraftStore();
+  
+  const userFuturePicks = React.useMemo(() => {
+    const p = [];
+    for (let r = 1; r <= settings.rounds; r++) {
+      let pickOverall;
+      if (r % 2 !== 0) {
+         pickOverall = (r - 1) * settings.teamCount + settings.position;
+      } else {
+         pickOverall = (r - 1) * settings.teamCount + (settings.teamCount - settings.position + 1);
+      }
+      if (pickOverall > currentPickIndex + 1) {
+         p.push({ round: r, pickOverall });
+      }
+    }
+    return p;
+  }, [settings, currentPickIndex]);
+
+  const pickDividers = React.useMemo(() => {
+    const map = new Map();
+    userFuturePicks.forEach(p => {
+      const gap = p.pickOverall - (currentPickIndex + 1);
+      if (gap > 0) map.set(gap, p);
+    });
+    return map;
+  }, [userFuturePicks, currentPickIndex]);
+
+  let availableCount = 0;
+
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'rank', direction: 'asc' });
 
   const currentFilters = showExtendedStats ? rankingsFilters : filters;
@@ -425,9 +453,12 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
             const pickInfo = picks.find(p => p.playerId === player.id);
             const tags = getTagIcons(player);
             
+            if (!isPicked) availableCount++;
+            const divider = !isPicked ? pickDividers.get(availableCount) : null;
+            
             return (
+              <React.Fragment key={player.id}>
               <div 
-                key={player.id} 
                 className={cn(
                   "grid grid-cols-12 gap-0 px-2 py-2.5 items-center border-b border-[#30363d] hover:bg-white/[0.02] transition-colors group relative",
                   isPicked && "opacity-40 grayscale-[0.5]"
@@ -570,6 +601,16 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   </div>
                 )}
               </div>
+              {divider && (
+                 <div className="bg-primary/5 border-y border-primary/20 py-1.5 px-2 text-center flex items-center justify-center gap-4 my-0.5">
+                   <div className="h-px bg-primary/20 flex-1" />
+                   <span className="text-[10px] font-mono text-primary font-bold tracking-widest uppercase shadow-[0_0_10px_rgba(46,160,67,0.2)]">
+                     RD {divider.round} - Pick {divider.pickOverall}
+                   </span>
+                   <div className="h-px bg-primary/20 flex-1" />
+                 </div>
+              )}
+              </React.Fragment>
             );
           })}
         </ScrollArea>
