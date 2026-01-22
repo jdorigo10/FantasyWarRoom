@@ -20,13 +20,28 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const currentUpdateFilters = showExtendedStats ? updateRankingsFilters : updateFilters;
 
   // Calculate position-specific max PPG for relative scaling
-  const posMaxPPG = React.useMemo(() => {
-    const map: Record<string, number> = {};
+  const posStats = React.useMemo(() => {
+    const map: Record<string, { maxPPG: number; ppgSorted: string[]; adpSorted: string[] }> = {};
+    
+    // Initialize
+    const posList = ["QB", "RB", "WR", "TE", "DST", "K", "FLEX"];
+    posList.forEach(p => {
+      map[p] = { maxPPG: 0, ppgSorted: [], adpSorted: [] };
+    });
+
     players.forEach(p => {
-      if (!map[p.position] || p.ppg > map[p.position]) {
-        map[p.position] = p.ppg;
+      if (p.ppg > map[p.position].maxPPG) {
+        map[p.position].maxPPG = p.ppg;
       }
     });
+
+    // Sort players by PPG and ADP within each position
+    posList.forEach(pos => {
+      const posPlayers = players.filter(p => p.position === pos);
+      map[pos].ppgSorted = [...posPlayers].sort((a, b) => b.ppg - a.ppg).map(p => p.id);
+      map[pos].adpSorted = [...posPlayers].sort((a, b) => a.adp - b.adp).map(p => p.id);
+    });
+
     return map;
   }, [players]);
 
@@ -46,13 +61,31 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   };
 
   const getPPGColor = (ppg: number, position: string) => {
-    const max = posMaxPPG[position] || 20;
+    const max = posStats[position]?.maxPPG || 20;
     const ratio = ppg / max;
 
     if (ratio > 0.85) return "text-[#2ea043]"; // Top tier for pos
     if (ratio > 0.7) return "text-[#d29922]";  // Good tier
     if (ratio > 0.5) return "text-[#f0883e]";  // Average
     return "text-[#f85149]"; // Below average
+  };
+
+  const getDraftValue = (player: any) => {
+    const stats = posStats[player.position];
+    if (!stats) return 0;
+    
+    const adpRank = stats.adpSorted.indexOf(player.id) + 1;
+    const ppgRank = stats.ppgSorted.indexOf(player.id) + 1;
+    
+    return adpRank - ppgRank;
+  };
+
+  const getValueColor = (value: number) => {
+    if (value > 5) return "text-[#2ea043]"; // High value
+    if (value > 0) return "text-[#d29922]"; // Slight value
+    if (value === 0) return "text-[#8b949e]"; // Neutral
+    if (value > -5) return "text-[#f0883e]"; // Slight reach
+    return "text-[#f85149]"; // High reach
   };
 
   const getTagIcons = (player: any) => {
@@ -180,9 +213,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-12 gap-1 px-4 py-2.5 bg-[#161b22] text-[10px] font-bold text-[#8b949e] uppercase tracking-wider border-b border-[#30363d]">
-          <div className="col-span-1">RK</div>
+          <div className="col-span-1 text-center">RK</div>
           <div className={showExtendedStats ? "col-span-2" : "col-span-6"}>PLAYER</div>
           <div className="col-span-1 text-center">ADP</div>
+          {showExtendedStats && <div className="col-span-1 text-center text-[8px] leading-tight">DRAFT VALUE</div>}
           <div className="col-span-1 text-center">PPG</div>
           {showExtendedStats && (
             <>
@@ -239,6 +273,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <div className="col-span-1 text-center font-mono text-[#8b949e] text-[11px]">
                   {player.adp}
                 </div>
+                {showExtendedStats && (
+                  <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getValueColor(getDraftValue(player)))}>
+                    {getDraftValue(player) > 0 ? `+${getDraftValue(player)}` : getDraftValue(player)}
+                  </div>
+                )}
                 <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", showExtendedStats ? getPPGColor(player.ppg, player.position) : "text-primary")}>
                   {player.ppg}
                 </div>
@@ -277,7 +316,6 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                         </TooltipTrigger>
                         <TooltipContent side="left" className="bg-[#161b22] border-[#30363d] p-3 shadow-2xl min-w-[200px] z-50">
                           <div className="space-y-2.5">
-                            <p className="text-[10px] font-bold text-primary uppercase tracking-widest border-b border-[#30363d] pb-2 mb-2">Tactical Intelligence</p>
                             {tags.map((tag, i) => (
                               <div key={i} className="flex items-start gap-3">
                                 <tag.icon className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", tag.color)} />
