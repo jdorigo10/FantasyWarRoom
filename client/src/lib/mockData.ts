@@ -92,16 +92,63 @@ function generatePlayers(): Player[] {
     names.map(name => ({ name, position: pos as Position }))
   );
 
-  // Sort by a deterministic but varied score to create realistic rankings
-  // Higher PPG and lower ADP should generally be at the top
-  const sortedNames = allNames.sort(() => Math.random() - 0.5);
+  // Position-based PPG ranges
+  const ppgRanges: Record<Position, { top: [number, number], good: [number, number], other: [number, number] }> = {
+    QB: { top: [20, 25], good: [15, 20], other: [10, 15] },
+    RB: { top: [20, 25], good: [15, 20], other: [8, 15] },
+    WR: { top: [20, 25], good: [15, 20], other: [8, 15] },
+    TE: { top: [13, 16], good: [10, 12], other: [5, 9] },
+    DST: { top: [9, 12], good: [6, 8], other: [2, 5] },
+    K: { top: [9, 12], good: [6, 8], other: [2, 5] },
+    FLEX: { top: [20, 25], good: [15, 20], other: [8, 15] } // Placeholder, logic uses RB/WR/TE
+  };
 
-  sortedNames.forEach((item, index) => {
+  const posCounts: Record<string, number> = {};
+
+  // Sort names to process by position and assign realistic PPG
+  const sortedByPos = [...allNames].sort((a, b) => a.position.localeCompare(b.position));
+
+  sortedByPos.forEach((item: any) => {
+    const pos = item.position;
+    posCounts[pos] = (posCounts[pos] || 0) + 1;
+    const count = posCounts[pos];
+    
+    let ppgRange;
+    if (pos === "QB") {
+      if (count <= 4) ppgRange = ppgRanges.QB.top;
+      else if (count <= 10) ppgRange = ppgRanges.QB.good;
+      else ppgRange = ppgRanges.QB.other;
+    } else if (pos === "RB") {
+      if (count <= 6) ppgRange = ppgRanges.RB.top;
+      else if (count <= 15) ppgRange = ppgRanges.RB.good;
+      else ppgRange = ppgRanges.RB.other;
+    } else if (pos === "WR") {
+      if (count <= 6) ppgRange = ppgRanges.WR.top;
+      else if (count <= 15) ppgRange = ppgRanges.WR.good;
+      else ppgRange = ppgRanges.WR.other;
+    } else if (pos === "TE") {
+      if (count <= 3) ppgRange = ppgRanges.TE.top;
+      else if (count <= 8) ppgRange = ppgRanges.TE.good;
+      else ppgRange = ppgRanges.TE.other;
+    } else if (pos === "K" || pos === "DST") {
+      const kOrDst = pos as "K" | "DST";
+      if (count <= 5) ppgRange = ppgRanges[kOrDst].top;
+      else if (count <= 10) ppgRange = ppgRanges[kOrDst].good;
+      else ppgRange = ppgRanges[kOrDst].other;
+    } else {
+      ppgRange = [5, 10];
+    }
+
+    const ppg = Number((ppgRange[0] + Math.random() * (ppgRange[1] - ppgRange[0])).toFixed(1));
+    item.tempPpg = ppg;
+  });
+
+  // Now create the actual players and sort by PPG for rank
+  const finalSorted = [...sortedByPos].sort((a: any, b: any) => b.tempPpg - a.tempPpg);
+
+  finalSorted.forEach((item: any, index) => {
     const rank = index + 1;
-    // Higher rank = lower PPG and higher ADP
-    const basePpg = 25 - (rank * 0.1);
-    const ppg = Number((basePpg + Math.random() * 2).toFixed(1));
-    const adp = Number((rank + Math.random() * 3).toFixed(1));
+    const adp = Number((rank + Math.random() * 5).toFixed(1));
 
     players.push({
       id: `p-${idCounter++}`,
@@ -110,7 +157,7 @@ function generatePlayers(): Player[] {
       position: item.position,
       team: TEAMS[Math.floor(Math.random() * TEAMS.length)],
       byeWeek: Math.floor(Math.random() * 10) + 5,
-      ppg,
+      ppg: (item as any).tempPpg,
       adp,
       risk: Math.random() > 0.8 ? "High" : "Low",
       injuryHistory: Math.random() > 0.7 ? "Significant" : "Clear",
