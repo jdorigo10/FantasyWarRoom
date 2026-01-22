@@ -159,9 +159,12 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <div className="col-span-1 text-center">PPG</div>
           {showExtendedStats && (
             <>
+              <div className="col-span-1 flex items-center justify-center">
+                <div className="h-4 w-[1px] bg-[#30363d]" />
+              </div>
               <div className="col-span-1 text-center">SOS</div>
-              <div className="col-span-1 text-center">OFF</div>
-              <div className="col-span-1 text-center">DEF</div>
+              <div className="col-span-1 text-center text-[9px]">OFF RANK</div>
+              <div className="col-span-1 text-center text-[9px]">DEF RANK</div>
             </>
           )}
           <div className="col-span-1 flex items-center justify-center">
@@ -207,6 +210,9 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 
                 {showExtendedStats && (
                   <>
+                    <div className="col-span-1 flex items-center justify-center">
+                      <div className="h-8 w-[1px] bg-[#30363d]/50" />
+                    </div>
                     <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.sos))}>
                       {player.sos}
                     </div>
