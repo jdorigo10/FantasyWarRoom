@@ -349,7 +349,7 @@ export const MOCK_PLAYERS = generatePlayers();
 export const INITIAL_SETTINGS: DraftSettings = {
   teamCount: 10,
   position: 1,
-  scoring: "PPR",
+  scoring: config.scoring as "Standard" | "PPR" | "Half-PPR",
   rounds: 16,
   theme: "dark",
   accentColor: "#2ea043",

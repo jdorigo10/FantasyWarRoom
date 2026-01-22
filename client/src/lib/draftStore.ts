@@ -48,7 +48,8 @@ const loadSettings = (): DraftSettings => {
       // Ensure config-driven values are always up to date, overriding storage
       return {
         ...parsed,
-        draftYear: INITIAL_SETTINGS.draftYear
+        draftYear: INITIAL_SETTINGS.draftYear,
+        scoring: INITIAL_SETTINGS.scoring
       };
     } catch (e) {
       console.error('Failed to parse stored settings', e);

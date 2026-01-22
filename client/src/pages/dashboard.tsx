@@ -269,14 +269,11 @@ export default function Dashboard() {
 
                     <div className="space-y-2">
                       <label className="text-[11px] text-[#8b949e] uppercase font-mono">Scoring</label>
-                      <select 
-                        className={cn("w-full rounded-lg p-2.5 text-sm transition-colors",
-                          settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
-                        value={settings.scoring}
-                        onChange={(e) => handleScoringChange(e.target.value as any)}
-                      >
-                        {["PPR", "Half-PPR", "Standard"].map(type => <option key={type} value={type}>{type}</option>)}
-                      </select>
+                      <div className={cn("w-full rounded-lg p-3 text-sm transition-colors opacity-60 cursor-not-allowed flex items-center justify-between",
+                          settings.theme === 'dark' ? "bg-[#0d1117] border border-[#30363d] text-white" : "bg-gray-50 border border-gray-200 text-gray-900")}>
+                        <span>{settings.scoring}</span>
+                        <span className="text-[10px] uppercase font-bold text-primary/60 tracking-wider">Configured</span>
+                      </div>
                     </div>
                   </div>
                 </div>
