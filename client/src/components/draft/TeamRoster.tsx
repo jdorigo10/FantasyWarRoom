@@ -256,8 +256,8 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
           </div>
           <div className="p-2.5 bg-primary/10 rounded border border-primary/20">
             <div className="flex justify-between items-start mb-1.5">
-               <div className="text-[10px] font-bold text-primary truncate">TARGET: Breece Hall (RB)</div>
-               <Badge className="bg-primary text-black text-[8px] h-4 px-1 flex-shrink-0">98% VAL</Badge>
+               <div className="text-[10px] font-bold text-primary truncate">TARGET: Breece Hall (RB, NYJ)</div>
+               <div className="text-[10px] font-mono font-bold text-primary">21.4</div>
             </div>
             <p className="text-[9px] text-[#adbac7] leading-tight line-clamp-2">
                Elite volume projected for Season 2026. Pairs optimally with your current QB1.
