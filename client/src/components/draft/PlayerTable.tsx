@@ -476,11 +476,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>
                   <div className="text-[13px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
                     {player.name}
-                    {/* User Tags Display */}
-                    {playerTags[player.id]?.includes('favorite') && (
+                    {/* User Tags Display - uses player.name as key */}
+                    {playerTags[player.name]?.includes('favorite') && (
                       <Heart className="h-3 w-3 text-red-500 fill-red-500" />
                     )}
-                    {playerTags[player.id]?.includes('target') && (
+                    {playerTags[player.name]?.includes('target') && (
                       <Crosshair className="h-3 w-3 text-white" />
                     )}
                     
@@ -497,17 +497,17 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                              <button 
                                className={cn(
                                  "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
-                                 playerTags[player.id]?.includes('favorite') ? "bg-red-500/10 text-red-500" : "text-[#c9d1d9] hover:bg-white/5"
+                                 playerTags[player.name]?.includes('favorite') ? "bg-red-500/10 text-red-500" : "text-[#c9d1d9] hover:bg-white/5"
                                )}
                                onClick={() => togglePlayerTag(player.id, 'favorite')}
                              >
-                               <Heart className={cn("h-3 w-3", playerTags[player.id]?.includes('favorite') && "fill-current")} />
+                               <Heart className={cn("h-3 w-3", playerTags[player.name]?.includes('favorite') && "fill-current")} />
                                Favorite
                              </button>
                              <button 
                                className={cn(
                                  "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
-                                 playerTags[player.id]?.includes('target') ? "bg-primary/10 text-primary" : "text-[#c9d1d9] hover:bg-white/5"
+                                 playerTags[player.name]?.includes('target') ? "bg-primary/10 text-primary" : "text-[#c9d1d9] hover:bg-white/5"
                                )}
                                onClick={() => togglePlayerTag(player.id, 'target')}
                              >

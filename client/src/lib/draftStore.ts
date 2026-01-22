@@ -38,16 +38,41 @@ interface DraftState {
   resetDraft: () => void;
   simulatePick: () => void;
   togglePlayerTag: (playerId: string, tag: "favorite" | "target") => void;
+  getPlayerTags: (playerId: string) => string[];
 }
 
 const STORAGE_KEY = 'fantasy-warroom-settings';
 const TAGS_KEY = 'fantasy-warroom-player-tags';
 
+// Load and validate tags - uses player NAME as key (not ID)
+// Also cleans up tags for players that no longer exist in the app
 const loadTags = (): Record<string, string[]> => {
   const stored = localStorage.getItem(TAGS_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored) as Record<string, string[]>;
+      
+      // Get all valid player names from current data
+      const validPlayerNames = new Set(MOCK_PLAYERS.map(p => p.name));
+      
+      // Filter out any players that no longer exist
+      const cleaned: Record<string, string[]> = {};
+      let hasChanges = false;
+      
+      for (const [playerName, tags] of Object.entries(parsed)) {
+        if (validPlayerNames.has(playerName) && tags.length > 0) {
+          cleaned[playerName] = tags;
+        } else {
+          hasChanges = true; // Mark that we removed something
+        }
+      }
+      
+      // Save cleaned version if we removed stale entries
+      if (hasChanges) {
+        localStorage.setItem(TAGS_KEY, JSON.stringify(cleaned));
+      }
+      
+      return cleaned;
     } catch (e) {
       console.error('Failed to parse stored tags', e);
     }
@@ -216,17 +241,30 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   },
 
   togglePlayerTag: (playerId, tag) => set((state) => {
-    const currentTags = state.playerTags[playerId] || [];
+    // Find player by ID to get their name
+    const player = state.players.find(p => p.id === playerId);
+    if (!player) return state;
+    
+    const playerName = player.name;
+    const currentTags = state.playerTags[playerName] || [];
     let newTags;
     if (currentTags.includes(tag)) {
       newTags = currentTags.filter(t => t !== tag);
     } else {
       newTags = [...currentTags, tag];
     }
-    const updated = { ...state.playerTags, [playerId]: newTags };
+    const updated = { ...state.playerTags, [playerName]: newTags };
     localStorage.setItem(TAGS_KEY, JSON.stringify(updated));
     return { playerTags: updated };
-  })
+  }),
+
+  // Helper to get tags for a player by ID (looks up by name internally)
+  getPlayerTags: (playerId: string) => {
+    const state = get();
+    const player = state.players.find(p => p.id === playerId);
+    if (!player) return [];
+    return state.playerTags[player.name] || [];
+  }
 }));
 
 // Helper to determine if it's user's turn (Snake Draft)

@@ -80,10 +80,10 @@ export function DraftBoard() {
                            <div className="flex items-center justify-between">
                              <div className="flex items-center gap-1 truncate flex-1">
                                <span className="font-semibold truncate text-[#c9d1d9]">{player.name}</span>
-                               {playerTags[player.id]?.includes('favorite') && (
+                               {playerTags[player.name]?.includes('favorite') && (
                                   <Heart className="h-2.5 w-2.5 text-red-500 fill-red-500 shrink-0" />
                                )}
-                               {playerTags[player.id]?.includes('target') && (
+                               {playerTags[player.name]?.includes('target') && (
                                   <Crosshair className="h-2.5 w-2.5 text-white shrink-0" />
                                )}
                              </div>
