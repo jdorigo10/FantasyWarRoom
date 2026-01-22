@@ -94,12 +94,17 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-[#161b22] text-[10px] font-bold text-[#8b949e] uppercase tracking-wider border-b border-[#30363d]">
           <div className="col-span-1">RK</div>
-          <div className="col-span-4">PLAYER</div>
-          <div className="col-span-1 text-center">POS</div>
-          <div className="col-span-1 text-center">TEAM</div>
+          <div className="col-span-1 flex items-center justify-center">
+             <div className="h-4 w-[1px] bg-[#30363d]" />
+          </div>
+          <div className="col-span-5">PLAYER</div>
           <div className="col-span-1 text-center">BYE</div>
-          <div className="col-span-2 text-right">PPG</div>
-          <div className="col-span-2 text-right">ADP</div>
+          <div className="col-span-1 text-right pr-2">ADP</div>
+          <div className="col-span-1 text-right pr-4">PPG</div>
+          <div className="col-span-1 flex items-center justify-center">
+             <div className="h-4 w-[1px] bg-[#30363d]" />
+          </div>
+          <div className="col-span-1 text-center">ACTION</div>
         </div>
         <ScrollArea className="flex-1">
           {filteredPlayers.map((player) => {
@@ -115,12 +120,15 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
               >
                 <div className="col-span-1 font-mono text-[11px] text-[#6e7681]">#{player.rank}</div>
-                <div className="col-span-4">
+                <div className="col-span-1 flex items-center justify-center">
+                   <div className="h-8 w-[1px] bg-[#30363d]/50" />
+                </div>
+                <div className="col-span-5">
                   <div className="text-sm font-semibold text-[#c9d1d9] flex items-center gap-2">
                     {player.name}
                     {isPicked && pickInfo && (
-                      <span className="text-[9px] font-mono text-primary border border-primary/30 px-1 rounded uppercase tracking-tighter">
-                        Drafted: RD {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
+                      <span className="text-[8px] font-mono text-primary border border-primary/30 px-1 rounded uppercase tracking-tighter">
+                        RD {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
                       </span>
                     )}
                   </div>
@@ -129,23 +137,25 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                      {player.team}
                   </div>
                 </div>
-                <div className="col-span-1 text-center text-[11px] font-bold">{player.position}</div>
-                <div className="col-span-1 text-center text-[11px] text-[#8b949e]">{player.team}</div>
                 <div className="col-span-1 text-center text-[11px] font-mono">{player.byeWeek}</div>
-                <div className="col-span-2 text-right font-mono text-primary font-bold">{player.ppg}</div>
-                <div className="col-span-2 text-right font-mono text-[#8b949e]">{player.adp}</div>
-                
-                {!isPicked && (
-                  <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="col-span-1 text-right font-mono text-[#8b949e] text-[11px] pr-2">{player.adp}</div>
+                <div className="col-span-1 text-right font-mono text-primary font-bold text-[12px] pr-4">{player.ppg}</div>
+                <div className="col-span-1 flex items-center justify-center">
+                   <div className="h-8 w-[1px] bg-[#30363d]/50" />
+                </div>
+                <div className="col-span-1 flex justify-center">
+                  {!isPicked ? (
                     <Button 
                       size="sm" 
-                      className="h-7 bg-primary text-black font-bold text-[10px] uppercase px-3"
+                      className="h-7 bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase px-3 border border-primary/30"
                       onClick={() => makePick(player.id)}
                     >
                       Draft
                     </Button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-[10px] font-mono text-[#484f58] uppercase italic">Taken</div>
+                  )}
+                </div>
               </div>
             );
           })}
