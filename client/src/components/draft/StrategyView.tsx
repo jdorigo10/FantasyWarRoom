@@ -14,8 +14,18 @@ interface StrategyScenario {
 }
 
 export function StrategyView() {
-  const { players, settings } = useDraftStore();
+  const { players, settings, picks, pickedPlayers } = useDraftStore();
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  // Identify User's Actual Picks
+  const userActualPicks = useMemo(() => {
+    const map: Record<number, any> = {};
+    picks.filter(p => p.pickedBy === "User").forEach(p => {
+        const player = players.find(pl => pl.id === p.playerId);
+        if (player) map[p.round] = player;
+    });
+    return map;
+  }, [picks, players]);
 
   const scenarios = useMemo(() => {
     // Generate all permutations
@@ -62,8 +72,24 @@ export function StrategyView() {
                 // Fixed rounds
                 draftOrder[12] = "DST";
                 draftOrder[14] = "K";
+
+                // FILTER: Check conflicts with actual user picks
+                let conflict = false;
+                for (const [roundStr, player] of Object.entries(userActualPicks)) {
+                    const round = parseInt(roundStr);
+                    // If user picked a player in this round, the strategy MUST have the same position type for this round
+                    // Note: If user reached for a player or picked off-meta, we might filter out too much?
+                    // User requirement: "If I took RB1... the possible draft scenarios can be updates where RB1 is pick 1"
+                    // This implies we filter for scenarios that match the *position* taken.
+                    if (draftOrder[round] !== player.position) {
+                        conflict = true;
+                        break;
+                    }
+                }
                 
-                generatedStrategies.push({ draftOrder });
+                if (!conflict) {
+                    generatedStrategies.push({ draftOrder });
+                }
             });
         }
     }
@@ -79,15 +105,43 @@ export function StrategyView() {
         const pos = draftOrder[round];
         if (!pos) continue; // Skip rounds 9, 10, 11, 13
 
+        // Determine pick overall for user
         const userPickOverall = round % 2 === 1
           ? (round - 1) * settings.teamCount + settings.position
           : round * settings.teamCount - settings.position + 1;
 
+        // Check if user already made a pick in this round
+        if (userActualPicks[round]) {
+             const player = userActualPicks[round];
+             
+             // Generate key
+             let key = pos;
+             if (["DST", "K", "QB", "TE"].includes(pos)) key = `${pos}1`;
+             else {
+                 let count = 1;
+                 while (scenarioPlayers[`${pos}${count}`]) count++;
+                 key = `${pos}${count}`;
+             }
+             
+             scenarioPlayers[key] = { 
+                 ...player, 
+                 round, 
+                 pickOverall: picks.find(p => p.round === round && p.pickedBy === "User")?.pickOverall || userPickOverall 
+             };
+             draftedIds.add(player.id);
+             continue;
+        }
+
+        // Otherwise simulate "Best Available"
+        // Exclude players already picked in real draft (pickedPlayers)
+        // AND players picked in this scenario simulation (draftedIds)
         const bestAvailable = players
           .filter(p => p.position === pos)
-          .filter(p => !draftedIds.has(p.id))
+          .filter(p => !draftedIds.has(p.id)) // Not picked in this scenario
+          .filter(p => !pickedPlayers.includes(p.id)) // Not picked in real draft (by anyone)
           .filter(p => p.adp > (userPickOverall - round))
-          .sort((a, b) => b.ppg - a.ppg)[0] || players.filter(p => p.position === pos && !draftedIds.has(p.id))[0];
+          .sort((a, b) => b.ppg - a.ppg)[0] || 
+          players.filter(p => p.position === pos && !draftedIds.has(p.id) && !pickedPlayers.includes(p.id))[0];
 
         if (bestAvailable) {
           draftedIds.add(bestAvailable.id);
@@ -139,12 +193,12 @@ export function StrategyView() {
       starterKeys.forEach(k => {
         if (!scenarioPlayers[k]) {
           const pos = k.replace(/[0-9]/g, '');
-          const fallback = players.find(p => p.position === (pos === "FLEX" ? "RB" : pos) && !draftedIds.has(p.id));
+          const fallback = players.find(p => p.position === (pos === "FLEX" ? "RB" : pos) && !draftedIds.has(p.id) && !pickedPlayers.includes(p.id));
           if (fallback) scenarioPlayers[k] = fallback;
         }
       });
       if (!scenarioPlayers["BENCH"]) {
-        const fallback = players.find(p => !draftedIds.has(p.id));
+        const fallback = players.find(p => !draftedIds.has(p.id) && !pickedPlayers.includes(p.id));
         if (fallback) scenarioPlayers["BENCH"] = fallback;
       }
 
@@ -162,7 +216,7 @@ export function StrategyView() {
     });
 
     return results.sort((a, b) => sortDir === 'desc' ? b.totalPPG - a.totalPPG : a.totalPPG - b.totalPPG).slice(0, 25);
-  }, [players, settings, sortDir]);
+  }, [players, settings, sortDir, picks, pickedPlayers, userActualPicks]);
 
   const columns = [
     { id: "QB1", label: "QB" },
