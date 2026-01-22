@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ListOrdered, BrainCircuit, Settings, Footprints } from "lucide-react";
+import { LayoutDashboard, ListOrdered, BrainCircuit, Settings, Shield } from "lucide-react";
 import { useDraftStore } from "@/lib/draftStore";
 
 export function Sidebar() {
@@ -20,7 +20,7 @@ export function Sidebar() {
       <div className="p-8 flex flex-col space-y-6">
         <div className="flex items-center space-x-3">
           <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-            <Footprints className="h-6 w-6 text-primary rotate-[135deg]" fill="currentColor" />
+            <Shield className="h-6 w-6 text-primary" fill="currentColor" />
           </div>
           <div>
             <h1 className={cn("text-lg font-display font-bold leading-none tracking-tighter italic transition-colors",

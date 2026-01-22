@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
-import { Database, ShieldAlert, Activity, BarChart, History, TrendingUp, Search, Layers, ShieldCheck } from "lucide-react";
+import { Database, ShieldAlert, Activity, BarChart, History, TrendingUp, Search, Layers, ShieldCheck, Shield } from "lucide-react";
 import { INITIALIZATION_STEPS } from "@/lib/mockData";
 
 const STEP_ICONS: Record<string, any> = {
@@ -27,7 +27,6 @@ const STEP_ICONS: Record<string, any> = {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Footprints } from "lucide-react";
 
 export default function Dashboard() {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -81,7 +80,7 @@ export default function Dashboard() {
           settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
           <div className="flex flex-col items-center text-center space-y-8">
             <div className="h-16 w-16 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-              <Footprints className="h-8 w-8 text-primary rotate-[135deg]" fill="currentColor" />
+              <Shield className="h-8 w-8 text-primary" fill="currentColor" />
             </div>
             
             <div className="space-y-2">
