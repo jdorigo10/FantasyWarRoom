@@ -81,18 +81,18 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
     }
   });
 
-  const avgPpg = rosterPlayers.length > 0 
-    ? (rosterPlayers.reduce((sum, p) => sum + p.ppg, 0) / rosterPlayers.length).toFixed(1)
-    : "0.0";
+  const startersPpg = filledRoster
+    .filter(s => s.slot !== "BENCH" && s.player)
+    .reduce((sum, s) => sum + s.player.ppg, 0);
 
   return (
     <div className="flex flex-col h-full space-y-4 overflow-hidden">
       <Card className="bg-[#161b22] border-[#30363d] flex flex-col flex-1 min-h-0 shadow-xl overflow-hidden">
         <div className="p-4 border-b border-[#30363d] flex-shrink-0">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[10px] font-display font-bold tracking-[0.2em] text-primary uppercase truncate mr-2">{viewedTeam.name}'s Roster</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-display font-bold tracking-[0.2em] text-primary uppercase truncate mr-4">{viewedTeam.name}'s Roster</h2>
             <select 
-              className="bg-[#0d1117] border border-[#30363d] text-[10px] text-white rounded px-2 py-1 focus:ring-primary/20 cursor-pointer min-w-[80px]"
+              className="bg-[#0d1117] border border-[#30363d] text-xs text-white rounded-lg px-3 py-1.5 focus:ring-primary/20 cursor-pointer min-w-[100px] transition-all hover:bg-[#1c2128]"
               value={settings.viewedTeamId}
               onChange={(e) => updateSettings({ viewedTeamId: e.target.value })}
             >
@@ -104,50 +104,50 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
             </select>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-[#8b949e] uppercase font-mono">Proj. PPG</span>
-            <span className="text-xl font-mono font-bold text-white">{avgPpg}</span>
+            <span className="text-[10px] text-[#8b949e] uppercase font-mono font-bold tracking-wider">Projected PPG</span>
+            <span className="text-2xl font-mono font-bold text-white tracking-tight">{startersPpg.toFixed(1)}</span>
           </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto p-3 space-y-1.5 scrollbar-hide">
           {filledRoster.map((slot, idx) => {
             const isBenchDivider = slot.slot === "BENCH" && filledRoster[idx-1]?.slot !== "BENCH";
             return (
               <React.Fragment key={idx}>
                 {isBenchDivider && (
-                  <div className="py-2 flex items-center gap-2">
+                  <div className="py-3 flex items-center gap-3">
                     <div className="h-px flex-1 bg-[#30363d]" />
-                    <span className="text-[9px] font-mono text-[#8b949e] uppercase tracking-widest">Bench</span>
+                    <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-[0.2em] font-bold">Bench</span>
                     <div className="h-px flex-1 bg-[#30363d]" />
                   </div>
                 )}
                 <div className={cn(
-                  "flex items-center justify-between p-2 rounded border transition-colors min-h-[44px]",
+                  "flex items-center justify-between p-2.5 rounded border transition-all duration-200 min-h-[50px]",
                   slot.player 
-                    ? "bg-[#0d1117] border-[#30363d] hover:border-primary/40" 
-                    : "bg-transparent border-dashed border-[#21262d] opacity-40"
+                    ? "bg-[#0d1117] border-[#30363d] hover:border-primary/40 shadow-sm" 
+                    : "bg-transparent border-dashed border-[#21262d] opacity-30"
                 )}>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 text-[9px] font-mono font-bold text-[#8b949e] uppercase text-center flex-shrink-0">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 text-[10px] font-mono font-bold text-[#8b949e] uppercase text-center flex-shrink-0">
                       {slot.slot}
                     </div>
                     {slot.player ? (
                       <div className="truncate">
-                        <div className="text-xs font-bold text-white truncate leading-tight">
+                        <div className="text-[13px] font-bold text-white truncate leading-snug">
                           {slot.player.name}
                         </div>
-                        <div className="text-[9px] text-[#8b949e] uppercase font-mono mt-0.5 truncate flex items-center gap-1.5">
-                          <span>{slot.player.position} • {slot.player.team}</span>
-                          <span className="text-[#6e7681]">BYE {slot.player.byeWeek}</span>
+                        <div className="text-[10px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
+                          <span className="font-bold">{slot.player.position} • {slot.player.team}</span>
+                          <span className="text-[#6e7681] opacity-80">BYE {slot.player.byeWeek}</span>
                         </div>
                       </div>
                     ) : (
-                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic">Empty</div>
+                      <div className="text-[11px] font-mono text-[#484f58] uppercase italic tracking-widest">Empty</div>
                     )}
                   </div>
                   {slot.player && (
-                    <div className="text-right flex-shrink-0 ml-2">
-                      <div className="text-[10px] font-mono font-bold text-primary">{slot.player.ppg}</div>
+                    <div className="text-right flex-shrink-0 ml-3">
+                      <div className="text-[13px] font-mono font-bold text-primary">{slot.player.ppg}</div>
                     </div>
                   )}
                 </div>
