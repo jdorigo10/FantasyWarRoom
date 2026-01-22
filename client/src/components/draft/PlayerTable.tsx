@@ -248,18 +248,18 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-12 gap-0 px-2 py-2 bg-[#161b22] text-[11px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d]">
+        <div className="grid grid-cols-12 gap-0 px-2 py-2.5 bg-[#161b22] text-[11px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d] min-h-[40px] items-center">
           <div className="col-span-1 text-center pr-0.5">RK</div>
-          <div className={showExtendedStats ? "col-span-4" : "col-span-6"}>PLAYER</div>
+          <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>PLAYER</div>
           <div className={cn("text-center", showExtendedStats ? "col-span-1 ml-2.5" : "col-span-1")}>ADP</div>
-          {showExtendedStats && <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-2.5"><span>DRAFT</span><span>VAL</span></div>}
+          {showExtendedStats && <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-2.5"><span>DRAFT</span><span>VAL</span></div>}
           <div className={cn("text-center", showExtendedStats ? "col-span-1 -ml-5" : "col-span-1")}>PPG</div>
           {showExtendedStats && (
             <>
               <div className="col-span-1 text-center ml-4">SOS</div>
-              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-4"><span>OFF</span><span>RK</span></div>
-              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-4"><span>DEF</span><span>RK</span></div>
-              <div className="col-span-1 text-center ml-4">TAGS</div>
+              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4"><span>OFF</span><span>RK</span></div>
+              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4"><span>DEF</span><span>RK</span></div>
+              <div className="col-span-2 text-center ml-4 pr-1">TAGS</div>
             </>
           )}
           {!showExtendedStats && (
@@ -283,7 +283,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
               >
                 <div className="col-span-1 font-mono text-[11px] text-[#6e7681] text-center pr-0.5">#{player.rank}</div>
-                <div className={showExtendedStats ? "col-span-4" : "col-span-6"}>
+                <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>
                   <div className="text-[13px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
                     {player.name}
                     {isPicked && pickInfo && (
@@ -330,7 +330,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
 
                 {showExtendedStats ? (
-                  <div className="col-span-1 flex justify-center items-center px-1">
+                  <div className="col-span-2 flex justify-center items-center px-1 ml-2">
                     <TooltipProvider>
                       <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>
