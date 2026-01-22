@@ -159,7 +159,6 @@ export default function Dashboard() {
                <div>
                   <h2 className={cn("text-xl font-display font-bold tracking-tight transition-colors duration-500",
                     settings.theme === 'dark' ? "text-white" : "text-gray-900")}>PLAYER RANKINGS</h2>
-                  <p className="text-xs text-[#8b949e] font-mono mt-1 uppercase tracking-wider">Master Data: ESPN + Historical Trends</p>
                </div>
             </div>
             <div className="flex-1 min-h-0">

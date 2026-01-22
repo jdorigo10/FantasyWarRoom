@@ -76,56 +76,54 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
 
-      {!showExtendedStats && (
-        <div className="p-3 border-b border-[#30363d] flex items-center gap-4 bg-[#161b22]/50">
-          <div className="relative flex-1 max-w-[280px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#8b949e]" />
-            <Input 
-              placeholder="Search for Player" 
-              className="h-9 pl-9 bg-[#0d1117] border-[#30363d] text-[11px] focus:ring-primary/20" 
-              value={filters.search}
-              onChange={(e) => updateFilters({ search: e.target.value })}
-            />
-          </div>
-          
-          <select 
-            className="h-9 bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg px-3 focus:ring-primary/20 cursor-pointer min-w-[140px] transition-all hover:bg-[#1c2128]"
-            value={filters.team}
-            onChange={(e) => updateFilters({ team: e.target.value })}
-          >
-            {TEAMS_ALL.map(team => (
-              <option key={team} value={team}>
-                {TEAM_NAMES[team] || team}
-              </option>
-            ))}
-          </select>
-
-          <div className="flex bg-[#0d1117] rounded-lg border border-[#30363d] p-1">
-             {POSITIONS.map(pos => (
-                <button
-                  key={pos}
-                  onClick={() => updateFilters({ pos })}
-                  className={cn(
-                    "px-3 py-1 text-[10px] font-bold rounded-md transition-all",
-                    filters.pos === pos ? "bg-primary text-black" : "text-[#8b949e] hover:text-white"
-                  )}
-                >
-                  {pos}
-                </button>
-             ))}
-          </div>
-
-          <div className="flex items-center space-x-2 px-2 border-l border-[#30363d] ml-auto">
-            <Checkbox 
-              id="show-drafted" 
-              checked={filters.showDrafted} 
-              onCheckedChange={(checked) => updateFilters({ showDrafted: !!checked })}
-              className="border-primary data-[state=checked]:bg-primary h-4 w-4"
-            />
-            <label htmlFor="show-drafted" className="text-[10px] font-mono text-[#8b949e] uppercase cursor-pointer select-none whitespace-nowrap">Show Drafted</label>
-          </div>
+      <div className="p-3 border-b border-[#30363d] flex items-center gap-4 bg-[#161b22]/50">
+        <div className="relative flex-1 max-w-[280px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#8b949e]" />
+          <Input 
+            placeholder="Search for Player" 
+            className="h-9 pl-9 bg-[#0d1117] border-[#30363d] text-[11px] focus:ring-primary/20" 
+            value={filters.search}
+            onChange={(e) => updateFilters({ search: e.target.value })}
+          />
         </div>
-      )}
+        
+        <select 
+          className="h-9 bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg px-3 focus:ring-primary/20 cursor-pointer min-w-[140px] transition-all hover:bg-[#1c2128]"
+          value={filters.team}
+          onChange={(e) => updateFilters({ team: e.target.value })}
+        >
+          {TEAMS_ALL.map(team => (
+            <option key={team} value={team}>
+              {TEAM_NAMES[team] || team}
+            </option>
+          ))}
+        </select>
+
+        <div className="flex bg-[#0d1117] rounded-lg border border-[#30363d] p-1">
+           {POSITIONS.map(pos => (
+              <button
+                key={pos}
+                onClick={() => updateFilters({ pos })}
+                className={cn(
+                  "px-3 py-1 text-[10px] font-bold rounded-md transition-all",
+                  filters.pos === pos ? "bg-primary text-black" : "text-[#8b949e] hover:text-white"
+                )}
+              >
+                {pos}
+              </button>
+           ))}
+        </div>
+
+        <div className="flex items-center space-x-2 px-2 border-l border-[#30363d] ml-auto">
+          <Checkbox 
+            id="show-drafted" 
+            checked={filters.showDrafted} 
+            onCheckedChange={(checked) => updateFilters({ showDrafted: !!checked })}
+            className="border-primary data-[state=checked]:bg-primary h-4 w-4"
+          />
+          <label htmlFor="show-drafted" className="text-[10px] font-mono text-[#8b949e] uppercase cursor-pointer select-none whitespace-nowrap">Show Drafted</label>
+        </div>
+      </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-[#161b22] text-[10px] font-bold text-[#8b949e] uppercase tracking-wider border-b border-[#30363d]">
@@ -136,7 +134,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <div className="col-span-1 flex items-center justify-center">
              <div className="h-4 w-[1px] bg-[#30363d]" />
           </div>
-          <div className="col-span-2 text-center">ACTION</div>
+          {!showExtendedStats && <div className="col-span-2 text-center">ACTION</div>}
         </div>
         <ScrollArea className="flex-1">
           {filteredPlayers.map((player) => {
@@ -173,22 +171,24 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <div className="col-span-1 flex items-center justify-center">
                    <div className="h-8 w-[1px] bg-[#30363d]/50" />
                 </div>
-                <div className="col-span-2 flex justify-center px-2">
-                  {!isPicked ? (
-                    <Button 
-                      size="sm" 
-                      className="h-7 w-full bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
-                      onClick={() => makePick(player.id)}
-                    >
-                      Draft
-                    </Button>
-                  ) : (
-                    <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center gap-1.5">
-                      <div className="h-1 w-1 rounded-full bg-[#484f58]" />
-                      Taken
-                    </div>
-                  )}
-                </div>
+                {!showExtendedStats && (
+                  <div className="col-span-2 flex justify-center px-2">
+                    {!isPicked ? (
+                      <Button 
+                        size="sm" 
+                        className="h-7 w-full bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
+                        onClick={() => makePick(player.id)}
+                      >
+                        Draft
+                      </Button>
+                    ) : (
+                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center gap-1.5">
+                        <div className="h-1 w-1 rounded-full bg-[#484f58]" />
+                        Taken
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
