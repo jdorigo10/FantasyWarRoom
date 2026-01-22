@@ -12,38 +12,71 @@ interface PlayerTableProps {
 }
 
 export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
-  const { players, pickedPlayers, makePick, currentPickIndex, settings } = useDraftStore();
+  const { players, pickedPlayers, picks, makePick, currentPickIndex, settings } = useDraftStore();
   const [filter, setFilter] = useState("");
-  const [posFilter, setPosFilter] = useState<string | null>(null);
+  const [posFilter, setPosFilter] = useState<string>("All");
+  const [teamFilter, setTeamFilter] = useState<string>("All");
+  const [showDrafted, setShowDrafted] = useState(false);
 
-  const availablePlayers = players.filter(p => !pickedPlayers.includes(p.id));
+  const TEAMS_ALL = ["All", "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
+  const POSITIONS = ["All", "QB", "RB", "WR", "TE", "FLEX", "DST", "K"];
   
-  const filteredPlayers = availablePlayers.filter(p => {
+  const filteredPlayers = players.filter(p => {
+    const isPicked = pickedPlayers.includes(p.id);
+    if (!showDrafted && isPicked) return false;
+
     const matchesName = p.name.toLowerCase().includes(filter.toLowerCase());
-    const matchesPos = posFilter === "FLEX" 
-      ? (p.position === "RB" || p.position === "WR")
-      : posFilter ? p.position === posFilter : true;
-    return matchesName && matchesPos;
+    const matchesTeam = teamFilter === "All" || p.team === teamFilter;
+    
+    let matchesPos = true;
+    if (posFilter !== "All") {
+      if (posFilter === "FLEX") {
+        matchesPos = ["RB", "WR", "TE"].includes(p.position);
+      } else {
+        matchesPos = p.position === posFilter;
+      }
+    }
+
+    return matchesName && matchesTeam && matchesPos;
   });
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden relative">
+      <div className="absolute -top-12 right-0 flex items-center space-x-2">
+        <Checkbox 
+          id="show-drafted" 
+          checked={showDrafted} 
+          onCheckedChange={(checked) => setShowDrafted(!!checked)}
+          className="border-primary data-[state=checked]:bg-primary h-3.5 w-3.5"
+        />
+        <label htmlFor="show-drafted" className="text-[10px] font-mono text-[#8b949e] uppercase cursor-pointer select-none">Show Drafted</label>
+      </div>
+
       {!showExtendedStats && (
-        <div className="p-4 border-b border-[#30363d] flex space-x-2">
-          <div className="relative flex-1">
+        <div className="p-3 border-b border-[#30363d] flex items-center gap-3 bg-[#161b22]/50">
+          <div className="relative w-48">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#8b949e]" />
             <Input 
-              placeholder="Filter ESPN pool..." 
-              className="h-9 pl-9 bg-[#0d1117] border-[#30363d] text-xs focus:ring-primary/20" 
+              placeholder="Search for Player" 
+              className="h-8 pl-9 bg-[#0d1117] border-[#30363d] text-[11px] focus:ring-primary/20" 
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
           </div>
+          
+          <select 
+            className="h-8 bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded px-2 focus:ring-primary/20 cursor-pointer min-w-[80px]"
+            value={teamFilter}
+            onChange={(e) => setTeamFilter(e.target.value)}
+          >
+            {TEAMS_ALL.map(team => <option key={team} value={team}>{team === "All" ? "All Teams" : team}</option>)}
+          </select>
+
           <div className="flex bg-[#0d1117] rounded border border-[#30363d] p-0.5">
-             {["QB", "RB", "WR", "TE", "DST", "K", "FLEX"].map(pos => (
+             {POSITIONS.map(pos => (
                 <button
                   key={pos}
-                  onClick={() => setPosFilter(posFilter === pos ? null : pos)}
+                  onClick={() => setPosFilter(pos)}
                   className={cn(
                     "px-2.5 py-1 text-[10px] font-bold rounded transition-all",
                     posFilter === pos ? "bg-primary text-black" : "text-[#8b949e] hover:text-white"
@@ -67,26 +100,53 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <div className="col-span-2 text-right">ADP</div>
         </div>
         <ScrollArea className="flex-1">
-          {filteredPlayers.map((player) => (
-            <div 
-              key={player.id} 
-              className="grid grid-cols-12 gap-2 px-4 py-3 items-center border-b border-[#30363d] hover:bg-white/[0.02] transition-colors group"
-            >
-              <div className="col-span-1 font-mono text-[11px] text-[#6e7681]">#{player.rank}</div>
-              <div className="col-span-4">
-                <div className="text-sm font-semibold text-[#c9d1d9]">{player.name}</div>
-                <div className="text-[10px] text-[#8b949e] flex items-center mt-0.5">
-                   <Badge variant="outline" className="h-4 text-[9px] px-1 border-[#30363d] font-mono mr-2">{player.position}</Badge>
-                   {player.team}
+          {filteredPlayers.map((player) => {
+            const isPicked = pickedPlayers.includes(player.id);
+            const pickInfo = picks.find(p => p.playerId === player.id);
+            
+            return (
+              <div 
+                key={player.id} 
+                className={cn(
+                  "grid grid-cols-12 gap-2 px-4 py-3 items-center border-b border-[#30363d] hover:bg-white/[0.02] transition-colors group relative",
+                  isPicked && "opacity-40 grayscale-[0.5]"
+                )}
+              >
+                <div className="col-span-1 font-mono text-[11px] text-[#6e7681]">#{player.rank}</div>
+                <div className="col-span-4">
+                  <div className="text-sm font-semibold text-[#c9d1d9] flex items-center gap-2">
+                    {player.name}
+                    {isPicked && pickInfo && (
+                      <span className="text-[9px] font-mono text-primary border border-primary/30 px-1 rounded uppercase tracking-tighter">
+                        Drafted: RD {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-[#8b949e] flex items-center mt-0.5">
+                     <Badge variant="outline" className="h-4 text-[9px] px-1 border-[#30363d] font-mono mr-2">{player.position}</Badge>
+                     {player.team}
+                  </div>
                 </div>
+                <div className="col-span-1 text-center text-[11px] font-bold">{player.position}</div>
+                <div className="col-span-1 text-center text-[11px] text-[#8b949e]">{player.team}</div>
+                <div className="col-span-1 text-center text-[11px] font-mono">{player.byeWeek}</div>
+                <div className="col-span-2 text-right font-mono text-primary font-bold">{player.ppg}</div>
+                <div className="col-span-2 text-right font-mono text-[#8b949e]">{player.adp}</div>
+                
+                {!isPicked && (
+                  <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button 
+                      size="sm" 
+                      className="h-7 bg-primary text-black font-bold text-[10px] uppercase px-3"
+                      onClick={() => makePick(player.id)}
+                    >
+                      Draft
+                    </Button>
+                  </div>
+                )}
               </div>
-              <div className="col-span-1 text-center text-[11px] font-bold">{player.position}</div>
-              <div className="col-span-1 text-center text-[11px] text-[#8b949e]">{player.team}</div>
-              <div className="col-span-1 text-center text-[11px] font-mono">{player.byeWeek}</div>
-              <div className="col-span-2 text-right font-mono text-primary font-bold">{player.ppg}</div>
-              <div className="col-span-2 text-right font-mono text-[#8b949e]">{player.adp}</div>
-            </div>
-          ))}
+            );
+          })}
         </ScrollArea>
       </div>
     </div>

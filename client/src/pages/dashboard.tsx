@@ -328,10 +328,12 @@ export default function Dashboard() {
         <div className="lg:col-span-8 h-full flex flex-col space-y-6 min-h-0">
           <div className={cn("rounded-lg border p-6 flex flex-col min-h-0 shadow-xl transition-colors duration-500",
             settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-            <h2 className="text-sm font-display font-bold tracking-[0.2em] text-primary uppercase mb-6 flex items-center">
-               <div className="h-2 w-2 rounded-full bg-primary animate-pulse mr-3" />
-               COMMAND CENTER: DRAFT TOOL
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-sm font-display font-bold tracking-[0.2em] text-primary uppercase flex items-center">
+                 <div className="h-2 w-2 rounded-full bg-primary animate-pulse mr-3" />
+                 BIG BOARD
+              </h2>
+            </div>
             <div className={cn("flex-1 min-h-0 rounded border transition-colors duration-500",
               settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
                <PlayerTable />
