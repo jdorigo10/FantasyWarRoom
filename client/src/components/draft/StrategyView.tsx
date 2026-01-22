@@ -181,7 +181,7 @@ export function StrategyView() {
     <div className="flex-1 overflow-hidden p-6 flex flex-col space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-display font-bold tracking-tight text-white uppercase italic">
-          Draft Scenarios & Strategies
+          Strategy - Pick {settings.position} in a {settings.teamCount} team draft
         </h2>
         <div className="flex items-center space-x-2 text-[10px] text-[#8b949e] font-mono uppercase tracking-widest">
           <Info className="h-3 w-3 text-primary" />
