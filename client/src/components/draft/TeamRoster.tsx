@@ -208,21 +208,21 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                     </div>
                     {slot.player ? (
                       <div className="truncate">
-                        <div className="text-[13px] font-bold text-white truncate leading-snug">
+                        <div className="text-[14px] font-bold text-white truncate leading-snug">
                           {slot.player.name}
                         </div>
-                        <div className="text-[10px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
+                        <div className="text-[11px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
                           <span className="font-bold">{slot.player.position} • {slot.player.team}</span>
                           <span className="text-[#6e7681] opacity-80 uppercase">Bye {slot.player.byeWeek}</span>
                         </div>
                       </div>
                     ) : slot.placeholder ? (
                       <div className="truncate opacity-50">
-                        <div className="text-[13px] font-bold text-primary/80 truncate leading-snug flex items-center gap-2">
+                        <div className="text-[14px] font-bold text-primary/80 truncate leading-snug flex items-center gap-2">
                           <TrendingUp className="h-3 w-3" />
                           {slot.placeholder.name}
                         </div>
-                        <div className="text-[10px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
+                        <div className="text-[11px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
                           <span className="font-bold">{slot.placeholder.position} • {slot.placeholder.team}</span>
                           <span className="opacity-80 uppercase">Bye {slot.placeholder.byeWeek}</span>
                         </div>

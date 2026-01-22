@@ -212,7 +212,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-12 gap-0 px-2 py-2 bg-[#161b22] text-[9px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d]">
+        <div className="grid grid-cols-12 gap-0 px-2 py-2 bg-[#161b22] text-[10px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d]">
           <div className="col-span-1 text-center pr-0.5">RK</div>
           <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>PLAYER</div>
           <div className="col-span-1 text-center">ADP</div>
@@ -220,10 +220,16 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           <div className="col-span-1 text-center">PPG</div>
           {showExtendedStats && (
             <>
+              <div className="col-span-1 flex items-center justify-center">
+                 <div className="h-3 w-[1px] bg-[#30363d]" />
+              </div>
               <div className="col-span-1 text-center">SOS</div>
               <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>OFF</span><span>RK</span></div>
               <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>DEF</span><span>RK</span></div>
-              <div className="col-span-2 text-center">TAGS</div>
+              <div className="col-span-1 flex items-center justify-center">
+                 <div className="h-3 w-[1px] bg-[#30363d]" />
+              </div>
+              <div className="col-span-1 text-center">TAGS</div>
             </>
           )}
           {!showExtendedStats && (
@@ -284,6 +290,9 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 
                 {showExtendedStats && (
                   <>
+                    <div className="col-span-1 flex items-center justify-center">
+                      <div className="h-4 w-[1px] bg-[#30363d]" />
+                    </div>
                     <div className={cn("col-span-1 text-center font-mono font-bold text-[10px]", getRankColor(player.sos, false))}>
                       {player.sos}
                     </div>
@@ -293,11 +302,14 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     <div className={cn("col-span-1 text-center font-mono font-bold text-[10px]", getRankColor(player.defensiveRank, true))}>
                       {player.defensiveRank}
                     </div>
+                    <div className="col-span-1 flex items-center justify-center">
+                      <div className="h-4 w-[1px] bg-[#30363d]" />
+                    </div>
                   </>
                 )}
 
                 {showExtendedStats ? (
-                  <div className="col-span-2 flex justify-center items-center">
+                  <div className="col-span-1 flex justify-center items-center">
                     <TooltipProvider>
                       <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>
@@ -317,7 +329,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                               </div>
                             ))}
                             {tags.length === 0 && (
-                              <p className="text-[10px] text-[#8b949e] italic text-center py-1">No tactical alerts found.</p>
+                              <p className="text-[10px] text-[#8b949e] italic text-center py-1">No Tags</p>
                             )}
                           </div>
                         </TooltipContent>
