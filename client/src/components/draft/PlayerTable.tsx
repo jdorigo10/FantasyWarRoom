@@ -233,7 +233,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-12 gap-0 px-2 py-2 bg-[#161b22] text-[10px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d]">
+        <div className="grid grid-cols-12 gap-0 px-2 py-2 bg-[#161b22] text-[11px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d]">
           <div className="col-span-1 text-center pr-0.5">RK</div>
           <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>PLAYER</div>
           <div className="col-span-1 text-center">ADP</div>
