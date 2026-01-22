@@ -131,8 +131,8 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
         <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-[#161b22] text-[10px] font-bold text-[#8b949e] uppercase tracking-wider border-b border-[#30363d]">
           <div className="col-span-1">RK</div>
           <div className="col-span-6">PLAYER</div>
-          <div className="col-span-1 text-right pr-2">ADP</div>
-          <div className="col-span-1 text-right pr-4">PPG</div>
+          <div className="col-span-1 text-center">ADP</div>
+          <div className="col-span-1 text-center">PPG</div>
           <div className="col-span-1 flex items-center justify-center">
              <div className="h-4 w-[1px] bg-[#30363d]" />
           </div>
@@ -166,10 +166,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                      <span className="text-[#6e7681] font-mono uppercase text-[9px]">BYE {player.byeWeek}</span>
                   </div>
                 </div>
-                <div className="col-span-1 text-right font-mono text-[#8b949e] text-[11px] pr-2">
+                <div className="col-span-1 text-center font-mono text-[#8b949e] text-[11px]">
                   {player.adp} <span className="text-[9px] opacity-70">(R{Math.ceil(player.adp / settings.teamCount)})</span>
                 </div>
-                <div className="col-span-1 text-right font-mono text-primary font-bold text-[12px] pr-4">{player.ppg}</div>
+                <div className="col-span-1 text-center font-mono text-primary font-bold text-[12px]">{player.ppg}</div>
                 <div className="col-span-1 flex items-center justify-center">
                    <div className="h-8 w-[1px] bg-[#30363d]/50" />
                 </div>

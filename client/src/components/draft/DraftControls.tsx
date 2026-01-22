@@ -34,8 +34,9 @@ export function DraftControls() {
       <div className="flex items-center space-x-6">
          <div>
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Current Pick</div>
-            <div className="text-2xl font-display font-bold text-foreground">
-               <span className="text-muted-foreground">RD</span> {round} <span className="text-muted-foreground">/</span> <span className="text-primary">#{pick}</span>
+            <div className="text-2xl font-display font-bold text-foreground flex items-baseline gap-2">
+               <div><span className="text-muted-foreground">RD</span> {round} <span className="text-muted-foreground">/</span> <span className="text-primary">#{pick}</span></div>
+               <div className="text-[12px] font-mono text-muted-foreground/40 font-normal">({currentPickIndex + 1})</div>
             </div>
          </div>
          
