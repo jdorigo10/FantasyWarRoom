@@ -40,15 +40,21 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
     <div className="flex flex-col h-full space-y-6 overflow-hidden">
       <Card className="bg-[#161b22] border-[#30363d] flex flex-col min-h-0 shadow-xl">
         <div className="p-6 border-b border-[#30363d]">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-display font-bold tracking-[0.2em] text-primary uppercase">ROSTER VIEW</h2>
+          <div className="flex flex-col space-y-4 mb-4">
+            <h2 className="text-xs font-display font-bold tracking-[0.2em] text-primary uppercase">{viewedTeam.name}'s Roster</h2>
             <select 
-              className="bg-[#0d1117] border border-[#30363d] text-[10px] text-white rounded px-2 py-1 focus:ring-primary/20"
+              className="w-full bg-[#0d1117] border border-[#30363d] text-xs text-white rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer transition-all hover:bg-[#1c2128]"
               value={settings.viewedTeamId}
               onChange={(e) => updateSettings({ viewedTeamId: e.target.value })}
             >
-              {settings.teams.map(t => (
-                <option key={t.id} value={t.id}>{t.name} {t.isUser ? "(YOU)" : ""}</option>
+              {settings.teams.map((t, idx) => (
+                <option 
+                  key={t.id} 
+                  value={t.id} 
+                  className={cn("bg-[#0d1117] py-2", t.isUser && "font-bold")}
+                >
+                  {idx + 1}. {t.name}
+                </option>
               ))}
             </select>
           </div>

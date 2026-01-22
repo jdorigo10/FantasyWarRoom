@@ -44,7 +44,7 @@ export function DraftControls() {
          <div>
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">On The Clock</div>
             <div className={cn("text-lg font-bold flex items-center gap-2", isUser ? "text-primary animate-pulse" : "text-foreground")}>
-               {currentTeam?.name || `Team ${currentTeamIndex + 1}`} {isUser && "(YOU)"}
+               {currentTeam?.name || `Team ${currentTeamIndex + 1}`} {isUser && "(user)"}
             </div>
          </div>
       </div>
