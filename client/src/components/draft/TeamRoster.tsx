@@ -92,7 +92,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
       if (slot.slot !== "BENCH") {
         const bestAvailable = availablePlayers
           .filter(p => !assignedPlaceholderIds.has(p.id))
-          .filter(p => slot.pos.includes(p.position) || (slot.slot === "FLEX" && ["RB", "WR", "TE"].includes(p.position)))
+          .filter(p => slot.pos.includes(p.position) || (slot.slot === "FLEX" && ["RB", "WR"].includes(p.position)))
           .sort((a, b) => b.ppg - a.ppg)[0];
         
         if (bestAvailable) {
@@ -113,7 +113,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
       const fullPositions = (["QB", "RB", "WR", "TE", "DST", "K"] as const).filter(pos => {
         if (benchSuggestedPositions.has(pos as any)) return false;
 
-        const canFitInStarters = filledRoster.some(s => s.slot !== "BENCH" && !s.player && (s.pos.includes(pos) || (s.slot === "FLEX" && ["RB", "WR", "TE"].includes(pos))));
+        const canFitInStarters = filledRoster.some(s => s.slot !== "BENCH" && !s.player && (s.pos.includes(pos) || (s.slot === "FLEX" && ["RB", "WR"].includes(pos))));
         
         if (!canFitInStarters) {
           const startersOfPos = filledRoster.filter(s => s.slot !== "BENCH" && s.player?.position === pos).length;
