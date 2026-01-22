@@ -6,9 +6,8 @@
     "sos": "https://example.com/sos",
     "offense": "https://example.com/offense",
     "defense": "https://example.com/defense",
-    "injury": "https://example.com/injuries",
+    "player_info": "https://example.com/injuries",
     "history_adp": "https://example.com/adp-history",
-    "history_ppg": "https://example.com/ppg-history",
-    "trends": "https://example.com/trends"
+    "history_ppg": "https://example.com/ppg-history"
   }
 }

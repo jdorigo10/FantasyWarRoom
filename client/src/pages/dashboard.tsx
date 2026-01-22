@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
-import { Database, ShieldAlert, Activity, BarChart, History, TrendingUp, Search, Layers, ShieldCheck, Shield } from "lucide-react";
+import { Database, ShieldAlert, Activity, BarChart, History, TrendingUp, Search, Layers, ShieldCheck, Shield, Sparkles } from "lucide-react";
 import { INITIALIZATION_STEPS } from "@/lib/mockData";
 
 const STEP_ICONS: Record<string, any> = {
@@ -21,7 +21,8 @@ const STEP_ICONS: Record<string, any> = {
   injury: Activity,
   history_adp: History,
   history_ppg: History,
-  trends: Database
+  trends: Database,
+  ai_analysis: Sparkles
 };
 
 import { Input } from "@/components/ui/input";

@@ -38,83 +38,250 @@ export interface DraftSettings {
   draftYear: string;
 }
 
-const TEAMS = ["ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
+const TEAMS = [
+  "ARI",
+  "ATL",
+  "BAL",
+  "BUF",
+  "CAR",
+  "CHI",
+  "CIN",
+  "CLE",
+  "DAL",
+  "DEN",
+  "DET",
+  "GB",
+  "HOU",
+  "IND",
+  "JAX",
+  "KC",
+  "LV",
+  "LAC",
+  "LAR",
+  "MIA",
+  "MIN",
+  "NE",
+  "NO",
+  "NYG",
+  "NYJ",
+  "PHI",
+  "PIT",
+  "SEA",
+  "SF",
+  "TB",
+  "TEN",
+  "WAS",
+];
 
 const MOCK_NAMES: Record<string, string[]> = {
   QB: [
-    "Josh Allen", "Jalen Hurts", "Patrick Mahomes", "Lamar Jackson", "Joe Burrow", "C.J. Stroud",
-    "Anthony Richardson", "Dak Prescott", "Jordan Love", "Brock Purdy", "Kyler Murray", "Caleb Williams",
-    "Tua Tagovailoa", "Jared Goff", "Justin Herbert", "Kirk Cousins", "Jayden Daniels", "Trevor Lawrence",
-    "Aaron Rodgers", "Matthew Stafford"
+    "Josh Allen",
+    "Jalen Hurts",
+    "Patrick Mahomes",
+    "Lamar Jackson",
+    "Joe Burrow",
+    "C.J. Stroud",
+    "Anthony Richardson",
+    "Dak Prescott",
+    "Jordan Love",
+    "Brock Purdy",
+    "Kyler Murray",
+    "Caleb Williams",
+    "Tua Tagovailoa",
+    "Jared Goff",
+    "Justin Herbert",
+    "Kirk Cousins",
+    "Jayden Daniels",
+    "Trevor Lawrence",
+    "Aaron Rodgers",
+    "Matthew Stafford",
   ],
   RB: [
-    "Christian McCaffrey", "Breece Hall", "Bijan Robinson", "Saquon Barkley", "Jonathan Taylor",
-    "Kyren Williams", "Jahmyr Gibbs", "Travis Etienne", "Derrick Henry", "Isiah Pacheco",
-    "Rachaad White", "Joe Mixon", "Kenneth Walker III", "James Cook", "Josh Jacobs",
-    "Alvin Kamara", "James Conner", "David Montgomery", "D'Andre Swift", "Aaron Jones",
-    "Zamir White", "Raheem Mostert", "Najee Harris", "Jonathon Brooks", "Brian Robinson Jr.",
-    "Javonte Williams", "Austin Ekeler", "Zack Moss", "Tony Pollard", "Nick Chubb",
-    "Devin Singletary", "Jaylen Warren", "Ezekiel Elliott", "Gus Edwards", "Ty Chandler",
-    "Jerome Ford", "Trey Benson", "Chuba Hubbard", "Blake Corum", "Chase Brown"
+    "Christian McCaffrey",
+    "Breece Hall",
+    "Bijan Robinson",
+    "Saquon Barkley",
+    "Jonathan Taylor",
+    "Kyren Williams",
+    "Jahmyr Gibbs",
+    "Travis Etienne",
+    "Derrick Henry",
+    "Isiah Pacheco",
+    "Rachaad White",
+    "Joe Mixon",
+    "Kenneth Walker III",
+    "James Cook",
+    "Josh Jacobs",
+    "Alvin Kamara",
+    "James Conner",
+    "David Montgomery",
+    "D'Andre Swift",
+    "Aaron Jones",
+    "Zamir White",
+    "Raheem Mostert",
+    "Najee Harris",
+    "Jonathon Brooks",
+    "Brian Robinson Jr.",
+    "Javonte Williams",
+    "Austin Ekeler",
+    "Zack Moss",
+    "Tony Pollard",
+    "Nick Chubb",
+    "Devin Singletary",
+    "Jaylen Warren",
+    "Ezekiel Elliott",
+    "Gus Edwards",
+    "Ty Chandler",
+    "Jerome Ford",
+    "Trey Benson",
+    "Chuba Hubbard",
+    "Blake Corum",
+    "Chase Brown",
   ],
   WR: [
-    "CeeDee Lamb", "Tyreek Hill", "Justin Jefferson", "Ja'Marr Chase", "Amon-Ra St. Brown",
-    "A.J. Brown", "Garrett Wilson", "Puka Nacua", "Marvin Harrison Jr.", "Drake London",
-    "Davante Adams", "Chris Olave", "Mike Evans", "Nico Collins", "Jaylen Waddle",
-    "Michael Pittman Jr.", "DeVonta Smith", "D.K. Metcalf", "Stefon Diggs", "Cooper Kupp",
-    "DJ Moore", "Malik Nabers", "Brandon Aiyuk", "George Pickens", "Deebo Samuel",
-    "Zay Flowers", "Tee Higgins", "Amari Cooper", "Christian Kirk", "Tank Dell",
-    "Terry McLaurin", "Rashee Rice", "Chris Godwin", "Keenan Allen", "Jayden Reed",
-    "Hollywood Brown", "Jordan Addison", "Jaxon Smith-Njigba", "Ladd McConkey", "Courtland Sutton"
+    "CeeDee Lamb",
+    "Tyreek Hill",
+    "Justin Jefferson",
+    "Ja'Marr Chase",
+    "Amon-Ra St. Brown",
+    "A.J. Brown",
+    "Garrett Wilson",
+    "Puka Nacua",
+    "Marvin Harrison Jr.",
+    "Drake London",
+    "Davante Adams",
+    "Chris Olave",
+    "Mike Evans",
+    "Nico Collins",
+    "Jaylen Waddle",
+    "Michael Pittman Jr.",
+    "DeVonta Smith",
+    "D.K. Metcalf",
+    "Stefon Diggs",
+    "Cooper Kupp",
+    "DJ Moore",
+    "Malik Nabers",
+    "Brandon Aiyuk",
+    "George Pickens",
+    "Deebo Samuel",
+    "Zay Flowers",
+    "Tee Higgins",
+    "Amari Cooper",
+    "Christian Kirk",
+    "Tank Dell",
+    "Terry McLaurin",
+    "Rashee Rice",
+    "Chris Godwin",
+    "Keenan Allen",
+    "Jayden Reed",
+    "Hollywood Brown",
+    "Jordan Addison",
+    "Jaxon Smith-Njigba",
+    "Ladd McConkey",
+    "Courtland Sutton",
   ],
   TE: [
-    "Sam LaPorta", "Travis Kelce", "Trey McBride", "Mark Andrews", "George Kittle",
-    "Evan Engram", "Kyle Pitts", "Jake Ferguson", "Dalton Kincaid", "Brock Bowers",
-    "David Njoku", "Dallas Goedert", "Cole Kmet", "T.J. Hockenson", "Pat Freiermuth",
-    "Dalton Schultz", "Luke Musgrave", "Hunter Henry", "Cade Otton", "Isaiah Likely"
+    "Sam LaPorta",
+    "Travis Kelce",
+    "Trey McBride",
+    "Mark Andrews",
+    "George Kittle",
+    "Evan Engram",
+    "Kyle Pitts",
+    "Jake Ferguson",
+    "Dalton Kincaid",
+    "Brock Bowers",
+    "David Njoku",
+    "Dallas Goedert",
+    "Cole Kmet",
+    "T.J. Hockenson",
+    "Pat Freiermuth",
+    "Dalton Schultz",
+    "Luke Musgrave",
+    "Hunter Henry",
+    "Cade Otton",
+    "Isaiah Likely",
   ],
   K: [
-    "Justin Tucker", "Brandon Aubrey", "Harrison Butker", "Jake Elliott", "Younghoe Koo",
-    "Evan McPherson", "Cameron Dicker", "Matt Gay", "Jason Sanders", "Tyler Bass",
-    "Dustin Hopkins", "Jake Moody", "Ka'imi Fairbairn", "Cairo Santos", "Chris Boswell",
-    "Blake Grupe", "Greg Zuerlein", "Chase McLaughlin", "Nick Folk", "Greg Joseph"
+    "Justin Tucker",
+    "Brandon Aubrey",
+    "Harrison Butker",
+    "Jake Elliott",
+    "Younghoe Koo",
+    "Evan McPherson",
+    "Cameron Dicker",
+    "Matt Gay",
+    "Jason Sanders",
+    "Tyler Bass",
+    "Dustin Hopkins",
+    "Jake Moody",
+    "Ka'imi Fairbairn",
+    "Cairo Santos",
+    "Chris Boswell",
+    "Blake Grupe",
+    "Greg Zuerlein",
+    "Chase McLaughlin",
+    "Nick Folk",
+    "Greg Joseph",
   ],
   DST: [
-    "Ravens", "Cowboys", "Jets", "49ers", "Browns", "Bills", "Steelers", "Dolphins",
-    "Chiefs", "Eagles", "Saints", "Texans", "Bengals", "Lions", "Packers", "Bears",
-    "Jaguars", "Vikings", "Broncos", "Raiders"
-  ]
+    "Ravens",
+    "Cowboys",
+    "Jets",
+    "49ers",
+    "Browns",
+    "Bills",
+    "Steelers",
+    "Dolphins",
+    "Chiefs",
+    "Eagles",
+    "Saints",
+    "Texans",
+    "Bengals",
+    "Lions",
+    "Packers",
+    "Bears",
+    "Jaguars",
+    "Vikings",
+    "Broncos",
+    "Raiders",
+  ],
 };
 
 function generatePlayers(): Player[] {
   const players: Player[] = [];
   let idCounter = 1;
 
-  const allNames = Object.entries(MOCK_NAMES).flatMap(([pos, names]) => 
-    names.map(name => ({ name, position: pos as Position }))
+  const allNames = Object.entries(MOCK_NAMES).flatMap(([pos, names]) =>
+    names.map((name) => ({ name, position: pos as Position })),
   );
 
   // Position-based PPG ranges
-  const ppgRanges: Record<Position, { top: [number, number], good: [number, number], other: [number, number] }> = {
+  const ppgRanges: Record<
+    Position,
+    { top: [number, number]; good: [number, number]; other: [number, number] }
+  > = {
     QB: { top: [20, 25], good: [15, 20], other: [10, 15] },
     RB: { top: [20, 25], good: [15, 20], other: [8, 15] },
     WR: { top: [20, 25], good: [15, 20], other: [8, 15] },
     TE: { top: [13, 16], good: [10, 12], other: [5, 9] },
     DST: { top: [9, 12], good: [6, 8], other: [2, 5] },
     K: { top: [9, 12], good: [6, 8], other: [2, 5] },
-    FLEX: { top: [20, 25], good: [15, 20], other: [8, 15] } // Placeholder, logic uses RB/WR/TE
+    FLEX: { top: [20, 25], good: [15, 20], other: [8, 15] }, // Placeholder, logic uses RB/WR/TE
   };
 
   const posCounts: Record<string, number> = {};
 
   // Sort names to process by position and assign realistic PPG
-  const sortedByPos = [...allNames].sort((a, b) => a.position.localeCompare(b.position));
+  const sortedByPos = [...allNames].sort((a, b) =>
+    a.position.localeCompare(b.position),
+  );
 
   sortedByPos.forEach((item: any) => {
     const pos = item.position;
     posCounts[pos] = (posCounts[pos] || 0) + 1;
     const count = posCounts[pos];
-    
+
     let ppgRange;
     if (pos === "QB") {
       if (count <= 4) ppgRange = ppgRanges.QB.top;
@@ -141,12 +308,16 @@ function generatePlayers(): Player[] {
       ppgRange = [5, 10];
     }
 
-    const ppg = Number((ppgRange[0] + Math.random() * (ppgRange[1] - ppgRange[0])).toFixed(1));
+    const ppg = Number(
+      (ppgRange[0] + Math.random() * (ppgRange[1] - ppgRange[0])).toFixed(1),
+    );
     item.tempPpg = ppg;
   });
 
   // Now create the actual players and sort by PPG for rank
-  const finalSorted = [...sortedByPos].sort((a: any, b: any) => b.tempPpg - a.tempPpg);
+  const finalSorted = [...sortedByPos].sort(
+    (a: any, b: any) => b.tempPpg - a.tempPpg,
+  );
 
   finalSorted.forEach((item: any, index) => {
     const rank = index + 1;
@@ -166,7 +337,7 @@ function generatePlayers(): Player[] {
       offensiveRank: Math.floor(Math.random() * 32) + 1,
       defensiveRank: Math.floor(Math.random() * 32) + 1,
       sos: Math.floor(Math.random() * 32) + 1,
-      notes: "ESPN projected top tier."
+      notes: "ESPN projected top tier.",
     });
   });
 
@@ -185,20 +356,56 @@ export const INITIAL_SETTINGS: DraftSettings = {
   teams: Array.from({ length: 10 }, (_, i) => ({
     id: `team-${i + 1}`,
     name: `Team ${i + 1}`,
-    isUser: i === 0
+    isUser: i === 0,
   })),
   viewedTeamId: "team-1",
-  draftYear: config.draftYear
+  draftYear: config.draftYear,
 };
 
 export const INITIALIZATION_STEPS = [
-  { label: "ESPN Player Draft Rankings", key: "rankings", link: config.dataSources.rankings },
-  { label: "ESPN Player Projected PPG", key: "ppg", link: config.dataSources.ppg },
-  { label: "NFL Strength of Schedules", key: "sos", link: config.dataSources.sos },
-  { label: "Projected Offensive Ranking (1-32)", key: "offense", link: config.dataSources.offense },
-  { label: "Projected Defensive Ranking (1-32)", key: "defense", link: config.dataSources.defense },
-  { label: "Player Injury History", key: "injury", link: config.dataSources.injury },
-  { label: "Past 5 years Fantasy Preseason ADP", key: "history_adp", link: config.dataSources.history_adp },
-  { label: "Past 5 years Fantasy Season PPG", key: "history_ppg", link: config.dataSources.history_ppg },
-  { label: "NFL Trends (Age, Experience, Situation)", key: "trends", link: config.dataSources.trends }
+  {
+    label: "ESPN Player Draft Rankings & ADP",
+    key: "rankings",
+    link: config.dataSources.rankings,
+  },
+  {
+    label: "ESPN Player Projected PPG",
+    key: "ppg",
+    link: config.dataSources.ppg,
+  },
+  {
+    label: "NFL Strength of Schedules",
+    key: "sos",
+    link: config.dataSources.sos,
+  },
+  {
+    label: "Projected Team Offensive PPG(F)",
+    key: "offense",
+    link: config.dataSources.offense,
+  },
+  {
+    label: "Projected Team Defensive PPG(A)",
+    key: "defense",
+    link: config.dataSources.defense,
+  },
+  {
+    label: "Player Info (Status, Age, Experience, Situation",
+    key: "player_info",
+    link: config.dataSources.player_info,
+  },
+  {
+    label: "Past 3 years Fantasy Preseason ADP",
+    key: "history_adp",
+    link: config.dataSources.history_adp,
+  },
+  {
+    label: "Past 3 years Fantasy Season PPG",
+    key: "history_ppg",
+    link: config.dataSources.history_ppg,
+  },
+  {
+    label: "Generating AI Analysis for each Player",
+    key: "ai_analysis",
+    link: "",
+  },
 ];
