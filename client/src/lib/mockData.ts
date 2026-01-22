@@ -1,4 +1,5 @@
 import { z } from "zod";
+import config from "../config.json";
 
 export type Position = "QB" | "RB" | "WR" | "TE" | "K" | "DST" | "FLEX";
 
@@ -187,17 +188,17 @@ export const INITIAL_SETTINGS: DraftSettings = {
     isUser: i === 0
   })),
   viewedTeamId: "team-1",
-  draftYear: "2026-2027"
+  draftYear: config.draftYear
 };
 
 export const INITIALIZATION_STEPS = [
-  { label: "ESPN Player Draft Rankings", key: "rankings" },
-  { label: "ESPN Player Projected PPG", key: "ppg" },
-  { label: "NFL Strength of Schedules", key: "sos" },
-  { label: "Projected Offensive Ranking (1-32)", key: "offense" },
-  { label: "Projected Defensive Ranking (1-32)", key: "defense" },
-  { label: "Player Injury History", key: "injury" },
-  { label: "Past 5 years Fantasy Preseason ADP", key: "history_adp" },
-  { label: "Past 5 years Fantasy Season PPG", key: "history_ppg" },
-  { label: "NFL Trends (Age, Experience, Situation)", key: "trends" }
+  { label: "ESPN Player Draft Rankings", key: "rankings", link: config.dataSources.rankings },
+  { label: "ESPN Player Projected PPG", key: "ppg", link: config.dataSources.ppg },
+  { label: "NFL Strength of Schedules", key: "sos", link: config.dataSources.sos },
+  { label: "Projected Offensive Ranking (1-32)", key: "offense", link: config.dataSources.offense },
+  { label: "Projected Defensive Ranking (1-32)", key: "defense", link: config.dataSources.defense },
+  { label: "Player Injury History", key: "injury", link: config.dataSources.injury },
+  { label: "Past 5 years Fantasy Preseason ADP", key: "history_adp", link: config.dataSources.history_adp },
+  { label: "Past 5 years Fantasy Season PPG", key: "history_ppg", link: config.dataSources.history_ppg },
+  { label: "NFL Trends (Age, Experience, Situation)", key: "trends", link: config.dataSources.trends }
 ];

@@ -1,0 +1,14 @@
+{
+  "draftYear": "2026",
+  "dataSources": {
+    "rankings": "https://example.com/rankings",
+    "ppg": "https://example.com/projections",
+    "sos": "https://example.com/sos",
+    "offense": "https://example.com/offense",
+    "defense": "https://example.com/defense",
+    "injury": "https://example.com/injuries",
+    "history_adp": "https://example.com/adp-history",
+    "history_ppg": "https://example.com/ppg-history",
+    "trends": "https://example.com/trends"
+  }
+}
