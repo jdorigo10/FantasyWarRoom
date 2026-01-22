@@ -345,7 +345,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 </TooltipTrigger>
                 <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
                   <p className="font-bold text-primary mb-1">Draft Value</p>
-                  <p className="text-[#c9d1d9]">PPG (rank) subtracted by ADP (rank)</p>
+                  <p className="text-[#c9d1d9]">ADP (rank) subtracted by PPG (rank)</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
