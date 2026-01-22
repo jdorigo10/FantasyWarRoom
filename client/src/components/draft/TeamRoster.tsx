@@ -1,5 +1,6 @@
 import React from "react";
 import { useDraftStore } from "@/lib/draftStore";
+import { useDraftStrategies } from "@/hooks/useDraftStrategies";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,10 +11,24 @@ interface TeamRosterProps {
 }
 
 export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
-  const { players, picks, settings, updateSettings } = useDraftStore();
+  const { players, picks, settings, updateSettings, currentPickIndex } = useDraftStore();
+  const { scenarios } = useDraftStrategies();
 
   const viewedTeam = settings.teams.find(t => t.id === settings.viewedTeamId) || settings.teams[0];
   
+  // Calculate Suggestion
+  let suggestedPlayer = null;
+  if (showSuggested && scenarios.length > 0) {
+    const topStrategy = scenarios[0];
+    const allStrategyPlayers = Object.values(topStrategy.players);
+    // Find the player in the strategy with the lowest pickOverall that is >= currentPickIndex + 1
+    // This represents the next player the user should target according to the best strategy.
+    
+    suggestedPlayer = allStrategyPlayers
+        .filter((p: any) => p.pickOverall >= currentPickIndex + 1)
+        .sort((a: any, b: any) => a.pickOverall - b.pickOverall)[0];
+  }
+
   // Define roster slots
   const rosterSlots = [
     { slot: "QB", pos: ["QB"] },
@@ -248,7 +263,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
         </div>
       </Card>
 
-      {showSuggested && (
+      {showSuggested && suggestedPlayer && (
         <Card className="bg-[#1c2128] border-primary/20 border-2 p-4 shadow-[0_0_20px_rgba(46,160,67,0.1)] flex-shrink-0">
           <div className="flex items-center text-primary mb-3">
              <Sparkles className="h-3 w-3 mr-2" />
@@ -256,11 +271,11 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
           </div>
           <div className="p-2.5 bg-primary/10 rounded border border-primary/20">
             <div className="flex justify-between items-start mb-1.5">
-               <div className="text-[10px] font-bold text-primary truncate">TARGET: Breece Hall (RB, NYJ)</div>
-               <div className="text-[10px] font-mono font-bold text-primary">21.4</div>
+               <div className="text-[10px] font-bold text-primary truncate">TARGET: {suggestedPlayer.name} ({suggestedPlayer.position}, {suggestedPlayer.team})</div>
+               <div className="text-[10px] font-mono font-bold text-primary">{suggestedPlayer.ppg}</div>
             </div>
             <p className="text-[9px] text-[#adbac7] leading-tight line-clamp-2">
-               Elite volume projected for Season 2026. Pairs optimally with your current QB1.
+               Top strategic pick for Round {suggestedPlayer.round}. Projected to maximize your team's total PPG.
             </p>
           </div>
         </Card>

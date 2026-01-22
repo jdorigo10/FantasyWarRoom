@@ -1,222 +1,20 @@
 import React, { useMemo, useState } from "react";
 import { useDraftStore } from "@/lib/draftStore";
+import { useDraftStrategies } from "@/hooks/useDraftStrategies";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info, ArrowUpDown } from "lucide-react";
 
-interface StrategyScenario {
-  name: string;
-  order: string[]; 
-  players: Record<string, any>;
-  totalPPG: number;
-}
-
 export function StrategyView() {
-  const { players, settings, picks, pickedPlayers } = useDraftStore();
+  const { settings } = useDraftStore();
+  const { scenarios, userActualPicks } = useDraftStrategies();
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // Identify User's Actual Picks
-  const userActualPicks = useMemo(() => {
-    const map: Record<number, any> = {};
-    picks.filter(p => p.pickedBy === "User").forEach(p => {
-        const player = players.find(pl => pl.id === p.playerId);
-        if (player) map[p.round] = player;
-    });
-    return map;
-  }, [picks, players]);
-
-  const scenarios = useMemo(() => {
-    // Generate all permutations
-    const rounds = [1, 2, 3, 4, 5, 6, 7, 8];
-    const generatedStrategies: any[] = [];
-    
-    // Helper to get combinations of k items from array
-    const getCombinations = (arr: number[], k: number): number[][] => {
-        if (k === 0) return [[]];
-        if (arr.length === 0) return [];
-        const [first, ...rest] = arr;
-        const withFirst = getCombinations(rest, k - 1).map(c => [first, ...c]);
-        const withoutFirst = getCombinations(rest, k);
-        return [...withFirst, ...withoutFirst];
-    };
-
-    // 1. Pick 3 rounds for RBs
-    const rbCombs = getCombinations(rounds, 3);
-    
-    for (const rbs of rbCombs) {
-        const remainingAfterRb = rounds.filter(r => !rbs.includes(r));
-        // 2. Pick 3 rounds for WRs
-        const wrCombs = getCombinations(remainingAfterRb, 3);
-        
-        for (const wrs of wrCombs) {
-            const remainingFinal = remainingAfterRb.filter(r => !wrs.includes(r));
-            // remainingFinal has 2 items for QB and TE
-            
-            // Permutation 1: QB = remainingFinal[0], TE = remainingFinal[1]
-            const p1 = { RB: rbs, WR: wrs, QB: remainingFinal[0], TE: remainingFinal[1] };
-            // Permutation 2: QB = remainingFinal[1], TE = remainingFinal[0]
-            const p2 = { RB: rbs, WR: wrs, QB: remainingFinal[1], TE: remainingFinal[0] };
-            
-            [p1, p2].forEach(p => {
-                // Constraints: QB >= 2, TE >= 2
-                if (p.QB < 2 || p.TE < 2) return;
-                
-                const draftOrder: Record<number, string> = {};
-                p.RB.forEach(r => draftOrder[r] = "RB");
-                p.WR.forEach(r => draftOrder[r] = "WR");
-                draftOrder[p.QB] = "QB";
-                draftOrder[p.TE] = "TE";
-                
-                // Fixed rounds
-                draftOrder[12] = "DST";
-                draftOrder[14] = "K";
-
-                // FILTER: Check conflicts with actual user picks
-                let conflict = false;
-                for (const [roundStr, player] of Object.entries(userActualPicks)) {
-                    const round = parseInt(roundStr);
-                    // If user picked a player in this round, the strategy MUST have the same position type for this round
-                    // Note: If user reached for a player or picked off-meta, we might filter out too much?
-                    // User requirement: "If I took RB1... the possible draft scenarios can be updates where RB1 is pick 1"
-                    // This implies we filter for scenarios that match the *position* taken.
-                    if (draftOrder[round] !== player.position) {
-                        conflict = true;
-                        break;
-                    }
-                }
-                
-                if (!conflict) {
-                    generatedStrategies.push({ draftOrder });
-                }
-            });
-        }
-    }
-
-    // Simulate all scenarios
-    const results = generatedStrategies.map((strat, idx) => {
-      const scenarioPlayers: Record<string, any> = {};
-      const draftedIds = new Set<string>();
-      const draftOrder = strat.draftOrder;
-
-      // Simulation
-      for (let round = 1; round <= 14; round++) {
-        const pos = draftOrder[round];
-        if (!pos) continue; // Skip rounds 9, 10, 11, 13
-
-        // Determine pick overall for user
-        const userPickOverall = round % 2 === 1
-          ? (round - 1) * settings.teamCount + settings.position
-          : round * settings.teamCount - settings.position + 1;
-
-        // Check if user already made a pick in this round
-        if (userActualPicks[round]) {
-             const player = userActualPicks[round];
-             
-             // Generate key
-             let key = pos;
-             if (["DST", "K", "QB", "TE"].includes(pos)) key = `${pos}1`;
-             else {
-                 let count = 1;
-                 while (scenarioPlayers[`${pos}${count}`]) count++;
-                 key = `${pos}${count}`;
-             }
-             
-             scenarioPlayers[key] = { 
-                 ...player, 
-                 round, 
-                 pickOverall: picks.find(p => p.round === round && p.pickedBy === "User")?.pickOverall || userPickOverall 
-             };
-             draftedIds.add(player.id);
-             continue;
-        }
-
-        // Otherwise simulate "Best Available"
-        // Exclude players already picked in real draft (pickedPlayers)
-        // AND players picked in this scenario simulation (draftedIds)
-        const bestAvailable = players
-          .filter(p => p.position === pos)
-          .filter(p => !draftedIds.has(p.id)) // Not picked in this scenario
-          .filter(p => !pickedPlayers.includes(p.id)) // Not picked in real draft (by anyone)
-          .filter(p => p.adp > (userPickOverall - round))
-          .sort((a, b) => b.ppg - a.ppg)[0] || 
-          players.filter(p => p.position === pos && !draftedIds.has(p.id) && !pickedPlayers.includes(p.id))[0];
-
-        if (bestAvailable) {
-          draftedIds.add(bestAvailable.id);
-          
-          let key = pos;
-          if (pos === "DST") key = "DST1";
-          else if (pos === "K") key = "K1";
-          else if (pos === "QB") key = "QB1";
-          else if (pos === "TE") key = "TE1";
-          else {
-            // RB or WR
-            let count = 1;
-            while (scenarioPlayers[`${pos}${count}`]) {
-              count++;
-            }
-            key = `${pos}${count}`;
-          }
-
-          scenarioPlayers[key] = {
-            ...bestAvailable,
-            round,
-            pickOverall: userPickOverall
-          };
-        }
-      }
-
-      // Determine FLEX and BENCH
-      const rb3 = scenarioPlayers["RB3"];
-      const wr3 = scenarioPlayers["WR3"];
-      
-      if (rb3 && wr3) {
-        if (rb3.ppg >= wr3.ppg) {
-          scenarioPlayers["FLEX"] = rb3;
-          scenarioPlayers["BENCH"] = wr3;
-        } else {
-          scenarioPlayers["FLEX"] = wr3;
-          scenarioPlayers["BENCH"] = rb3;
-        }
-      } else if (rb3) {
-        scenarioPlayers["FLEX"] = rb3;
-        scenarioPlayers["BENCH"] = scenarioPlayers["WR3"] || scenarioPlayers["RB4"] || null;
-      } else if (wr3) {
-        scenarioPlayers["FLEX"] = wr3;
-        scenarioPlayers["BENCH"] = scenarioPlayers["RB3"] || scenarioPlayers["WR4"] || null;
-      }
-
-      // Ensure all positions have a player
-      const starterKeys = ["QB1", "RB1", "RB2", "WR1", "WR2", "TE1", "FLEX", "DST1", "K1"];
-      starterKeys.forEach(k => {
-        if (!scenarioPlayers[k]) {
-          const pos = k.replace(/[0-9]/g, '');
-          const fallback = players.find(p => p.position === (pos === "FLEX" ? "RB" : pos) && !draftedIds.has(p.id) && !pickedPlayers.includes(p.id));
-          if (fallback) scenarioPlayers[k] = fallback;
-        }
-      });
-      if (!scenarioPlayers["BENCH"]) {
-        const fallback = players.find(p => !draftedIds.has(p.id) && !pickedPlayers.includes(p.id));
-        if (fallback) scenarioPlayers["BENCH"] = fallback;
-      }
-
-      // Calculate Total PPG for starters
-      let total = 0;
-      starterKeys.forEach(k => {
-        if (scenarioPlayers[k]) total += scenarioPlayers[k].ppg;
-      });
-
-      return {
-        name: `Scenario ${idx + 1}`,
-        players: scenarioPlayers,
-        totalPPG: parseFloat(total.toFixed(1))
-      };
-    });
-
-    return results.sort((a, b) => sortDir === 'desc' ? b.totalPPG - a.totalPPG : a.totalPPG - b.totalPPG).slice(0, 25);
-  }, [players, settings, sortDir, picks, pickedPlayers, userActualPicks]);
+  const sortedScenarios = useMemo(() => {
+    return [...scenarios].sort((a, b) => sortDir === 'desc' ? b.totalPPG - a.totalPPG : a.totalPPG - b.totalPPG);
+  }, [scenarios, sortDir]);
 
   const columns = [
     { id: "QB1", label: "QB" },
@@ -262,21 +60,33 @@ export function StrategyView() {
             </div>
 
             <div className="flex flex-col">
-              {scenarios.map((scenario, idx) => (
+              {sortedScenarios.map((scenario, idx) => (
                 <div 
                   key={idx} 
                   className="grid grid-cols-[repeat(10,minmax(115px,1fr))_120px] gap-0 border-b border-[#30363d]/50 hover:bg-white/[0.02] transition-colors group"
                 >
                   {columns.map(col => {
                     const player = scenario.players[col.id];
+                    const isDrafted = player && userActualPicks[player.round]?.id === player.id;
+                    
                     return (
-                      <div key={col.id} className="p-3 border-r border-[#30363d]/50 flex flex-col justify-center items-center text-center">
+                      <div key={col.id} className={cn(
+                        "p-3 border-r border-[#30363d]/50 flex flex-col justify-center items-center text-center transition-colors",
+                        isDrafted ? "bg-primary/10" : ""
+                      )}>
                         {player ? (
                           <>
-                            <div className="text-[8px] font-mono text-primary mb-1 uppercase tracking-tighter font-bold">
+                            <div className={cn(
+                              "text-[8px] font-mono mb-1 uppercase tracking-tighter font-bold",
+                              isDrafted ? "text-primary" : "text-primary"
+                            )}>
+                              {isDrafted && <span className="mr-1">✓</span>}
                               RD {player.round} - {player.pickOverall}
                             </div>
-                            <span className="text-[11px] font-semibold text-[#c9d1d9] truncate w-full">{player.name}</span>
+                            <span className={cn(
+                              "text-[11px] font-semibold truncate w-full",
+                              isDrafted ? "text-white" : "text-[#c9d1d9]"
+                            )}>{player.name}</span>
                             <div className="flex items-center space-x-1 mt-0.5">
                               <span className="text-[9px] font-bold text-[#484f58] uppercase">{player.team}</span>
                               <span className="text-[9px] text-[#8b949e] font-mono">{player.ppg}</span>
