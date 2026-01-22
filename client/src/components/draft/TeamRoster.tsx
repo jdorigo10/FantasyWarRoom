@@ -114,9 +114,15 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
         // Only suggest this position if it's full AND we haven't suggested it on the bench yet
         if (benchSuggestedPositions.has(pos as any)) return false;
 
-        const slotsForPos = starterSlots.filter(s => s.pos.includes(pos) || (s.slot === "FLEX" && ["RB", "WR", "TE"].includes(pos)));
-        const draftedForPos = rosterPlayers.filter(p => p.position === pos);
-        return draftedForPos.length >= slotsForPos.length;
+        const canFitInStarters = filledRoster.some(s => s.slot !== "BENCH" && !s.player && (s.pos.includes(pos) || (s.slot === "FLEX" && ["RB", "WR", "TE"].includes(pos))));
+        
+        if (!canFitInStarters) {
+          const startersOfPos = filledRoster.filter(s => s.slot !== "BENCH" && s.player?.position === pos).length;
+          const totalOfPos = rosterPlayers.filter(p => p.position === pos).length;
+          // Suggest 1 backup if they have filled their starter requirement but haven't drafted a bench player for this pos yet
+          return (totalOfPos - startersOfPos) === 0;
+        }
+        return false;
       });
 
       if (fullPositions.length > 0) {
@@ -198,12 +204,13 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                       </div>
                     ) : slot.placeholder ? (
                       <div className="truncate opacity-50">
-                        <div className="text-[12px] font-bold text-primary/80 truncate leading-snug flex items-center gap-2">
+                        <div className="text-[13px] font-bold text-primary/80 truncate leading-snug flex items-center gap-2">
                           <TrendingUp className="h-3 w-3" />
                           {slot.placeholder.name}
                         </div>
-                        <div className="text-[10px] text-primary/60 uppercase font-mono mt-0.5 truncate">
-                          {slot.placeholder.position} • {slot.placeholder.team}
+                        <div className="text-[10px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
+                          <span className="font-bold">{slot.placeholder.position} • {slot.placeholder.team}</span>
+                          <span className="opacity-80">BYE {slot.placeholder.byeWeek}</span>
                         </div>
                       </div>
                     ) : (

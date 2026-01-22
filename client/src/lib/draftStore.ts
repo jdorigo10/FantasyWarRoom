@@ -87,12 +87,14 @@ export const useDraftStore = create<DraftState>((set, get) => ({
         TE: myPlayers.filter(p => p.position === "TE").length,
         DST: myPlayers.filter(p => p.position === "DST").length,
         K: myPlayers.filter(p => p.position === "K").length,
+        FLEX: 0
       };
 
-      const limits: Record<string, number> = { QB: 4, RB: 8, WR: 8, TE: 3, DST: 3, K: 3 };
+      const limits: Record<string, number> = { QB: 4, RB: 8, WR: 8, TE: 3, DST: 3, K: 3, FLEX: 99 };
       
-      if (counts[player.position] >= limits[player.position]) {
-        alert(`Position Limit Reached: You cannot draft more than ${limits[player.position]} ${player.position}s.`);
+      const posKey = player.position as string;
+      if (counts[posKey] >= limits[posKey]) {
+        alert(`Position Limit Reached: You cannot draft more than ${limits[posKey]} ${posKey}s.`);
         return state;
       }
     }
