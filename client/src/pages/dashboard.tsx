@@ -287,7 +287,6 @@ export default function Dashboard() {
               settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
               <div className="flex items-center justify-between mb-6">
                 <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Teams & Draft Order</label>
-                <span className="text-[10px] font-mono text-[#8b949e]">{settings.teamCount} Teams Registered</span>
               </div>
               <div className="flex-1 overflow-y-auto pr-2 scrollbar-hide">
                 <div className="grid grid-cols-2 gap-3">
