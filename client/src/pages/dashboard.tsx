@@ -80,13 +80,13 @@ export default function Dashboard() {
           settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
           <div className="flex flex-col items-center text-center space-y-8">
             <div className="h-16 w-16 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-              <ShieldAlert className="h-8 w-8 text-primary" />
+              <ShieldAlert className="h-8 w-8 text-primary" fill="currentColor" />
             </div>
             
             <div className="space-y-2">
               <h1 className={cn("text-2xl font-display font-bold tracking-tight uppercase italic transition-colors duration-500",
-                settings.theme === 'dark' ? "text-white" : "text-gray-900")}>WarRoom Data Sync</h1>
-              <p className="text-[#8b949e] text-[10px] uppercase tracking-[0.3em] font-mono">ESPN Global Feed / NFL Analytics</p>
+                settings.theme === 'dark' ? "text-white" : "text-gray-900")}>FANTASY WARROOM</h1>
+              <p className="text-[#8b949e] text-[10px] uppercase tracking-[0.3em] font-mono">Draft Analysis Tool</p>
             </div>
 
             <div className="w-full space-y-6">

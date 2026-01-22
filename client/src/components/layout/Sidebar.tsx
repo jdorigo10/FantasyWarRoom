@@ -19,12 +19,13 @@ export function Sidebar() {
       settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
       <div className="p-8 flex items-center space-x-3">
         <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-          <ShieldAlert className="h-6 w-6 text-primary" />
+          <ShieldAlert className="h-6 w-6 text-primary" fill="currentColor" />
         </div>
         <div>
           <h1 className={cn("text-lg font-display font-bold leading-none tracking-tighter italic transition-colors",
-            settings.theme === 'dark' ? "text-white" : "text-gray-900")}>WARROOM</h1>
-          <p className="text-[10px] text-[#8b949e] font-mono tracking-widest mt-1">v2.0 PRO</p>
+            settings.theme === 'dark' ? "text-white" : "text-gray-900")}>
+            FANTASY<br />WARROOM
+          </h1>
         </div>
       </div>
 
@@ -58,7 +59,7 @@ export function Sidebar() {
         <div className={cn("rounded-xl p-4 border transition-colors duration-500",
           settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-mono text-[#8b949e] uppercase">ESPN Sync Status</span>
+            <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-widest">v2.0</span>
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
           </div>
           <p className={cn("text-[11px] font-mono transition-colors",
