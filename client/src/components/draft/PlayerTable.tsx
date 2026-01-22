@@ -325,17 +325,17 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     </TooltipProvider>
                   </div>
                 ) : (
-                  <div className="col-span-2 flex justify-center items-center px-2">
+                  <div className="col-span-2 flex justify-end items-center pr-2">
                     {!isPicked ? (
                       <Button 
                         size="sm" 
-                        className="h-7 w-full max-w-[80px] bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)] mx-auto"
+                        className="h-7 w-full max-w-[80px] bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
                         onClick={() => makePick(player.id)}
                       >
                         Draft
                       </Button>
                     ) : (
-                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center justify-center gap-1.5 w-full">
+                      <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center justify-end gap-1.5 w-full">
                         <div className="h-1 w-1 rounded-full bg-[#484f58]" />
                         Taken
                       </div>
