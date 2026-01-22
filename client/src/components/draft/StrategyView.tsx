@@ -18,36 +18,67 @@ export function StrategyView() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const scenarios = useMemo(() => {
-    const strategies = [
-      { name: "RB Heavy", priority: ["RB", "RB", "RB", "WR", "WR", "WR", "TE", "QB"] },
-      { name: "Zero RB", priority: ["WR", "WR", "WR", "WR", "TE", "QB", "RB", "RB"] },
-      { name: "Balanced", priority: ["RB", "WR", "RB", "WR", "QB", "TE", "RB", "WR"] },
-      { name: "Early QB", priority: ["QB", "RB", "WR", "RB", "WR", "TE", "RB", "WR"] },
-      { name: "Hero RB", priority: ["RB", "WR", "WR", "WR", "WR", "WR", "TE", "QB"] },
-    ];
+    // Generate all permutations
+    const rounds = [1, 2, 3, 4, 5, 6, 7, 8];
+    const generatedStrategies: any[] = [];
+    
+    // Helper to get combinations of k items from array
+    const getCombinations = (arr: number[], k: number): number[][] => {
+        if (k === 0) return [[]];
+        if (arr.length === 0) return [];
+        const [first, ...rest] = arr;
+        const withFirst = getCombinations(rest, k - 1).map(c => [first, ...c]);
+        const withoutFirst = getCombinations(rest, k);
+        return [...withFirst, ...withoutFirst];
+    };
 
-    return strategies.map(strat => {
+    // 1. Pick 3 rounds for RBs
+    const rbCombs = getCombinations(rounds, 3);
+    
+    for (const rbs of rbCombs) {
+        const remainingAfterRb = rounds.filter(r => !rbs.includes(r));
+        // 2. Pick 3 rounds for WRs
+        const wrCombs = getCombinations(remainingAfterRb, 3);
+        
+        for (const wrs of wrCombs) {
+            const remainingFinal = remainingAfterRb.filter(r => !wrs.includes(r));
+            // remainingFinal has 2 items for QB and TE
+            
+            // Permutation 1: QB = remainingFinal[0], TE = remainingFinal[1]
+            const p1 = { RB: rbs, WR: wrs, QB: remainingFinal[0], TE: remainingFinal[1] };
+            // Permutation 2: QB = remainingFinal[1], TE = remainingFinal[0]
+            const p2 = { RB: rbs, WR: wrs, QB: remainingFinal[1], TE: remainingFinal[0] };
+            
+            [p1, p2].forEach(p => {
+                // Constraints: QB >= 2, TE >= 2
+                if (p.QB < 2 || p.TE < 2) return;
+                
+                const draftOrder: Record<number, string> = {};
+                p.RB.forEach(r => draftOrder[r] = "RB");
+                p.WR.forEach(r => draftOrder[r] = "WR");
+                draftOrder[p.QB] = "QB";
+                draftOrder[p.TE] = "TE";
+                
+                // Fixed rounds
+                draftOrder[12] = "DST";
+                draftOrder[14] = "K";
+                
+                generatedStrategies.push({ draftOrder });
+            });
+        }
+    }
+
+    // Simulate all scenarios
+    const results = generatedStrategies.map((strat, idx) => {
       const scenarioPlayers: Record<string, any> = {};
       const draftedIds = new Set<string>();
-      
-      const draftOrder: Record<number, string> = {};
-      draftOrder[12] = "DST";
-      draftOrder[14] = "K";
-      
-      let priorityIdx = 0;
-      for (let rd = 1; rd <= 14; rd++) {
-        if (draftOrder[rd]) continue;
-        if (priorityIdx < strat.priority.length) {
-          draftOrder[rd] = strat.priority[priorityIdx++];
-        } else {
-          // Fill remaining slots with best available value (simplified)
-          draftOrder[rd] = "WR"; 
-        }
-      }
+      const draftOrder = strat.draftOrder;
 
       // Simulation
       for (let round = 1; round <= 14; round++) {
         const pos = draftOrder[round];
+        if (!pos) continue; // Skip rounds 9, 10, 11, 13
+
         const userPickOverall = (round - 1) * settings.teamCount + settings.position;
 
         const bestAvailable = players
@@ -82,8 +113,6 @@ export function StrategyView() {
       }
 
       // Determine FLEX and BENCH
-      // Required: RB1, RB2, WR1, WR2
-      // Candidates for FLEX: RB3 or WR3
       const rb3 = scenarioPlayers["RB3"];
       const wr3 = scenarioPlayers["WR3"];
       
@@ -103,7 +132,7 @@ export function StrategyView() {
         scenarioPlayers["BENCH"] = scenarioPlayers["RB3"] || scenarioPlayers["WR4"] || null;
       }
 
-      // Ensure all positions have a player (even if mock)
+      // Ensure all positions have a player
       const starterKeys = ["QB1", "RB1", "RB2", "WR1", "WR2", "TE1", "FLEX", "DST1", "K1"];
       starterKeys.forEach(k => {
         if (!scenarioPlayers[k]) {
@@ -118,18 +147,19 @@ export function StrategyView() {
       }
 
       // Calculate Total PPG for starters
-      const starters = ["QB1", "RB1", "RB2", "WR1", "WR2", "TE1", "FLEX", "DST1", "K1"];
       let total = 0;
-      starters.forEach(k => {
+      starterKeys.forEach(k => {
         if (scenarioPlayers[k]) total += scenarioPlayers[k].ppg;
       });
 
       return {
-        name: strat.name,
+        name: `Scenario ${idx + 1}`,
         players: scenarioPlayers,
         totalPPG: parseFloat(total.toFixed(1))
       };
-    }).sort((a, b) => sortDir === 'desc' ? b.totalPPG - a.totalPPG : a.totalPPG - b.totalPPG);
+    });
+
+    return results.sort((a, b) => sortDir === 'desc' ? b.totalPPG - a.totalPPG : a.totalPPG - b.totalPPG).slice(0, 100);
   }, [players, settings, sortDir]);
 
   const columns = [
@@ -153,7 +183,7 @@ export function StrategyView() {
         </h2>
         <div className="flex items-center space-x-2 text-[10px] text-[#8b949e] font-mono uppercase tracking-widest">
           <Info className="h-3 w-3 text-primary" />
-          <span>Projected best picks per round</span>
+          <span>Top 100 Projected Scenarios (Sorted by Total PPG)</span>
         </div>
       </div>
 
