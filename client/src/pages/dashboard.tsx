@@ -196,20 +196,20 @@ export default function Dashboard() {
 
     if (location === "/settings") {
       return (
-        <div className="p-10 max-w-5xl mx-auto space-y-8 h-full">
-          <h1 className={cn("text-2xl font-display font-bold uppercase tracking-tight italic transition-colors duration-500",
+        <div className="p-10 max-w-6xl mx-auto space-y-10 h-full">
+          <h1 className={cn("text-3xl font-display font-bold uppercase tracking-tight italic transition-colors duration-500",
             settings.theme === 'dark' ? "text-white" : "text-gray-900")}>APP SETTINGS</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[calc(100%-4rem)]">
-            <div className="space-y-6">
-              <Card className={cn("p-6 space-y-4 transition-colors duration-500",
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-[calc(100%-5rem)]">
+            <div className="space-y-8">
+              <Card className={cn("p-8 space-y-6 transition-colors duration-500",
                 settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-[#8b949e] uppercase tracking-widest">Data Source</label>
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-[#8b949e] uppercase font-mono">Draft Year</label>
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Data Source</label>
+                  <div className="space-y-2">
+                    <label className="text-[11px] text-[#8b949e] uppercase font-mono">Draft Year</label>
                     <select 
-                      className={cn("w-full rounded p-2 text-xs transition-colors",
+                      className={cn("w-full rounded-lg p-3 text-sm transition-colors",
                         settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
                       value={settings.draftYear}
                       onChange={(e) => handleYearChange(e.target.value)}
@@ -223,21 +223,21 @@ export default function Dashboard() {
                 </div>
               </Card>
 
-              <Card className={cn("p-6 space-y-6 transition-colors duration-500",
+              <Card className={cn("p-8 space-y-8 transition-colors duration-500",
                 settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-                <div className="space-y-4">
-                  <label className="text-[10px] font-bold text-[#8b949e] uppercase tracking-widest">Theme & Appearance</label>
-                  <div className="flex space-x-3">
+                <div className="space-y-5">
+                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Theme & Appearance</label>
+                  <div className="flex space-x-4">
                     <Button 
                       variant={settings.theme === 'dark' ? 'default' : 'outline'}
-                      className={cn("flex-1 h-8 text-[10px] transition-all", settings.theme === 'dark' ? "bg-primary text-white" : "bg-gray-100 text-gray-900")}
+                      className={cn("flex-1 h-12 text-xs transition-all", settings.theme === 'dark' ? "bg-primary text-white" : "bg-gray-100 text-gray-900")}
                       onClick={() => updateSettings({ theme: 'dark' })}
                     >
                       Dark Mode
                     </Button>
                     <Button 
                       variant={settings.theme === 'light' ? 'default' : 'outline'}
-                      className={cn("flex-1 h-8 text-[10px] transition-all", settings.theme === 'light' ? "bg-primary text-white border-primary" : "bg-white text-gray-900")}
+                      className={cn("flex-1 h-12 text-xs transition-all", settings.theme === 'light' ? "bg-primary text-white border-primary" : "bg-white text-gray-900")}
                       onClick={() => updateSettings({ theme: 'light' })}
                     >
                       Light Mode
@@ -245,9 +245,9 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <label className="text-[10px] font-bold text-[#8b949e] uppercase tracking-widest">Accent Color</label>
-                  <div className="grid grid-cols-6 gap-2">
+                <div className="space-y-5">
+                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Accent Color</label>
+                  <div className="grid grid-cols-6 gap-3">
                     {[
                       { name: "Green", color: "#2ea043" },
                       { name: "Red", color: "#f85149" },
@@ -258,12 +258,12 @@ export default function Dashboard() {
                     ].map(item => (
                       <div 
                         key={item.name} 
-                        className={cn("flex flex-col items-center p-1 rounded-lg border-2 transition-all cursor-pointer group",
+                        className={cn("flex flex-col items-center p-2 rounded-xl border-2 transition-all cursor-pointer group",
                           settings.accentColor === item.color ? "border-primary bg-primary/5" : "border-transparent hover:bg-black/5")}
                         onClick={() => updateSettings({ accentColor: item.color })}
                       >
                         <div 
-                          className="h-5 w-5 rounded-full shadow-sm group-hover:scale-110 transition-transform" 
+                          className="h-7 w-7 rounded-full shadow-md group-hover:scale-110 transition-transform" 
                           style={{ backgroundColor: item.color }} 
                         />
                       </div>
@@ -273,16 +273,16 @@ export default function Dashboard() {
               </Card>
             </div>
 
-            <div className="space-y-6 flex flex-col min-h-0">
-              <Card className={cn("p-6 space-y-4 transition-colors duration-500 flex-shrink-0",
+            <div className="space-y-8 flex flex-col min-h-0">
+              <Card className={cn("p-8 space-y-6 transition-colors duration-500 flex-shrink-0",
                 settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-[#8b949e] uppercase tracking-widest">League Configuration</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-[#8b949e] uppercase font-mono">Team Count</label>
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">League Configuration</label>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-[#8b949e] uppercase font-mono">Team Count</label>
                       <select 
-                        className={cn("w-full rounded p-1.5 text-xs transition-colors",
+                        className={cn("w-full rounded-lg p-2.5 text-sm transition-colors",
                           settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
                         value={settings.teamCount}
                         onChange={(e) => handleTeamCountChange(parseInt(e.target.value))}
@@ -291,10 +291,10 @@ export default function Dashboard() {
                       </select>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-[#8b949e] uppercase font-mono">Scoring</label>
+                    <div className="space-y-2">
+                      <label className="text-[11px] text-[#8b949e] uppercase font-mono">Scoring</label>
                       <select 
-                        className={cn("w-full rounded p-1.5 text-xs transition-colors",
+                        className={cn("w-full rounded-lg p-2.5 text-sm transition-colors",
                           settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
                         value={settings.scoring}
                         onChange={(e) => handleScoringChange(e.target.value as any)}
@@ -306,29 +306,29 @@ export default function Dashboard() {
                 </div>
               </Card>
 
-              <Card className={cn("p-6 flex flex-col transition-colors duration-500 h-fit",
+              <Card className={cn("p-8 flex flex-col transition-colors duration-500 h-fit",
                 settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-                <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                  <label className="text-[10px] font-bold text-[#8b949e] uppercase tracking-widest">Teams & Order</label>
+                <div className="flex items-center justify-between mb-6 flex-shrink-0">
+                  <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Teams & Order</label>
                 </div>
                 <div className="pr-2 scrollbar-hide">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     {settings.teams.map((team, idx) => (
-                      <div key={team.id} className={cn("flex items-center space-x-2 p-1.5 rounded-lg border transition-all",
+                      <div key={team.id} className={cn("flex items-center space-x-3 p-2.5 rounded-xl border transition-all",
                         settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
-                        <div className="flex-shrink-0 w-4 h-4 rounded bg-primary/20 flex items-center justify-center text-[8px] font-bold text-primary font-mono">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary font-mono">
                           {idx + 1}
                         </div>
                         <Input 
                           value={team.name}
                           onChange={(e) => updateTeamName(team.id, e.target.value)}
-                          className={cn("h-5 bg-transparent border-none text-[9px] focus-visible:ring-0 px-0 truncate flex-1",
+                          className={cn("h-8 bg-transparent border-none text-[11px] focus-visible:ring-0 px-0 truncate flex-1",
                             settings.theme === 'dark' ? "text-white" : "text-gray-900")}
                         />
                         <Checkbox 
                           checked={team.isUser} 
                           onCheckedChange={() => toggleUserTeam(team.id)}
-                          className="border-primary data-[state=checked]:bg-primary h-3 w-3"
+                          className="border-primary data-[state=checked]:bg-primary h-4 w-4"
                         />
                       </div>
                     ))}
