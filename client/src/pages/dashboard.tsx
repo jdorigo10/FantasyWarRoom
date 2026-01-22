@@ -116,7 +116,7 @@ export default function Dashboard() {
         name: `Team ${i + 1}`,
         isUser: i === 0
       }));
-      updateSettings({ teamCount: count, teams: newTeams, viewedTeamId: "team-1" });
+      updateSettings({ teamCount: count, teams: newTeams, viewedTeamId: "team-1", position: 1 });
       resetDraft();
     }
   };
@@ -146,7 +146,8 @@ export default function Dashboard() {
       ...t,
       isUser: t.id === id
     }));
-    updateSettings({ teams: updatedTeams });
+    const newPosition = updatedTeams.findIndex(t => t.id === id) + 1;
+    updateSettings({ teams: updatedTeams, position: newPosition });
   };
 
   const renderContent = () => {
