@@ -1,5 +1,6 @@
 import React from "react";
 import { useDraftStore } from "@/lib/draftStore";
+import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, TrendingUp } from "lucide-react";
