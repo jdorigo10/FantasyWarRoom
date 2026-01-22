@@ -80,7 +80,7 @@ export const useDraftStore = create<DraftState>((set, get) => ({
         .map(p => state.players.find(pl => pl.id === p.playerId))
         .filter(Boolean) as Player[];
       
-      const counts = {
+      const counts: Record<string, number> = {
         QB: myPlayers.filter(p => p.position === "QB").length,
         RB: myPlayers.filter(p => p.position === "RB").length,
         WR: myPlayers.filter(p => p.position === "WR").length,
@@ -89,10 +89,10 @@ export const useDraftStore = create<DraftState>((set, get) => ({
         K: myPlayers.filter(p => p.position === "K").length,
       };
 
-      const limits = { QB: 4, RB: 8, WR: 8, TE: 3, DST: 3, K: 3 };
+      const limits: Record<string, number> = { QB: 4, RB: 8, WR: 8, TE: 3, DST: 3, K: 3 };
       
-      if (counts[player.position as keyof typeof counts] >= limits[player.position as keyof typeof limits]) {
-        alert(`Position Limit Reached: You cannot draft more than ${limits[player.position as keyof typeof limits]} ${player.position}s.`);
+      if (counts[player.position] >= limits[player.position]) {
+        alert(`Position Limit Reached: You cannot draft more than ${limits[player.position]} ${player.position}s.`);
         return state;
       }
     }

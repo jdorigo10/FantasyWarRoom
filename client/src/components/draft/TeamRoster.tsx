@@ -104,15 +104,16 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
   });
 
   // Re-evaluate bench placeholders
+  const benchSuggestedPositions = new Set<Position>();
+
   filledRoster.forEach((slot) => {
     if (slot.slot === "BENCH" && !slot.player) {
-      // Find positions where the user has already filled ALL starting roles
-      // For each position, if count of drafted players >= count of starting slots, 
-      // then this position can have placeholders on the bench
       const starterSlots = rosterSlots.filter(s => s.slot !== "BENCH");
       
-      // Determine positions that are "Full" in starters
       const fullPositions = (["QB", "RB", "WR", "TE", "DST", "K"] as const).filter(pos => {
+        // Only suggest this position if it's full AND we haven't suggested it on the bench yet
+        if (benchSuggestedPositions.has(pos as any)) return false;
+
         const slotsForPos = starterSlots.filter(s => s.pos.includes(pos) || (s.slot === "FLEX" && ["RB", "WR", "TE"].includes(pos)));
         const draftedForPos = rosterPlayers.filter(p => p.position === pos);
         return draftedForPos.length >= slotsForPos.length;
@@ -127,6 +128,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
         if (bestForBench) {
           slot.placeholder = bestForBench;
           assignedPlaceholderIds.add(bestForBench.id);
+          benchSuggestedPositions.add(bestForBench.position);
         }
       }
     }

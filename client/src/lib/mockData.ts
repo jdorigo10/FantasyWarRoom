@@ -87,30 +87,41 @@ const MOCK_NAMES: Record<string, string[]> = {
 function generatePlayers(): Player[] {
   const players: Player[] = [];
   let idCounter = 1;
-  let rankCounter = 1;
 
-  Object.entries(MOCK_NAMES).forEach(([pos, names]) => {
-    names.forEach((name) => {
-      players.push({
-        id: `p-${idCounter++}`,
-        rank: rankCounter++,
-        name,
-        position: pos as Position,
-        team: TEAMS[Math.floor(Math.random() * TEAMS.length)],
-        byeWeek: Math.floor(Math.random() * 10) + 5,
-        ppg: Number((Math.random() * 10 + 15).toFixed(1)),
-        adp: Number((rankCounter + Math.random() * 5).toFixed(1)),
-        risk: Math.random() > 0.8 ? "High" : "Low",
-        injuryHistory: Math.random() > 0.7 ? "Significant" : "Clear",
-        offensiveRank: Math.floor(Math.random() * 32) + 1,
-        defensiveRank: Math.floor(Math.random() * 32) + 1,
-        sos: Math.floor(Math.random() * 32) + 1,
-        notes: "ESPN projected top tier."
-      });
+  const allNames = Object.entries(MOCK_NAMES).flatMap(([pos, names]) => 
+    names.map(name => ({ name, position: pos as Position }))
+  );
+
+  // Sort by a deterministic but varied score to create realistic rankings
+  // Higher PPG and lower ADP should generally be at the top
+  const sortedNames = allNames.sort(() => Math.random() - 0.5);
+
+  sortedNames.forEach((item, index) => {
+    const rank = index + 1;
+    // Higher rank = lower PPG and higher ADP
+    const basePpg = 25 - (rank * 0.1);
+    const ppg = Number((basePpg + Math.random() * 2).toFixed(1));
+    const adp = Number((rank + Math.random() * 3).toFixed(1));
+
+    players.push({
+      id: `p-${idCounter++}`,
+      rank,
+      name: item.name,
+      position: item.position,
+      team: TEAMS[Math.floor(Math.random() * TEAMS.length)],
+      byeWeek: Math.floor(Math.random() * 10) + 5,
+      ppg,
+      adp,
+      risk: Math.random() > 0.8 ? "High" : "Low",
+      injuryHistory: Math.random() > 0.7 ? "Significant" : "Clear",
+      offensiveRank: Math.floor(Math.random() * 32) + 1,
+      defensiveRank: Math.floor(Math.random() * 32) + 1,
+      sos: Math.floor(Math.random() * 32) + 1,
+      notes: "ESPN projected top tier."
     });
   });
 
-  return players.sort((a, b) => a.rank - b.rank);
+  return players;
 }
 
 export const MOCK_PLAYERS = generatePlayers();
