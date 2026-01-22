@@ -236,15 +236,15 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
         <div className="grid grid-cols-12 gap-0 px-2 py-2 bg-[#161b22] text-[11px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d]">
           <div className="col-span-1 text-center pr-0.5">RK</div>
           <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>PLAYER</div>
-          <div className="col-span-1 text-center">ADP</div>
-          {showExtendedStats && <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>DRAFT</span><span>VAL</span></div>}
-          <div className="col-span-1 text-center">PPG</div>
+          <div className={cn("text-center", showExtendedStats ? "col-span-1 ml-2.5" : "col-span-1")}>ADP</div>
+          {showExtendedStats && <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-2.5"><span>DRAFT</span><span>VAL</span></div>}
+          <div className={cn("text-center", showExtendedStats ? "col-span-1 -ml-5" : "col-span-1")}>PPG</div>
           {showExtendedStats && (
             <>
-              <div className="col-span-1 text-center">SOS</div>
-              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>OFF</span><span>RK</span></div>
-              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px]"><span>DEF</span><span>RK</span></div>
-              <div className="col-span-2 text-center">TAGS</div>
+              <div className="col-span-1 text-center ml-4">SOS</div>
+              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-4"><span>OFF</span><span>RK</span></div>
+              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[7px] -ml-4"><span>DEF</span><span>RK</span></div>
+              <div className="col-span-2 text-center ml-4">TAGS</div>
             </>
           )}
           {!showExtendedStats && (
@@ -285,30 +285,30 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                      <span className="text-[#6e7681] uppercase">Bye {player.byeWeek}</span>
                   </div>
                 </div>
-                <div className="col-span-1 text-center font-mono text-[#8b949e] text-[11px]">
+                <div className={cn("col-span-1 text-center font-mono text-[#8b949e] text-[11px]", showExtendedStats && "ml-2.5")}>
                   {player.adp}
                   <div className="text-[8px] text-primary opacity-60">
                     (RD{Math.ceil(player.adp / settings.teamCount)})
                   </div>
                 </div>
                 {showExtendedStats && (
-                  <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getValueColor(getDraftValue(player)))}>
+                  <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-2.5", getValueColor(getDraftValue(player)))}>
                     {getDraftValue(player) > 0 ? `+${getDraftValue(player)}` : getDraftValue(player)}
                   </div>
                 )}
-                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", getPPGColor(player.ppg, player.position))}>
+                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", showExtendedStats ? "-ml-5" : "", getPPGColor(player.ppg, player.position))}>
                   {player.ppg}
                 </div>
                 
                 {showExtendedStats && (
                   <>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.sos, false))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] ml-4", getRankColor(player.sos, false))}>
                       {player.sos}
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.offensiveRank, true))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-4", getRankColor(player.offensiveRank, true))}>
                       {player.offensiveRank}
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.defensiveRank, true))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-4", getRankColor(player.defensiveRank, true))}>
                       {player.defensiveRank}
                     </div>
                   </>
