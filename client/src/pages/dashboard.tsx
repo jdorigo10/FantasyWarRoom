@@ -312,23 +312,23 @@ export default function Dashboard() {
                   <label className="text-[10px] font-bold text-[#8b949e] uppercase tracking-widest">Teams & Order</label>
                 </div>
                 <div className="flex-1 overflow-y-auto pr-2 scrollbar-hide">
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {settings.teams.map((team, idx) => (
-                      <div key={team.id} className={cn("flex items-center space-x-2 p-2 rounded-lg border transition-all",
+                      <div key={team.id} className={cn("flex items-center space-x-2 p-1.5 rounded-lg border transition-all",
                         settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
-                        <div className="flex-shrink-0 w-5 h-5 rounded bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary font-mono">
+                        <div className="flex-shrink-0 w-4 h-4 rounded bg-primary/20 flex items-center justify-center text-[8px] font-bold text-primary font-mono">
                           {idx + 1}
                         </div>
                         <Input 
                           value={team.name}
                           onChange={(e) => updateTeamName(team.id, e.target.value)}
-                          className={cn("h-6 bg-transparent border-none text-[10px] focus-visible:ring-0 px-0 truncate flex-1",
+                          className={cn("h-5 bg-transparent border-none text-[9px] focus-visible:ring-0 px-0 truncate flex-1",
                             settings.theme === 'dark' ? "text-white" : "text-gray-900")}
                         />
                         <Checkbox 
                           checked={team.isUser} 
                           onCheckedChange={() => toggleUserTeam(team.id)}
-                          className="border-primary data-[state=checked]:bg-primary h-3.5 w-3.5"
+                          className="border-primary data-[state=checked]:bg-primary h-3 w-3"
                         />
                       </div>
                     ))}
