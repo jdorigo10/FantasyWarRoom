@@ -19,26 +19,40 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const currentFilters = showExtendedStats ? rankingsFilters : filters;
   const currentUpdateFilters = showExtendedStats ? updateRankingsFilters : updateFilters;
 
+  // Calculate position-specific max PPG for relative scaling
+  const posMaxPPG = React.useMemo(() => {
+    const map: Record<string, number> = {};
+    players.forEach(p => {
+      if (!map[p.position] || p.ppg > map[p.position]) {
+        map[p.position] = p.ppg;
+      }
+    });
+    return map;
+  }, [players]);
+
   const getRankColor = (rank: number, invert = false) => {
-    // 1-32 range
-    const val = invert ? rank : 33 - rank;
-    if (val > 24) return "text-[#2ea043]"; // Greenish
-    if (val > 16) return "text-[#d29922]"; // Yellowish
-    if (val > 8) return "text-[#f0883e]"; // Orangish
-    return "text-[#f85149]"; // Redish
+    // 1-32 range relative scale
+    // If invert is true: 1 is best (green), 32 is worst (red)
+    // If invert is false (SOS): 1 is best (green), 32 is worst (red) 
+    // Wait, user said SOS: high value is greenish, low is redish? 
+    // "Team stength of schedule (1-32, color scale where high value is greenish, low is redish)"
+    // "Team projected offensive ranking (1-32, color scale where low value is greenish, high is redish)"
+    
+    const value = invert ? 33 - rank : rank;
+    if (value >= 25) return "text-[#2ea043]"; // Best
+    if (value >= 17) return "text-[#d29922]"; // Good
+    if (value >= 9) return "text-[#f0883e]";  // Average
+    return "text-[#f85149]"; // Poor
   };
 
   const getPPGColor = (ppg: number, position: string) => {
-    // Basic position-based relative PPG scaling
-    let threshold = 15;
-    if (position === "QB") threshold = 20;
-    if (position === "TE") threshold = 12;
-    if (position === "K" || position === "DST") threshold = 8;
+    const max = posMaxPPG[position] || 20;
+    const ratio = ppg / max;
 
-    if (ppg > threshold + 3) return "text-[#2ea043]"; // Elite for pos
-    if (ppg > threshold) return "text-[#d29922]"; // Good for pos
-    if (ppg > threshold - 3) return "text-[#f0883e]"; // Average
-    return "text-[#f85149]"; // Poor for pos
+    if (ratio > 0.85) return "text-[#2ea043]"; // Top tier for pos
+    if (ratio > 0.7) return "text-[#d29922]";  // Good tier
+    if (ratio > 0.5) return "text-[#f0883e]";  // Average
+    return "text-[#f85149]"; // Below average
   };
 
   const getTagIcons = (player: any) => {
@@ -234,7 +248,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     <div className="col-span-1 flex items-center justify-center">
                       <div className="h-8 w-[1px] bg-[#30363d]/50" />
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.sos))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.sos, false))}>
                       {player.sos}
                     </div>
                     <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getRankColor(player.offensiveRank, true))}>
