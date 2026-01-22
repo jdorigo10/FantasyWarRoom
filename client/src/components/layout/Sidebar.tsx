@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ListOrdered, BrainCircuit, Settings, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, ListOrdered, BrainCircuit, Settings, Footprints } from "lucide-react";
 import { useDraftStore } from "@/lib/draftStore";
 
 export function Sidebar() {
@@ -17,19 +17,22 @@ export function Sidebar() {
   return (
     <div className={cn("w-64 border-r flex flex-col h-full shadow-2xl z-10 transition-colors duration-500",
       settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-      <div className="p-8 flex items-center space-x-3">
-        <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-          <ShieldAlert className="h-6 w-6 text-primary" fill="currentColor" />
+      <div className="p-8 flex flex-col space-y-6">
+        <div className="flex items-center space-x-3">
+          <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
+            <Footprints className="h-6 w-6 text-primary rotate-[135deg]" fill="currentColor" />
+          </div>
+          <div>
+            <h1 className={cn("text-lg font-display font-bold leading-none tracking-tighter italic transition-colors",
+              settings.theme === 'dark' ? "text-white" : "text-gray-900")}>
+              FANTASY<br />WARROOM
+            </h1>
+          </div>
         </div>
-        <div>
-          <h1 className={cn("text-lg font-display font-bold leading-none tracking-tighter italic transition-colors",
-            settings.theme === 'dark' ? "text-white" : "text-gray-900")}>
-            FANTASY<br />WARROOM
-          </h1>
-        </div>
+        <div className={cn("h-px w-full", settings.theme === 'dark' ? "bg-[#30363d]" : "bg-gray-200")} />
       </div>
 
-      <nav className="flex-1 px-4 space-y-2 mt-4">
+      <nav className="flex-1 px-4 space-y-2">
         {navItems.map((item) => {
           const isActive = location === item.href;
           return (
@@ -63,7 +66,7 @@ export function Sidebar() {
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
           </div>
           <p className={cn("text-[11px] font-mono transition-colors",
-            settings.theme === 'dark' ? "text-[#c9d1d9]" : "text-gray-900")}>ENCRYPTED_FEED_LIVE</p>
+            settings.theme === 'dark' ? "text-[#c9d1d9]" : "text-gray-900")}>LOCAL_SYNC_ACTIVE</p>
         </div>
       </div>
     </div>

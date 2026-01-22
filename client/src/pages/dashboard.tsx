@@ -27,13 +27,14 @@ const STEP_ICONS: Record<string, any> = {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Footprints } from "lucide-react";
 
 export default function Dashboard() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [loadingStep, setLoadingStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [location] = useLocation();
-  const { settings, updateSettings } = useDraftStore();
+  const { settings, updateSettings, resetDraft } = useDraftStore();
 
   useEffect(() => {
     // Apply theme and accent color
@@ -80,7 +81,7 @@ export default function Dashboard() {
           settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
           <div className="flex flex-col items-center text-center space-y-8">
             <div className="h-16 w-16 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-              <ShieldAlert className="h-8 w-8 text-primary" fill="currentColor" />
+              <Footprints className="h-8 w-8 text-primary rotate-[135deg]" fill="currentColor" />
             </div>
             
             <div className="space-y-2">
