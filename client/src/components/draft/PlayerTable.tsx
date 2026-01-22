@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Plus, Info, AlertTriangle, Thermometer, UserMinus, Clock, Baby, TrendingUp as TrendingUpIcon, TrendingDown, RefreshCcw, PlusSquare, Bandage, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Heart, Target, Star, Bookmark } from "lucide-react";
+import { Heart, Target, Star, Bookmark, Crosshair } from "lucide-react";
 
 interface PlayerTableProps {
   showExtendedStats?: boolean;
@@ -442,7 +442,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                       <Heart className="h-3 w-3 text-red-500 fill-red-500" />
                     )}
                     {playerTags[player.id]?.includes('target') && (
-                      <Target className="h-3 w-3 text-white" />
+                      <Crosshair className="h-3 w-3 text-white" />
                     )}
                     
                     {/* Tag Management */}
@@ -472,7 +472,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                                )}
                                onClick={() => togglePlayerTag(player.id, 'target')}
                              >
-                               <Target className="h-3 w-3" />
+                               <Crosshair className="h-3 w-3" />
                                Target
                              </button>
                           </div>

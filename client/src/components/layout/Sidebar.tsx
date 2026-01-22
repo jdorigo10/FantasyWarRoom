@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ListOrdered, Target, Settings, Shield, Compass } from "lucide-react";
+import { LayoutDashboard, ListOrdered, Target, Settings, Shield, BookOpen } from "lucide-react";
 import { useDraftStore } from "@/lib/draftStore";
 
 export function Sidebar() {
@@ -10,7 +10,7 @@ export function Sidebar() {
   const navItems = [
     { label: "Draft Tool", icon: LayoutDashboard, href: "/" },
     { label: "Player Rankings", icon: ListOrdered, href: "/rankings" },
-    { label: "Draft Strategy", icon: Compass, href: "/strategy" },
+    { label: "Draft Strategy", icon: BookOpen, href: "/strategy" },
     { label: "Settings", icon: Settings, href: "/settings" }
   ];
 

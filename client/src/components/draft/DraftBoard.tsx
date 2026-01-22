@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Heart, Target } from "lucide-react";
+import { Heart, Crosshair } from "lucide-react";
 
 export function DraftBoard() {
   const { settings, picks, currentPickIndex, players, playerTags } = useDraftStore();
@@ -84,7 +84,7 @@ export function DraftBoard() {
                                   <Heart className="h-2.5 w-2.5 text-red-500 fill-red-500 shrink-0" />
                                )}
                                {playerTags[player.id]?.includes('target') && (
-                                  <Target className="h-2.5 w-2.5 text-white shrink-0" />
+                                  <Crosshair className="h-2.5 w-2.5 text-white shrink-0" />
                                )}
                              </div>
                              <span className="text-[9px] text-primary/80 font-mono ml-1 shrink-0">{pickData.pickedBy}</span>
