@@ -82,7 +82,7 @@ export const INITIAL_SETTINGS: DraftSettings = {
   teamCount: 10,
   position: 1,
   scoring: "PPR",
-  rounds: 15,
+  rounds: 16,
   theme: "dark",
   accentColor: "#2ea043",
   teams: Array.from({ length: 10 }, (_, i) => ({
