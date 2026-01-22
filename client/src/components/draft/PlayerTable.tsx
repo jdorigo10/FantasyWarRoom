@@ -272,6 +272,9 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 </div>
                 <div className="col-span-1 text-center font-mono text-[#8b949e] text-[11px]">
                   {player.adp}
+                  <div className="text-[7px] text-primary opacity-60">
+                    (RD{Math.ceil(player.adp / settings.teamCount)})
+                  </div>
                 </div>
                 {showExtendedStats && (
                   <div className={cn("col-span-1 text-center font-mono font-bold text-[11px]", getValueColor(getDraftValue(player)))}>
