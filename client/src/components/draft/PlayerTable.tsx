@@ -43,49 +43,50 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
-      <div className="absolute -top-12 right-0 flex items-center space-x-2">
-        <Checkbox 
-          id="show-drafted" 
-          checked={showDrafted} 
-          onCheckedChange={(checked) => setShowDrafted(!!checked)}
-          className="border-primary data-[state=checked]:bg-primary h-3.5 w-3.5"
-        />
-        <label htmlFor="show-drafted" className="text-[10px] font-mono text-[#8b949e] uppercase cursor-pointer select-none">Show Drafted</label>
-      </div>
 
       {!showExtendedStats && (
-        <div className="p-3 border-b border-[#30363d] flex items-center gap-3 bg-[#161b22]/50">
-          <div className="relative w-48">
+        <div className="p-3 border-b border-[#30363d] flex items-center gap-4 bg-[#161b22]/50">
+          <div className="relative flex-1 max-w-[280px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#8b949e]" />
             <Input 
               placeholder="Search for Player" 
-              className="h-8 pl-9 bg-[#0d1117] border-[#30363d] text-[11px] focus:ring-primary/20" 
+              className="h-9 pl-9 bg-[#0d1117] border-[#30363d] text-[11px] focus:ring-primary/20" 
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
           </div>
           
           <select 
-            className="h-8 bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded px-2 focus:ring-primary/20 cursor-pointer min-w-[80px]"
+            className="h-9 bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg px-3 focus:ring-primary/20 cursor-pointer min-w-[140px] transition-all hover:bg-[#1c2128]"
             value={teamFilter}
             onChange={(e) => setTeamFilter(e.target.value)}
           >
             {TEAMS_ALL.map(team => <option key={team} value={team}>{team === "All" ? "All Teams" : team}</option>)}
           </select>
 
-          <div className="flex bg-[#0d1117] rounded border border-[#30363d] p-0.5">
+          <div className="flex bg-[#0d1117] rounded-lg border border-[#30363d] p-1">
              {POSITIONS.map(pos => (
                 <button
                   key={pos}
                   onClick={() => setPosFilter(pos)}
                   className={cn(
-                    "px-2.5 py-1 text-[10px] font-bold rounded transition-all",
+                    "px-3 py-1 text-[10px] font-bold rounded-md transition-all",
                     posFilter === pos ? "bg-primary text-black" : "text-[#8b949e] hover:text-white"
                   )}
                 >
                   {pos}
                 </button>
              ))}
+          </div>
+
+          <div className="flex items-center space-x-2 px-2 border-l border-[#30363d] ml-auto">
+            <Checkbox 
+              id="show-drafted" 
+              checked={showDrafted} 
+              onCheckedChange={(checked) => setShowDrafted(!!checked)}
+              className="border-primary data-[state=checked]:bg-primary h-4 w-4"
+            />
+            <label htmlFor="show-drafted" className="text-[10px] font-mono text-[#8b949e] uppercase cursor-pointer select-none whitespace-nowrap">Show Drafted</label>
           </div>
         </div>
       )}
