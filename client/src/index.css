@@ -111,4 +111,17 @@
   label[for] {
     cursor: pointer !important;
   }
+
+  /* Global Button Hover States */
+  button:not([disabled]):hover,
+  [role="button"]:not([disabled]):hover {
+    filter: brightness(1.15) saturate(1.1);
+    transition: all 0.2s ease;
+  }
+  
+  button:not([disabled]):active,
+  [role="button"]:not([disabled]):active {
+    transform: translateY(1px);
+    filter: brightness(0.9);
+  }
 }
