@@ -15,9 +15,23 @@ interface PlayerTableProps {
 
 export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const { players, pickedPlayers, picks, makePick, settings, filters, updateFilters, rankingsFilters, updateRankingsFilters } = useDraftStore();
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'rank', direction: 'asc' });
 
   const currentFilters = showExtendedStats ? rankingsFilters : filters;
   const currentUpdateFilters = showExtendedStats ? updateRankingsFilters : updateFilters;
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key: string) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
 
   // Calculate position-specific max PPG for relative scaling
   const posStats = React.useMemo(() => {
@@ -176,24 +190,77 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const TEAMS_ALL = ["All", "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
   const POSITIONS = ["All", "QB", "RB", "WR", "TE", "FLEX", "DST", "K"];
   
-  const filteredPlayers = players.filter(p => {
-    const isPicked = pickedPlayers.includes(p.id);
-    if (!currentFilters.showDrafted && isPicked) return false;
-
-    const matchesName = p.name.toLowerCase().includes(currentFilters.search.toLowerCase());
-    const matchesTeam = currentFilters.team === "All" || p.team === currentFilters.team;
+  const sortedPlayers = React.useMemo(() => {
+    let sortablePlayers = [...players];
     
-    let matchesPos = true;
-    if (currentFilters.pos !== "All") {
-      if (currentFilters.pos === "FLEX") {
-        matchesPos = ["RB", "WR", "TE"].includes(p.position);
-      } else {
-        matchesPos = p.position === currentFilters.pos;
-      }
+    // Apply sorting first
+    if (sortConfig !== null) {
+      sortablePlayers.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortConfig.key) {
+          case 'rank':
+            aValue = a.rank;
+            bValue = b.rank;
+            break;
+          case 'adp':
+            aValue = a.adp;
+            bValue = b.adp;
+            break;
+          case 'ppg':
+            aValue = a.ppg;
+            bValue = b.ppg;
+            break;
+          case 'sos':
+            aValue = a.sos;
+            bValue = b.sos;
+            break;
+          case 'off':
+            aValue = a.offensiveRank;
+            bValue = b.offensiveRank;
+            break;
+          case 'def':
+            aValue = a.defensiveRank;
+            bValue = b.defensiveRank;
+            break;
+          case 'val':
+            aValue = getDraftValue(a);
+            bValue = getDraftValue(b);
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
     }
 
-    return matchesName && matchesTeam && matchesPos;
-  });
+    return sortablePlayers.filter(p => {
+      const isPicked = pickedPlayers.includes(p.id);
+      if (!currentFilters.showDrafted && isPicked) return false;
+
+      const matchesName = p.name.toLowerCase().includes(currentFilters.search.toLowerCase());
+      const matchesTeam = currentFilters.team === "All" || p.team === currentFilters.team;
+      
+      let matchesPos = true;
+      if (currentFilters.pos !== "All") {
+        if (currentFilters.pos === "FLEX") {
+          matchesPos = ["RB", "WR", "TE"].includes(p.position);
+        } else {
+          matchesPos = p.position === currentFilters.pos;
+        }
+      }
+
+      return matchesName && matchesTeam && matchesPos;
+    });
+  }, [players, pickedPlayers, currentFilters, sortConfig, posStats]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
@@ -248,18 +315,34 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-12 gap-0 px-2 py-2.5 bg-[#161b22] text-[11px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d] min-h-[40px] items-center">
-          <div className="col-span-1 text-center pr-0.5">RK</div>
+        <div className="grid grid-cols-12 gap-0 px-2 py-2.5 bg-[#161b22] text-[11px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d] min-h-[40px] items-center select-none">
+          <div className="col-span-1 text-center pr-0.5 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('rank')}>
+            RK{getSortIcon('rank')}
+          </div>
           <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>PLAYER</div>
-          <div className={cn("text-center", showExtendedStats ? "col-span-1 ml-2.5" : "col-span-1")}>ADP</div>
-          {showExtendedStats && <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-2.5"><span>DRAFT</span><span>VAL</span></div>}
-          <div className={cn("text-center", showExtendedStats ? "col-span-1 -ml-5" : "col-span-1")}>PPG</div>
+          <div className={cn("text-center cursor-pointer hover:text-white transition-colors", showExtendedStats ? "col-span-1 ml-2.5" : "col-span-1")} onClick={() => handleSort('adp')}>
+            ADP{getSortIcon('adp')}
+          </div>
+          {showExtendedStats && (
+            <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-2.5 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('val')}>
+              <span>DRAFT</span><span>VAL{getSortIcon('val')}</span>
+            </div>
+          )}
+          <div className={cn("text-center cursor-pointer hover:text-white transition-colors", showExtendedStats ? "col-span-1 -ml-5" : "col-span-1")} onClick={() => handleSort('ppg')}>
+            PPG{getSortIcon('ppg')}
+          </div>
           {showExtendedStats && (
             <>
-              <div className="col-span-1 text-center ml-4">SOS</div>
-              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4"><span>OFF</span><span>RK</span></div>
-              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4"><span>DEF</span><span>RK</span></div>
-              <div className="col-span-2 text-center ml-4 pr-1">TAGS</div>
+              <div className="col-span-1 text-center ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('sos')}>
+                SOS{getSortIcon('sos')}
+              </div>
+              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('off')}>
+                <span>OFF</span><span>RK{getSortIcon('off')}</span>
+              </div>
+              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('def')}>
+                <span>DEF</span><span>RK{getSortIcon('def')}</span>
+              </div>
+              <div className="col-span-2 text-center ml-4">TAGS</div>
             </>
           )}
           {!showExtendedStats && (
@@ -269,7 +352,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           )}
         </div>
         <ScrollArea className="flex-1">
-          {filteredPlayers.map((player) => {
+          {sortedPlayers.map((player) => {
             const isPicked = pickedPlayers.includes(player.id);
             const pickInfo = picks.find(p => p.playerId === player.id);
             const tags = getTagIcons(player);
@@ -330,7 +413,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 )}
 
                 {showExtendedStats ? (
-                  <div className="col-span-2 flex justify-center items-center px-1 ml-2">
+                  <div className="col-span-2 flex justify-center items-center ml-4">
                     <TooltipProvider>
                       <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>
