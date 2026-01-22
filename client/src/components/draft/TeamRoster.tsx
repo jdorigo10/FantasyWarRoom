@@ -111,7 +111,6 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
       const starterSlots = rosterSlots.filter(s => s.slot !== "BENCH");
       
       const fullPositions = (["QB", "RB", "WR", "TE", "DST", "K"] as const).filter(pos => {
-        // Only suggest this position if it's full AND we haven't suggested it on the bench yet
         if (benchSuggestedPositions.has(pos as any)) return false;
 
         const canFitInStarters = filledRoster.some(s => s.slot !== "BENCH" && !s.player && (s.pos.includes(pos) || (s.slot === "FLEX" && ["RB", "WR", "TE"].includes(pos))));
@@ -119,8 +118,18 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
         if (!canFitInStarters) {
           const startersOfPos = filledRoster.filter(s => s.slot !== "BENCH" && s.player?.position === pos).length;
           const totalOfPos = rosterPlayers.filter(p => p.position === pos).length;
-          // Suggest 1 backup if they have filled their starter requirement but haven't drafted a bench player for this pos yet
-          return (totalOfPos - startersOfPos) === 0;
+          const backupsOfPos = totalOfPos - startersOfPos;
+
+          // Special logic for K: No backups suggested
+          if (pos === "K") return false;
+
+          // Special logic for QB/TE/DST: Suggest exactly 1 backup
+          if (["QB", "TE", "DST"].includes(pos)) {
+            return backupsOfPos === 0;
+          }
+
+          // For RB/WR: Suggest 1 backup once starters/flex are full
+          return backupsOfPos === 0;
         }
         return false;
       });
@@ -181,7 +190,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                   </div>
                 )}
                 <div className={cn(
-                  "flex items-center justify-between p-2.5 rounded border transition-all duration-200 min-h-[50px]",
+                  "flex items-center justify-between p-1.5 px-2.5 rounded border transition-all duration-200 min-h-[42px]",
                   slot.player 
                     ? "bg-[#0d1117] border-[#30363d] hover:border-primary/40 shadow-sm" 
                     : slot.placeholder
