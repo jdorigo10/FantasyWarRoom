@@ -8,7 +8,7 @@ import { Info, ArrowUpDown } from "lucide-react";
 
 interface StrategyScenario {
   name: string;
-  order: string[]; // e.g. ["RB", "RB", "WR", "WR", "QB", "TE", "WR", "DST", "K", "RB"]
+  order: string[]; 
   players: Record<string, any>;
   totalPPG: number;
 }
@@ -19,66 +19,97 @@ export function StrategyView() {
 
   const scenarios = useMemo(() => {
     const strategies = [
-      { name: "RB Heavy", order: ["RB", "RB", "WR", "WR", "TE", "QB", "WR", "RB", "DST", "K"] },
-      { name: "Zero RB", order: ["WR", "WR", "WR", "TE", "QB", "RB", "RB", "RB", "DST", "K"] },
-      { name: "Balanced", order: ["RB", "WR", "RB", "WR", "QB", "TE", "WR", "RB", "DST", "K"] },
-      { name: "Early QB", order: ["QB", "RB", "WR", "RB", "WR", "TE", "WR", "RB", "DST", "K"] },
-      { name: "Hero RB", order: ["RB", "WR", "WR", "WR", "WR", "QB", "TE", "RB", "DST", "K"] },
+      { name: "RB Heavy", priority: ["RB", "RB", "RB", "WR", "WR", "WR", "TE", "QB"] },
+      { name: "Zero RB", priority: ["WR", "WR", "WR", "WR", "TE", "QB", "RB", "RB"] },
+      { name: "Balanced", priority: ["RB", "WR", "RB", "WR", "QB", "TE", "RB", "WR"] },
+      { name: "Early QB", priority: ["QB", "RB", "WR", "RB", "WR", "TE", "RB", "WR"] },
+      { name: "Hero RB", priority: ["RB", "WR", "WR", "WR", "WR", "WR", "TE", "QB"] },
     ];
 
     return strategies.map(strat => {
       const scenarioPlayers: Record<string, any> = {};
       const draftedIds = new Set<string>();
       
-      // Simulation for each round
-      strat.order.forEach((pos, roundIdx) => {
-        const round = roundIdx + 1;
+      const draftOrder: Record<number, string> = {};
+      draftOrder[12] = "DST";
+      draftOrder[14] = "K";
+      
+      let priorityIdx = 0;
+      for (let rd = 1; rd <= 14; rd++) {
+        if (draftOrder[rd]) continue;
+        if (priorityIdx < strat.priority.length) {
+          draftOrder[rd] = strat.priority[priorityIdx++];
+        } else {
+          // Fill remaining slots with best available value (simplified)
+          draftOrder[rd] = "WR"; 
+        }
+      }
+
+      // Simulation
+      for (let round = 1; round <= 14; round++) {
+        const pos = draftOrder[round];
         const userPickOverall = (round - 1) * settings.teamCount + settings.position;
 
         const bestAvailable = players
-          .filter(p => p.position === (pos.startsWith("RB") ? "RB" : pos.startsWith("WR") ? "WR" : pos.startsWith("QB") ? "QB" : pos.startsWith("TE") ? "TE" : pos.startsWith("DST") ? "DST" : pos.startsWith("K") ? "K" : pos))
+          .filter(p => p.position === pos)
           .filter(p => !draftedIds.has(p.id))
           .filter(p => userPickOverall > (p.adp + (round * 1)))
-          .sort((a, b) => b.ppg - a.ppg)[0] || players.filter(p => !draftedIds.has(p.id))[0];
+          .sort((a, b) => b.ppg - a.ppg)[0] || players.filter(p => p.position === pos && !draftedIds.has(p.id))[0];
 
         if (bestAvailable) {
           draftedIds.add(bestAvailable.id);
+          
           let key = pos;
-          let count = 1;
-          while (scenarioPlayers[`${key}${count > 1 ? count : ""}`]) {
-            count++;
+          if (pos === "DST") key = "DST1";
+          else if (pos === "K") key = "K1";
+          else if (pos === "QB") key = "QB1";
+          else if (pos === "TE") key = "TE1";
+          else {
+            // RB or WR
+            let count = 1;
+            while (scenarioPlayers[`${pos}${count}`]) {
+              count++;
+            }
+            key = `${pos}${count}`;
           }
-          const finalKey = count > 1 ? `${key}${count}` : `${key}1`;
-          scenarioPlayers[finalKey] = {
+
+          scenarioPlayers[key] = {
             ...bestAvailable,
             round,
             pickOverall: userPickOverall
           };
         }
-      });
+      }
 
-      const starters = ["QB1", "RB1", "RB2", "WR1", "WR2", "TE1", "DST1", "K1"];
+      // Determine FLEX and BENCH
+      // Required: RB1, RB2, WR1, WR2
+      // Candidates for FLEX: RB3 or WR3
+      const rb3 = scenarioPlayers["RB3"];
+      const wr3 = scenarioPlayers["WR3"];
+      
+      if (rb3 && wr3) {
+        if (rb3.ppg >= wr3.ppg) {
+          scenarioPlayers["FLEX"] = rb3;
+          scenarioPlayers["BENCH"] = wr3;
+        } else {
+          scenarioPlayers["FLEX"] = wr3;
+          scenarioPlayers["BENCH"] = rb3;
+        }
+      } else if (rb3) {
+        scenarioPlayers["FLEX"] = rb3;
+        // Find next WR for bench if possible
+        scenarioPlayers["BENCH"] = scenarioPlayers["WR3"] || null;
+      } else if (wr3) {
+        scenarioPlayers["FLEX"] = wr3;
+        scenarioPlayers["BENCH"] = scenarioPlayers["RB3"] || null;
+      }
+
+      // Calculate Total PPG for starters
+      const starters = ["QB1", "RB1", "RB2", "WR1", "WR2", "TE1", "FLEX", "DST1", "K1"];
       let total = 0;
       starters.forEach(k => {
         if (scenarioPlayers[k]) total += scenarioPlayers[k].ppg;
       });
-      
-      const remaining = Object.entries(scenarioPlayers)
-        .filter(([k]) => !starters.includes(k));
-      
-      const flexCandidate = remaining.sort((a, b) => b[1].ppg - a[1].ppg)[0];
-      if (flexCandidate) {
-        scenarioPlayers["FLEX"] = flexCandidate[1];
-        total += flexCandidate[1].ppg;
-      }
-
-      const benchCandidate = Object.entries(scenarioPlayers)
-        .filter(([k]) => !starters.includes(k) && k !== "FLEX")
-        .sort((a, b) => b[1].ppg - a[1].ppg)[0];
-      
-      if (benchCandidate) {
-        scenarioPlayers["BENCH"] = benchCandidate[1];
-      }
 
       return {
         name: strat.name,
@@ -94,8 +125,8 @@ export function StrategyView() {
     { id: "RB2", label: "RB2" },
     { id: "WR1", label: "WR1" },
     { id: "WR2", label: "WR2" },
-    { id: "TE1", label: "TE" },
     { id: "FLEX", label: "FLEX" },
+    { id: "TE1", label: "TE" },
     { id: "DST1", label: "DST" },
     { id: "K1", label: "K" },
     { id: "BENCH", label: "BENCH" },
