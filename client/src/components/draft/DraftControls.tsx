@@ -74,8 +74,8 @@ export function DraftControls() {
                 : "bg-muted/50 border-border/50 opacity-70 grayscale-[0.2]"
           )}>
               <div className="flex items-center justify-between text-[8px] uppercase tracking-wider text-muted-foreground font-bold mb-1">
-                  <span className={cn(details.team.isUser && "text-primary")}>
-                      {details.team.isUser ? "YOU" : `TM ${details.team.id.split('-')[1]}`}
+                  <span className={cn(details.team.isUser && "text-primary", "truncate max-w-[80px]")}>
+                      {details.team.isUser ? "YOU" : details.team.name}
                   </span>
                   <span className="font-mono opacity-50">{details.round}.{details.pick}</span>
               </div>
@@ -99,7 +99,7 @@ export function DraftControls() {
   };
 
   return (
-    <div className="bg-card border-b border-border p-3 flex items-center justify-between gap-4 overflow-hidden h-[80px]">
+    <div className="bg-card border-b border-border p-2 flex items-center justify-between gap-4 overflow-hidden h-[80px]">
       
       {/* Ticker Section */}
       <div className="flex-1 flex items-center justify-center xl:justify-start gap-4 overflow-hidden">
@@ -110,34 +110,34 @@ export function DraftControls() {
          
          {/* Current Pick - Hero */}
          <div className={cn(
-             "flex-shrink-0 flex items-center gap-6 px-6 py-2 rounded-lg border-2 shadow-sm transition-all duration-500 min-w-[300px] justify-center",
+             "flex-shrink-0 flex items-center justify-center px-4 py-1.5 rounded-lg border-2 shadow-sm transition-all duration-500 min-w-[240px]",
              currentPick?.team?.isUser 
                 ? "bg-primary/10 border-primary shadow-[0_0_15px_rgba(46,160,67,0.15)]" 
                 : "bg-card border-border"
          )}>
              <div className="flex flex-col items-center">
-                 <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">
-                    {currentPick?.team?.isUser ? "Your Turn" : "On The Clock"}
+                 {/* Top: Info */}
+                 <div className="text-[10px] font-mono text-muted-foreground font-bold bg-muted/50 px-2 py-0.5 rounded mb-0.5 border border-white/5">
+                    RD {currentPick?.round} • PICK {currentPick?.pick} <span className="opacity-30 mx-1">|</span> #{currentPick?.overall}
                  </div>
+
+                 {/* Middle: Name */}
                  <div className={cn(
-                     "text-xl font-display font-bold whitespace-nowrap",
+                     "text-xl font-display font-bold whitespace-nowrap mb-0.5",
                      currentPick?.team?.isUser ? "text-primary animate-pulse" : "text-foreground"
                  )}>
                     {currentPick?.team?.name}
                  </div>
-                 <div className="text-[10px] font-mono text-muted-foreground font-bold bg-muted/50 px-2 py-0.5 rounded mt-1">
-                    RD {currentPick?.round} • PICK {currentPick?.pick} <span className="opacity-50 mx-1">|</span> #{currentPick?.overall}
-                 </div>
                  
-                 {/* Picks Until Up Counter */}
+                 {/* Bottom: Counter */}
                  {picksUntilUp > 0 && (
-                     <div className="mt-1.5 text-[9px] font-bold text-primary flex items-center gap-1 opacity-80">
+                     <div className="text-[9px] font-bold text-primary flex items-center gap-1 opacity-90 bg-primary/10 px-2 py-0.5 rounded-full mt-0.5">
                         <Clock className="w-3 h-3" />
                         {picksUntilUp} Pick{picksUntilUp !== 1 && 's'} Until You
                      </div>
                  )}
                  {picksUntilUp === 0 && (
-                     <div className="mt-1.5 text-[9px] font-bold text-primary animate-bounce">
+                     <div className="text-[9px] font-bold text-primary animate-bounce bg-primary/10 px-2 py-0.5 rounded-full mt-0.5">
                         MAKE YOUR SELECTION
                      </div>
                  )}
