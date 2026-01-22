@@ -52,7 +52,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
   const rosterPlayers = teamPicks.map(p => players.find(pl => pl.id === p.playerId)).filter(Boolean) as typeof players;
   
   // Assign players to slots
-  const filledRoster = rosterSlots.map(slot => ({ ...slot, player: null as any }));
+  const filledRoster = rosterSlots.map(slot => ({ ...slot, player: null as any, placeholder: null as any }));
   const remainingPlayers = [...rosterPlayers];
 
   // First pass: Match exact positions (except Flex/Bench)
@@ -78,6 +78,43 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
   filledRoster.forEach(slot => {
     if (slot.slot === "BENCH" && remainingPlayers.length > 0) {
       slot.player = remainingPlayers.shift();
+    }
+  });
+
+  // Fourth pass: Add placeholders for empty slots
+  const availablePlayers = players.filter(p => !picks.find(pk => pk.playerId === p.id));
+  
+  filledRoster.forEach(slot => {
+    if (!slot.player) {
+      if (slot.slot === "BENCH") {
+        // Only show placeholder for bench if all starters of that position are filled
+        // Since bench is "ANY", we can't easily determine which position to suggest 
+        // unless we look at the whole team. For now, let's keep bench empty as per user request
+        // "For the bench spots they can remain empty until all the starting spots at positon are filled"
+        // This is tricky for "ANY" slots. Let's focus on starters first.
+      } else {
+        const bestAvailable = availablePlayers
+          .filter(p => slot.pos.includes(p.position) || (slot.slot === "FLEX" && ["RB", "WR", "TE"].includes(p.position)))
+          .sort((a, b) => b.ppg - a.ppg)[0];
+        
+        if (bestAvailable) {
+          slot.placeholder = bestAvailable;
+        }
+      }
+    }
+  });
+
+  // Re-evaluate bench placeholders now that starters are checked
+  filledRoster.forEach((slot, idx) => {
+    if (slot.slot === "BENCH" && !slot.player) {
+      // Check if all starters are filled (no placeholders left in starting slots)
+      const startersFilled = filledRoster.filter(s => s.slot !== "BENCH").every(s => s.player);
+      if (startersFilled) {
+        const bestAny = availablePlayers.sort((a, b) => b.ppg - a.ppg)[0];
+        if (bestAny) {
+          slot.placeholder = bestAny;
+        }
+      }
     }
   });
 
@@ -125,7 +162,9 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                   "flex items-center justify-between p-2.5 rounded border transition-all duration-200 min-h-[50px]",
                   slot.player 
                     ? "bg-[#0d1117] border-[#30363d] hover:border-primary/40 shadow-sm" 
-                    : "bg-transparent border-dashed border-[#21262d] opacity-30"
+                    : slot.placeholder
+                      ? "bg-primary/5 border-primary/20 border-dashed"
+                      : "bg-transparent border-dashed border-[#21262d] opacity-30"
                 )}>
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-10 text-[10px] font-mono font-bold text-[#8b949e] uppercase text-center flex-shrink-0">
@@ -141,13 +180,28 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                           <span className="text-[#6e7681] opacity-80">BYE {slot.player.byeWeek}</span>
                         </div>
                       </div>
+                    ) : slot.placeholder ? (
+                      <div className="truncate opacity-50">
+                        <div className="text-[12px] font-bold text-primary/80 truncate leading-snug flex items-center gap-2">
+                          <TrendingUp className="h-3 w-3" />
+                          {slot.placeholder.name}
+                        </div>
+                        <div className="text-[9px] text-primary/60 uppercase font-mono mt-0.5 truncate">
+                          Projected Best Available
+                        </div>
+                      </div>
                     ) : (
                       <div className="text-[11px] font-mono text-[#484f58] uppercase italic tracking-widest">Empty</div>
                     )}
                   </div>
-                  {slot.player && (
+                  {(slot.player || slot.placeholder) && (
                     <div className="text-right flex-shrink-0 ml-3">
-                      <div className="text-[13px] font-mono font-bold text-primary">{slot.player.ppg}</div>
+                      <div className={cn(
+                        "text-[13px] font-mono font-bold",
+                        slot.player ? "text-primary" : "text-primary/40 italic"
+                      )}>
+                        {slot.player?.ppg || slot.placeholder?.ppg}
+                      </div>
                     </div>
                   )}
                 </div>

@@ -71,7 +71,32 @@ export const useDraftStore = create<DraftState>((set, get) => ({
 
   makePick: (playerId) => set((state) => {
     const isUserPick = isUserTurn(state.currentPickIndex, state.settings);
+    const player = state.players.find(p => p.id === playerId);
     
+    // Position constraints
+    if (isUserPick && player) {
+      const myPlayers = state.picks
+        .filter(p => p.pickedBy === "User")
+        .map(p => state.players.find(pl => pl.id === p.playerId))
+        .filter(Boolean) as Player[];
+      
+      const counts = {
+        QB: myPlayers.filter(p => p.position === "QB").length,
+        RB: myPlayers.filter(p => p.position === "RB").length,
+        WR: myPlayers.filter(p => p.position === "WR").length,
+        TE: myPlayers.filter(p => p.position === "TE").length,
+        DST: myPlayers.filter(p => p.position === "DST").length,
+        K: myPlayers.filter(p => p.position === "K").length,
+      };
+
+      const limits = { QB: 4, RB: 8, WR: 8, TE: 3, DST: 3, K: 3 };
+      
+      if (counts[player.position as keyof typeof counts] >= limits[player.position as keyof typeof limits]) {
+        alert(`Position Limit Reached: You cannot draft more than ${limits[player.position as keyof typeof limits]} ${player.position}s.`);
+        return state;
+      }
+    }
+
     // Add to picked list
     const newPickedPlayers = [...state.pickedPlayers, playerId];
     
