@@ -296,7 +296,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     {getDraftValue(player) > 0 ? `+${getDraftValue(player)}` : getDraftValue(player)}
                   </div>
                 )}
-                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", showExtendedStats ? getPPGColor(player.ppg, player.position) : "text-primary")}>
+                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", getPPGColor(player.ppg, player.position))}>
                   {player.ppg}
                 </div>
                 
