@@ -306,12 +306,12 @@ export default function Dashboard() {
                 </div>
               </Card>
 
-              <Card className={cn("p-6 flex flex-col transition-colors duration-500 flex-1 min-h-0",
+              <Card className={cn("p-6 flex flex-col transition-colors duration-500 h-fit",
                 settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
                 <div className="flex items-center justify-between mb-4 flex-shrink-0">
                   <label className="text-[10px] font-bold text-[#8b949e] uppercase tracking-widest">Teams & Order</label>
                 </div>
-                <div className="flex-1 overflow-y-auto pr-2 scrollbar-hide">
+                <div className="pr-2 scrollbar-hide">
                   <div className="grid grid-cols-2 gap-2">
                     {settings.teams.map((team, idx) => (
                       <div key={team.id} className={cn("flex items-center space-x-2 p-1.5 rounded-lg border transition-all",
