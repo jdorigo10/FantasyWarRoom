@@ -364,12 +364,12 @@ export const INITIAL_SETTINGS: DraftSettings = {
 
 export const INITIALIZATION_STEPS = [
   {
-    label: "ESPN Player Draft Rankings & ADP",
-    key: "rankings",
-    link: config.dataSources.rankings,
+    label: "ESPN Player Draft ADP",
+    key: "adp",
+    link: config.dataSources.adp,
   },
   {
-    label: "ESPN Player Projected PPG",
+    label: "ESPN Player Rankings & Projected PPG",
     key: "ppg",
     link: config.dataSources.ppg,
   },

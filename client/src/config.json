@@ -2,8 +2,8 @@
   "draftYear": "2026",
   "scoring": "PPR",
   "dataSources": {
-    "rankings": "https://example.com/rankings",
-    "ppg": "https://example.com/projections",
+    "adp": "https://fantasy.espn.com/football/livedraftresults",
+    "ppg": "https://fantasy.espn.com/football/players/projections",
     "sos": "https://example.com/sos",
     "offense": "https://example.com/offense",
     "defense": "https://example.com/defense",
