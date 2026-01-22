@@ -320,28 +320,94 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
             RK{getSortIcon('rank')}
           </div>
           <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>PLAYER</div>
-          <div className={cn("text-center cursor-pointer hover:text-white transition-colors", showExtendedStats ? "col-span-1 ml-2.5" : "col-span-1")} onClick={() => handleSort('adp')}>
-            ADP{getSortIcon('adp')}
-          </div>
+          
+          <TooltipProvider>
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <div className={cn("text-center cursor-pointer hover:text-white transition-colors", showExtendedStats ? "col-span-1 ml-2.5" : "col-span-1")} onClick={() => handleSort('adp')}>
+                  ADP{getSortIcon('adp')}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
+                <p className="font-bold text-primary mb-1">ADP</p>
+                <p className="text-[#c9d1d9]">Average Draft Position<br/>(ESPN)</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           {showExtendedStats && (
-            <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-2.5 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('val')}>
-              <span>DRAFT</span><span>VAL{getSortIcon('val')}</span>
-            </div>
+            <TooltipProvider>
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-2.5 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('val')}>
+                    <span>DRAFT</span><span>VAL{getSortIcon('val')}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
+                  <p className="font-bold text-primary mb-1">Draft Value</p>
+                  <p className="text-[#c9d1d9]">PPG (rank) subtracted by ADP (rank)</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
-          <div className={cn("text-center cursor-pointer hover:text-white transition-colors", showExtendedStats ? "col-span-1 -ml-5" : "col-span-1")} onClick={() => handleSort('ppg')}>
-            PPG{getSortIcon('ppg')}
-          </div>
+
+          <TooltipProvider>
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <div className={cn("text-center cursor-pointer hover:text-white transition-colors", showExtendedStats ? "col-span-1 -ml-5" : "col-span-1")} onClick={() => handleSort('ppg')}>
+                  PPG{getSortIcon('ppg')}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
+                <p className="font-bold text-primary mb-1">PPG</p>
+                <p className="text-[#c9d1d9]">Projected Fantasy Points Per Game<br/>(ESPN)</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           {showExtendedStats && (
             <>
-              <div className="col-span-1 text-center ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('sos')}>
-                SOS{getSortIcon('sos')}
-              </div>
-              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('off')}>
-                <span>OFF</span><span>RK{getSortIcon('off')}</span>
-              </div>
-              <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('def')}>
-                <span>DEF</span><span>RK{getSortIcon('def')}</span>
-              </div>
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <div className="col-span-1 text-center ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('sos')}>
+                      SOS{getSortIcon('sos')}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
+                    <p className="font-bold text-primary mb-1">SOS</p>
+                    <p className="text-[#c9d1d9]">Strength of Schedule - based on last seasons records<br/>(Easiest = 32, Hardest = 1)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('off')}>
+                      <span>OFF</span><span>RK{getSortIcon('off')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
+                    <p className="font-bold text-primary mb-1">OFF RK</p>
+                    <p className="text-[#c9d1d9]">Teams Offensive Ranking for projected PPG scored<br/>(Best = 1, Worst = 32)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('def')}>
+                      <span>DEF</span><span>RK{getSortIcon('def')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
+                    <p className="font-bold text-primary mb-1">DEF RK</p>
+                    <p className="text-[#c9d1d9]">Teams Defensive Ranking for projected PPG allowed<br/>(Best = 1, Worst = 32)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <div className="col-span-2 text-center ml-4">TAGS</div>
             </>
           )}

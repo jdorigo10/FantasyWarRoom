@@ -3,9 +3,10 @@ import { useDraftStore } from "@/lib/draftStore";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function DraftBoard() {
-  const { settings, picks, currentPickIndex } = useDraftStore();
+  const { settings, picks, currentPickIndex, players } = useDraftStore();
   
   // Create grid: Rows = Rounds, Cols = Teams
   const rounds = Array.from({ length: settings.rounds }, (_, i) => i + 1);
@@ -55,6 +56,7 @@ export function DraftBoard() {
                 }
 
                 const pickData = picks.find(p => p.pickOverall === pickOverall);
+                const player = pickData ? players.find(p => p.id === pickData.playerId) : null;
                 const isCurrent = currentPickIndex + 1 === pickOverall;
                 const isUserTeam = team === settings.position;
 
@@ -72,10 +74,41 @@ export function DraftBoard() {
                         {pickOverall}
                      </div>
                      
-                     {pickData ? (
+                     {pickData && player ? (
                         <div className="flex flex-col h-full justify-center">
-                           <span className="font-semibold truncate text-foreground">{pickData.playerId}</span>
-                           <span className="text-[10px] text-primary">{pickData.pickedBy}</span>
+                           <div className="flex items-center justify-between">
+                             <span className="font-semibold truncate text-[#c9d1d9] flex-1">{player.name}</span>
+                             <span className="text-[9px] text-primary/80 font-mono ml-1 shrink-0">{pickData.pickedBy}</span>
+                           </div>
+                           <div className="flex items-center gap-2 mt-1">
+                             <TooltipProvider>
+                               <Tooltip delayDuration={300}>
+                                 <TooltipTrigger asChild>
+                                   <div className="text-[10px] text-[#8b949e] font-mono cursor-help hover:text-white transition-colors">
+                                     A:{player.adp || 0}
+                                   </div>
+                                 </TooltipTrigger>
+                                 <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2">
+                                   <p className="font-bold text-primary mb-1">ADP</p>
+                                   <p className="text-[#c9d1d9]">Average Draft Position<br/>(ESPN)</p>
+                                 </TooltipContent>
+                               </Tooltip>
+                             </TooltipProvider>
+
+                             <TooltipProvider>
+                               <Tooltip delayDuration={300}>
+                                 <TooltipTrigger asChild>
+                                   <div className="text-[10px] text-[#8b949e] font-mono cursor-help hover:text-white transition-colors">
+                                     P:{player.ppg || 0}
+                                   </div>
+                                 </TooltipTrigger>
+                                 <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2">
+                                   <p className="font-bold text-primary mb-1">PPG</p>
+                                   <p className="text-[#c9d1d9]">Projected Fantasy Points Per Game<br/>(ESPN)</p>
+                                 </TooltipContent>
+                               </Tooltip>
+                             </TooltipProvider>
+                           </div>
                         </div>
                      ) : (
                         <div className="flex h-full items-center justify-center opacity-0 group-hover:opacity-20 text-[10px]">
