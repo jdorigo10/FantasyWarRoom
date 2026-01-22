@@ -92,7 +92,12 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
       if (slot.slot !== "BENCH") {
         const bestAvailable = availablePlayers
           .filter(p => !assignedPlaceholderIds.has(p.id))
-          .filter(p => slot.pos.includes(p.position) || (slot.slot === "FLEX" && ["RB", "WR"].includes(p.position)))
+          .filter(p => {
+            if (slot.slot === "FLEX") {
+              return ["RB", "WR"].includes(p.position);
+            }
+            return slot.pos.includes(p.position);
+          })
           .sort((a, b) => b.ppg - a.ppg)[0];
         
         if (bestAvailable) {
