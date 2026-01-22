@@ -8,13 +8,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Plus, Info, AlertTriangle, Thermometer, UserMinus, Clock, Baby, TrendingUp as TrendingUpIcon, TrendingDown, RefreshCcw, PlusSquare, Bandage, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Heart, Target, Star, Bookmark } from "lucide-react";
 
 interface PlayerTableProps {
   showExtendedStats?: boolean;
 }
 
 export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
-  const { players, pickedPlayers, picks, makePick, settings, filters, updateFilters, rankingsFilters, updateRankingsFilters } = useDraftStore();
+  const { players, pickedPlayers, picks, makePick, settings, filters, updateFilters, rankingsFilters, updateRankingsFilters, playerTags, togglePlayerTag } = useDraftStore();
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'rank', direction: 'asc' });
 
   const currentFilters = showExtendedStats ? rankingsFilters : filters;
@@ -435,8 +437,49 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>
                   <div className="text-[13px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
                     {player.name}
+                    {/* User Tags Display */}
+                    {playerTags[player.id]?.includes('favorite') && (
+                      <Heart className="h-3 w-3 text-red-500 fill-red-500" />
+                    )}
+                    {playerTags[player.id]?.includes('target') && (
+                      <Target className="h-3 w-3 text-white" />
+                    )}
+                    
+                    {/* Tag Management */}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:bg-white/10 rounded p-0.5 outline-none">
+                          <Plus className="h-3 w-3 text-[#8b949e]" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-40 p-2 bg-[#161b22] border-[#30363d] shadow-xl" align="start">
+                        <div className="space-y-1">
+                           <button 
+                             className={cn(
+                               "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
+                               playerTags[player.id]?.includes('favorite') ? "bg-red-500/10 text-red-500" : "text-[#c9d1d9] hover:bg-white/5"
+                             )}
+                             onClick={() => togglePlayerTag(player.id, 'favorite')}
+                           >
+                             <Heart className={cn("h-3 w-3", playerTags[player.id]?.includes('favorite') && "fill-current")} />
+                             Favorite
+                           </button>
+                           <button 
+                             className={cn(
+                               "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
+                               playerTags[player.id]?.includes('target') ? "bg-primary/10 text-primary" : "text-[#c9d1d9] hover:bg-white/5"
+                             )}
+                             onClick={() => togglePlayerTag(player.id, 'target')}
+                           >
+                             <Target className="h-3 w-3" />
+                             Target
+                           </button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+
                     {isPicked && pickInfo && (
-                      <span className="text-[8px] font-mono text-primary border border-primary/20 px-0.5 rounded uppercase whitespace-nowrap">
+                      <span className="text-[8px] font-mono text-primary border border-primary/20 px-0.5 rounded uppercase whitespace-nowrap ml-1">
                         {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
                       </span>
                     )}

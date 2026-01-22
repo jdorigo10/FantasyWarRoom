@@ -4,9 +4,10 @@ import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Heart, Target } from "lucide-react";
 
 export function DraftBoard() {
-  const { settings, picks, currentPickIndex, players } = useDraftStore();
+  const { settings, picks, currentPickIndex, players, playerTags } = useDraftStore();
   
   // Create grid: Rows = Rounds, Cols = Teams
   const rounds = Array.from({ length: settings.rounds }, (_, i) => i + 1);
@@ -77,7 +78,15 @@ export function DraftBoard() {
                      {pickData && player ? (
                         <div className="flex flex-col h-full justify-center">
                            <div className="flex items-center justify-between">
-                             <span className="font-semibold truncate text-[#c9d1d9] flex-1">{player.name}</span>
+                             <div className="flex items-center gap-1 truncate flex-1">
+                               <span className="font-semibold truncate text-[#c9d1d9]">{player.name}</span>
+                               {playerTags[player.id]?.includes('favorite') && (
+                                  <Heart className="h-2.5 w-2.5 text-red-500 fill-red-500 shrink-0" />
+                               )}
+                               {playerTags[player.id]?.includes('target') && (
+                                  <Target className="h-2.5 w-2.5 text-white shrink-0" />
+                               )}
+                             </div>
                              <span className="text-[9px] text-primary/80 font-mono ml-1 shrink-0">{pickData.pickedBy}</span>
                            </div>
                            <div className="flex items-center gap-2 mt-1">

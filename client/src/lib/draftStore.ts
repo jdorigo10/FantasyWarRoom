@@ -27,6 +27,7 @@ interface DraftState {
     team: string;
     showDrafted: boolean;
   };
+  playerTags: Record<string, string[]>;
   
   // Actions
   updateSettings: (settings: Partial<DraftSettings>) => void;
@@ -36,9 +37,23 @@ interface DraftState {
   undoLastPick: () => void;
   resetDraft: () => void;
   simulatePick: () => void; // AI helper to pick for CPU
+  togglePlayerTag: (playerId: string, tag: "favorite" | "target") => void;
 }
 
 const STORAGE_KEY = 'fantasy-warroom-settings';
+const TAGS_KEY = 'fantasy-warroom-player-tags';
+
+const loadTags = (): Record<string, string[]> => {
+  const stored = localStorage.getItem(TAGS_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Failed to parse stored tags', e);
+    }
+  }
+  return {};
+};
 
 const loadSettings = (): DraftSettings => {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -77,6 +92,7 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     team: "All",
     showDrafted: false
   },
+  playerTags: loadTags(),
 
   updateSettings: (newSettings) => set((state) => {
     const updated = { ...state.settings, ...newSettings };
@@ -205,7 +221,20 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     if (availablePlayers.length > 0) {
       state.makePick(availablePlayers[0].id);
     }
-  }
+  },
+
+  togglePlayerTag: (playerId, tag) => set((state) => {
+    const currentTags = state.playerTags[playerId] || [];
+    let newTags;
+    if (currentTags.includes(tag)) {
+      newTags = currentTags.filter(t => t !== tag);
+    } else {
+      newTags = [...currentTags, tag];
+    }
+    const updated = { ...state.playerTags, [playerId]: newTags };
+    localStorage.setItem(TAGS_KEY, JSON.stringify(updated));
+    return { playerTags: updated };
+  })
 }));
 
 // Helper to determine if it's user's turn (Snake Draft)
