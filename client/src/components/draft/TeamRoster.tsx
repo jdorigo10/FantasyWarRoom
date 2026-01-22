@@ -202,8 +202,8 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                           <TrendingUp className="h-3 w-3" />
                           {slot.placeholder.name}
                         </div>
-                        <div className="text-[9px] text-primary/60 uppercase font-mono mt-0.5 truncate">
-                          Best Available
+                        <div className="text-[10px] text-primary/60 uppercase font-mono mt-0.5 truncate">
+                          {slot.placeholder.position} • {slot.placeholder.team}
                         </div>
                       </div>
                     ) : (
