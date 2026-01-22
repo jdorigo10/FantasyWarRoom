@@ -44,7 +44,12 @@ const loadSettings = (): DraftSettings => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Ensure config-driven values are always up to date, overriding storage
+      return {
+        ...parsed,
+        draftYear: INITIAL_SETTINGS.draftYear
+      };
     } catch (e) {
       console.error('Failed to parse stored settings', e);
     }
