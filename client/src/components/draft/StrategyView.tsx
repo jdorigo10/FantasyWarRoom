@@ -4,7 +4,6 @@ import { useDraftStrategies } from "@/hooks/useDraftStrategies";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info, ArrowUpDown } from "lucide-react";
 
 export function StrategyView() {
@@ -33,7 +32,7 @@ export function StrategyView() {
     <div className="flex-1 overflow-hidden p-6 flex flex-col space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-display font-bold tracking-tight text-white uppercase italic">
-          Strategy - Pick {settings.position} in a {settings.teamCount} team draft
+          Strategy - Pick {settings.position} {" ("} {settings.teamCount}{" Team Draft)"}
         </h2>
         <div className="flex items-center space-x-2 text-[10px] text-[#8b949e] font-mono uppercase tracking-widest">
           <Info className="h-3 w-3 text-primary" />

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useDraftStore } from '@/lib/draftStore';
-import { Player } from '@/lib/mockData';
+import { Player } from '@/lib/baseData';
 
 export function useDraftStrategies() {
   const { players, settings, picks, pickedPlayers } = useDraftStore();

@@ -1,11 +1,12 @@
 import { create } from 'zustand';
-import { Player, DraftSettings, MOCK_PLAYERS, INITIAL_SETTINGS } from './mockData';
+import { Position, NFLTeamAbbv, Player, PlayerTeam, DraftSettings, INITIAL_SETTINGS } from './baseData';
 
 export interface DraftPick {
   round: number;
   pickOverall: number;
   playerId: string;
   pickedBy: "User" | "CPU";
+  teamId: string;
 }
 
 interface DraftState {
@@ -17,14 +18,14 @@ interface DraftState {
   myRoster: string[]; // IDs of players picked by user
   filters: {
     search: string;
-    pos: string;
-    team: string;
+    pos: Position;
+    team: NFLTeamAbbv;
     showDrafted: boolean;
   };
   rankingsFilters: {
     search: string;
-    pos: string;
-    team: string;
+    pos: Position;
+    team: NFLTeamAbbv;
     showDrafted: boolean;
   };
   playerTags: Record<string, string[]>;
@@ -39,6 +40,7 @@ interface DraftState {
   simulatePick: () => void;
   togglePlayerTag: (playerId: string, tag: "favorite" | "target") => void;
   getPlayerTags: (playerId: string) => string[];
+  setPlayers: (players: Player[]) => void;
 }
 
 const STORAGE_KEY = 'fantasy-warroom-settings';
@@ -46,14 +48,14 @@ const TAGS_KEY = 'fantasy-warroom-player-tags';
 
 // Load and validate tags - uses player NAME as key (not ID)
 // Also cleans up tags for players that no longer exist in the app
-const loadTags = (): Record<string, string[]> => {
+const loadTags = (players: Player[]): Record<string, string[]> => {
   const stored = localStorage.getItem(TAGS_KEY);
   if (stored) {
     try {
       const parsed = JSON.parse(stored) as Record<string, string[]>;
       
       // Get all valid player names from current data
-      const validPlayerNames = new Set(MOCK_PLAYERS.map(p => p.name));
+      const validPlayerNames = new Set(players.map(p => p.name));
       
       // Filter out any players that no longer exist
       const cleaned: Record<string, string[]> = {};
@@ -99,7 +101,7 @@ const loadSettings = (): DraftSettings => {
 
 export const useDraftStore = create<DraftState>((set, get) => ({
   settings: loadSettings(),
-  players: MOCK_PLAYERS,
+  players: [], // Will be populated by dataLoader
   pickedPlayers: [],
   picks: [],
   currentPickIndex: 0,
@@ -116,7 +118,7 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     team: "All",
     showDrafted: false
   },
-  playerTags: loadTags(),
+  playerTags: {},
 
   updateSettings: (newSettings) => set((state) => {
     const updated = { ...state.settings, ...newSettings };
@@ -187,7 +189,8 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       round: Math.floor(state.currentPickIndex / state.settings.teamCount) + 1,
       pickOverall: state.currentPickIndex + 1,
       playerId,
-      pickedBy: isUserPick ? "User" : "CPU"
+      pickedBy: isUserPick ? "User" : "CPU",
+      teamId: getCurrentPickTeamId(state.currentPickIndex, state.settings)
     };
 
     return {
@@ -235,9 +238,169 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   simulatePick: () => {
     const state = get();
     const availablePlayers = state.players.filter(p => !state.pickedPlayers.includes(p.id));
-    if (availablePlayers.length > 0) {
-      state.makePick(availablePlayers[0].id);
+    if (availablePlayers.length === 0) {
+      return;
     }
+
+    const pickIndex = state.currentPickIndex;
+    const round = Math.floor(pickIndex / state.settings.teamCount) + 1; // 1-based round
+    const isUserPicking = isUserTurn(pickIndex, state.settings);
+
+    // Determine roster for the team that is picking
+    const rosterIds = isUserPicking
+      ? state.myRoster
+      : state.picks.filter(p => p.teamId === getCurrentPickTeamId(pickIndex, state.settings)).map(p => p.playerId);
+
+    const rosterPlayers = rosterIds
+      .map(id => state.players.find(pl => pl.id === id))
+      .filter(Boolean) as Player[];
+
+    const counts: Record<string, number> = {
+      QB: rosterPlayers.filter(p => p.position === "QB").length,
+      RB: rosterPlayers.filter(p => p.position === "RB").length,
+      WR: rosterPlayers.filter(p => p.position === "WR").length,
+      TE: rosterPlayers.filter(p => p.position === "TE").length,
+      DST: rosterPlayers.filter(p => p.position === "DST").length,
+      K: rosterPlayers.filter(p => p.position === "K").length
+    };
+
+    // Position limits per team
+    const softLimits: Record<string, number> = { QB: 1, RB: 3, WR: 3, TE: 1, DST: 1, K: 1 };
+    const hardLimits: Record<string, number> = { QB: 3, RB: 8, WR: 8, TE: 3, DST: 2, K: 1 };
+
+    // Build candidate list with round-based restrictions
+    let candidates = availablePlayers
+      .filter(p => {
+        const pos = p.position;
+        
+        // Check hard position limits
+        if ((counts[pos] ?? 0) >= (hardLimits[pos] ?? 999)) return false;
+        
+        // Round restrictions for QB (don't take 2nd QB before round 10)
+        if (pos === "QB" && round < 10 && counts.QB >= 1) return false;
+        
+        // Round restrictions for TE (don't take 2nd TE before round 8)
+        if (pos === "TE" && round < 8 && counts.TE >= 1) return false;
+
+        // If 3 RBs already, dont take another before round 8
+        if (pos === "RB" && round < 8 && counts.RB >= 3) return false;
+
+        // If 3 WRs already, dont take another before round 8
+        if (pos === "WR" && round < 8 && counts.WR >= 3) return false;
+        
+        // No DST until after round 9
+        if (pos === "DST" && round <= 9) return false;
+        
+        // No K until after round 11
+        if (pos === "K" && round <= 11) return false;
+        
+        return true;
+      })
+      .slice()
+      .sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999));
+
+    if (candidates.length === 0) {
+      return;
+    }
+
+        // Helper function to apply randomness with reshuffling
+    const applyRankRandomness = (candidateList: Player[]): Player[] => {
+      // 50% chance to reshuffle with ±5 constraints
+      if (Math.random() < 0.5) {
+        return candidateList;
+      }
+      
+      // Apply randomness: each player can move ±5 spots from original rank
+      const reshuffled = candidateList.map((player, index) => {
+        const originalRank = player.rank ?? 999;
+        const minRank = Math.max(1, originalRank - 5);
+        const maxRank = originalRank + 5;
+        
+        // Find players that fall within this player's range
+        const playersInRange = candidateList.filter(p => {
+          const rank = p.rank ?? 999;
+          return rank >= minRank && rank <= maxRank;
+        });
+        
+        // Randomly select from the range (different player possible)
+        if (playersInRange.length > 0) {
+          return playersInRange[Math.floor(Math.random() * playersInRange.length)];
+        }
+        return player;
+      });
+      
+      // Remove duplicates and maintain sorted order
+      const seen = new Set<string>();
+      const unique = reshuffled.filter(p => {
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+      
+      return unique.sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999));
+    };
+
+    // Apply randomness to candidates
+    candidates = applyRankRandomness(candidates);
+
+    if (candidates.length === 0) {
+      return;
+    }
+
+    // If round <= 8: only prioritize filling a position if we don't have ANY at that position yet
+    if (round <= 8) {
+      const needyPositions = ["QB", "RB", "WR", "TE"].filter(pos => counts[pos] < softLimits[pos]);
+      
+      if (needyPositions.length > 0) {
+        for (const cand of candidates) {
+          if (needyPositions.includes(cand.position)) {
+            state.makePick(cand.id);
+            return;
+          }
+        }
+      }
+      
+      state.makePick(candidates[0].id);
+      return;
+    }
+
+    // After round 8: generally take best available, but try to secure DST/K if missing
+    const TOP_LOOKUP = state.settings.teamCount * 2; // Look at top 2 rounds worth of players available
+
+    if (counts.DST === 0 && round >= 10) {
+      const bestDst = candidates.slice(0, TOP_LOOKUP).find(c => c.position === "DST");
+      if (bestDst) {
+        state.makePick(bestDst.id);
+        return;
+      }
+    }
+
+    if (counts.K === 0 && round >= 12) {
+      const bestK = candidates.slice(0, TOP_LOOKUP).find(c => c.position === "K");
+      if (bestK) {
+        state.makePick(bestK.id);
+        return;
+      }
+    }
+
+    // If no DST/K taken by round 15/16 respectively, force take
+    if (counts.DST === 0 && round === 15) {
+      const bestDst = candidates.find(c => c.position === "DST");
+      if (bestDst) {
+        state.makePick(bestDst.id);
+        return;
+      }
+    }
+    if (counts.K === 0 && round === 16) {
+      const bestK = candidates.find(c => c.position === "K");
+      if (bestK) {
+        state.makePick(bestK.id);
+        return;
+      }
+    }
+
+    // Otherwise pick best available
+    state.makePick(candidates[0].id);
   },
 
   togglePlayerTag: (playerId, tag) => set((state) => {
@@ -264,6 +427,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     const player = state.players.find(p => p.id === playerId);
     if (!player) return [];
     return state.playerTags[player.name] || [];
+  },
+
+  // Set players from dataLoader
+  setPlayers: (players) => {
+    set({ playerTags: loadTags(players) });
+    set({ players });
   }
 }));
 
@@ -277,4 +446,19 @@ export const isUserTurn = (pickIndex: number, settings: DraftSettings) => {
   } else {
     return positionInRound === (settings.teamCount - settings.position);
   }
+};
+
+// Helper to get the team ID of the current pick (Snake Draft)
+export const getCurrentPickTeamId = (pickIndex: number, settings: DraftSettings) => {
+  const round = Math.floor(pickIndex / settings.teamCount);
+
+  let pickPosition;
+  if (round % 2 === 0) {
+    pickPosition = pickIndex % settings.teamCount;
+  } else {
+    pickPosition = settings.teamCount - (pickIndex % settings.teamCount) - 1;
+  }
+
+  const teamNumber = pickPosition;
+  return `team-${teamNumber}`;
 };

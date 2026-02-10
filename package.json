@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "dev:client": "vite dev --port 5000",
-    "dev": "NODE_ENV=development tsx server/index.ts",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "python -m uvicorn backend.api.main:app --port 8000",
+    "dev:web": "wait-on http://localhost:8000/health && cross-env NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
@@ -93,13 +95,16 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.4",
     "esbuild": "^0.25.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.20.5",
     "typescript": "5.6.3",
-    "vite": "^7.1.9"
+    "vite": "^7.1.9",
+    "wait-on": "^9.0.3"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

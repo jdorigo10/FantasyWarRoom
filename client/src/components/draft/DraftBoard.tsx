@@ -84,7 +84,7 @@ export function DraftBoard() {
                                   <Heart className="h-2.5 w-2.5 text-red-500 fill-red-500 shrink-0" />
                                )}
                                {playerTags[player.name]?.includes('target') && (
-                                  <Crosshair className="h-2.5 w-2.5 text-white shrink-0" />
+                                  <Crosshair className="h-2.5 w-2.5 text-yellow-500 shrink-0" />
                                )}
                              </div>
                              <span className="text-[9px] text-primary/80 font-mono ml-1 shrink-0">{pickData.pickedBy}</span>

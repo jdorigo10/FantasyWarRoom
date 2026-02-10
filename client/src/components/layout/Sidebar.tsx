@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ListOrdered, Target, Settings, Shield, BookOpen } from "lucide-react";
+import { LayoutDashboard, ListOrdered, Target, Settings, Trophy, BookOpen } from "lucide-react";
 import { useDraftStore } from "@/lib/draftStore";
 
 export function Sidebar() {
@@ -20,7 +20,7 @@ export function Sidebar() {
       <div className="p-8 flex flex-col space-y-6">
         <div className="flex items-center space-x-3">
           <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-            <Shield className="h-6 w-6 text-primary" fill="currentColor" />
+            <Trophy className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className={cn("text-lg font-display font-bold leading-none tracking-tighter italic transition-colors",
@@ -62,11 +62,11 @@ export function Sidebar() {
         <div className={cn("rounded-xl p-4 border transition-colors duration-500",
           settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-widest">v2.0</span>
+            <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-widest">v1.0</span>
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
           </div>
           <p className={cn("text-[11px] font-mono transition-colors",
-            settings.theme === 'dark' ? "text-[#c9d1d9]" : "text-gray-900")}>LOCAL_SYNC_ACTIVE</p>
+            settings.theme === 'dark' ? "text-[#c9d1d9]" : "text-gray-900")}>RUNNING LOCALHOST</p>
         </div>
       </div>
     </div>

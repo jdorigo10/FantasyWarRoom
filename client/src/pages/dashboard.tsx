@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDraftStore } from "@/lib/draftStore";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DraftControls } from "@/components/draft/DraftControls";
@@ -9,19 +9,35 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
-import { Database, ShieldAlert, Activity, BarChart, History, TrendingUp, Search, Layers, ShieldCheck, Shield, Sparkles } from "lucide-react";
-import { INITIALIZATION_STEPS } from "@/lib/mockData";
+import { Database, ShieldHalf, ClipboardClock, CalendarCheck , UserRoundSearch, Trophy, Sparkles, FileChartColumnIncreasing, SquareUserRound, UsersRound  } from "lucide-react";
+import { LOADER_STEPS, loadPlayerInfo, loadTeamInfo, assignTeamsToPlayers,
+          loadTeamOdds, determineTeamRankings, 
+          loadPlayerSpecifics, loadPastPlayerInfo, 
+          generateAIAnalysis } from "@/lib/dataLoader";
+import { Player, PlayerTeam } from "@/lib/baseData";
 
 const STEP_ICONS: Record<string, any> = {
-  rankings: Search,
-  ppg: BarChart,
-  sos: Layers,
-  offense: TrendingUp,
-  defense: ShieldCheck,
-  injury: Activity,
-  history_adp: History,
-  history_ppg: History,
-  trends: Database,
+  qb_info: SquareUserRound,
+  rb_info: SquareUserRound,
+  wr_info: SquareUserRound,
+  te_info: SquareUserRound,
+  dst_info: SquareUserRound,
+  k_info: SquareUserRound,
+  team_info: CalendarCheck,
+  player_teams: UsersRound,
+  team_scoring: ShieldHalf,
+  team_ranks: FileChartColumnIncreasing,
+  qb_specifics: UserRoundSearch,
+  rb_specifics: UserRoundSearch,
+  wr_specifics: UserRoundSearch,
+  te_specifics: UserRoundSearch,
+  k_specifics: UserRoundSearch,
+  past_qb_info: ClipboardClock,
+  past_rb_info: ClipboardClock,
+  past_wr_info: ClipboardClock,
+  past_te_info: ClipboardClock,
+  past_dst_info: ClipboardClock,
+  past_k_info: ClipboardClock,
   ai_analysis: Sparkles
 };
 
@@ -35,7 +51,8 @@ export default function Dashboard() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [location] = useLocation();
-  const { settings, updateSettings, resetDraft } = useDraftStore();
+  const { settings, updateSettings, resetDraft, setPlayers } = useDraftStore();
+  const initRef = useRef(false);
 
   useEffect(() => {
     // Apply theme and accent color
@@ -52,27 +69,89 @@ export default function Dashboard() {
   }, [settings.theme, settings.accentColor]);
 
   useEffect(() => {
-    if (isInitializing) {
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setTimeout(() => setIsInitializing(false), 800);
-            return 100;
-          }
-          const next = prev + (Math.random() * 8 + 2);
-          const currentProgress = Math.min(next, 100);
-          setLoadingStep(Math.floor((currentProgress / 100) * INITIALIZATION_STEPS.length));
-          return currentProgress;
-        });
-      }, 250);
-      return () => clearInterval(interval);
+    if (initRef.current) return;
+    initRef.current = true;
+
+    async function loadData() {
+      let players: Player[] = [];
+      let playerTeams: Record<string, PlayerTeam> = {};
+
+      let index = 0;
+
+      // Step 1: Load Base Player Info
+      for (const pos of ["QB", "RB", "WR", "TE", "DST", "K"]) {
+        setLoadingStep(index);
+        setProgress(((index) / LOADER_STEPS.length) * 100);
+        players = await loadPlayerInfo(pos, players);
+        index++;
+      }
+
+      // Sort and Edit Draft ranks so no gaps in the ranking (e.g. if top ranked player is 2, change to 1)
+      players.sort((a, b) => a.rank - b.rank);
+      players.forEach((player, index) => {
+        player.rank = index + 1;
+      });
+
+      // Step 2: Load Base Team Info
+      setLoadingStep(index);
+      setProgress(((index) / LOADER_STEPS.length) * 100);
+      playerTeams = await loadTeamInfo(playerTeams);
+      index++;
+
+      // Step 3: Assign Team Info to Players
+      setLoadingStep(index);
+      setProgress(((index) / LOADER_STEPS.length) * 100);
+      players = await assignTeamsToPlayers(players, playerTeams);
+      index++;
+
+      // Step 4: Load Scoring Odds for Each Team
+      setLoadingStep(index);
+      setProgress(((index) / LOADER_STEPS.length) * 100);
+      playerTeams = await loadTeamOdds(playerTeams);
+      index++;
+
+      // Step 5: Determine Offensive & Defensive Rankings for each Player
+      setLoadingStep(index);
+      setProgress(((index) / LOADER_STEPS.length) * 100);
+      players = await determineTeamRankings(players, playerTeams);
+      index++;
+
+      // Step 6: Load Player Specifics (Age, Experience, Situation)
+      for (const pos of ["QB", "RB", "WR", "TE", "K"]) {
+          setLoadingStep(index);
+          setProgress(((index) / LOADER_STEPS.length) * 100);
+          players = await loadPlayerSpecifics(pos, players);  
+          index++;
+      }
+
+      // Step 7: Load Past 2 Years Player Insight
+      for (const pos of ["QB", "RB", "WR", "TE", "DST", "K"]) {
+        setLoadingStep(index);
+        setProgress(((index) / LOADER_STEPS.length) * 100);
+        players = await loadPastPlayerInfo(pos, players);
+        index++;
+      }
+
+      // Step 8: Generate AI Analysis for each Player
+      setLoadingStep(index);
+      setProgress(((index) / LOADER_STEPS.length) * 100);
+      players = await generateAIAnalysis(players);
+  
+      setProgress(((index + 1) / LOADER_STEPS.length) * 100);
+      
+      // Store the fully loaded players in the store
+      setPlayers(players);
+      
+      // Small delay before showing UI
+      setTimeout(() => setIsInitializing(false), 300);
     }
-  }, [isInitializing]);
+    
+    loadData();
+  }, [setPlayers]);
 
   if (isInitializing) {
-    const currentStepIndex = Math.min(loadingStep, INITIALIZATION_STEPS.length - 1);
-    const currentStep = INITIALIZATION_STEPS[currentStepIndex];
+    const currentStepIndex = Math.min(loadingStep, LOADER_STEPS.length - 1);
+    const currentStep = LOADER_STEPS[currentStepIndex];
     const Icon = STEP_ICONS[currentStep.key] || Database;
 
     return (
@@ -82,7 +161,7 @@ export default function Dashboard() {
           settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
           <div className="flex flex-col items-center text-center space-y-8">
             <div className="h-16 w-16 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-              <Shield className="h-8 w-8 text-primary" fill="currentColor" />
+              <Trophy className="h-8 w-8 text-primary" />
             </div>
             
             <div className="space-y-2">
@@ -99,7 +178,7 @@ export default function Dashboard() {
                   <span className="opacity-80">{currentStep.label}</span>
                 </div>
                 <div className="flex justify-between w-full text-[10px] text-[#6e7681] font-mono uppercase tracking-widest px-1">
-                  <span>Step {currentStepIndex + 1} / {INITIALIZATION_STEPS.length}</span>
+                  <span>Step {currentStepIndex + 1} / {LOADER_STEPS.length}</span>
                   <span>{Math.floor(progress)}%</span>
                 </div>
               </div>
@@ -130,7 +209,7 @@ export default function Dashboard() {
   };
 
   const handleYearChange = (year: string) => {
-    alert("The app needs to reload in order to pull in / setup the corresponding data for the selected year: " + year);
+    alert("The app needs to reload in order to setup for the selected year: " + year);
     updateSettings({ draftYear: year });
     resetDraft();
     window.location.reload();
@@ -225,10 +304,10 @@ export default function Dashboard() {
                   <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Accent Color</label>
                   <div className="grid grid-cols-6 gap-3">
                     {[
-                      { name: "Green", color: "#2ea043" },
                       { name: "Red", color: "#f85149" },
                       { name: "Orange", color: "#f0883e" },
                       { name: "Yellow", color: "#d29922" },
+                      { name: "Green", color: "#2ea043" },
                       { name: "Purple", color: "#8957e5" },
                       { name: "Blue", color: "#388bfd" }
                     ].map(item => (

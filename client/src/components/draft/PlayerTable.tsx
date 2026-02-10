@@ -3,13 +3,13 @@ import { useDraftStore } from "@/lib/draftStore";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Plus, Info, AlertTriangle, Thermometer, UserMinus, Clock, Baby, TrendingUp as TrendingUpIcon, TrendingDown, RefreshCcw, PlusSquare, Bandage, Lock } from "lucide-react";
+import { Search, Plus, Clock, Baby, TrendingUp as TrendingUpIcon, TrendingDown, RefreshCcw, PlusSquare, Bandage, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Heart, Target, Star, Bookmark, Crosshair } from "lucide-react";
+import { Heart, Crosshair } from "lucide-react";
+import { Position, POSITION_LIST, NFLTeamAbbv, NFL_ABBV_LIST, NFL_TEAM_MAP } from "@/lib/baseData";
 
 interface PlayerTableProps {
   showExtendedStats?: boolean;
@@ -69,7 +69,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     const map: Record<string, { maxPPG: number; ppgSorted: string[]; adpSorted: string[] }> = {};
     
     // Initialize
-    const posList = ["QB", "RB", "WR", "TE", "DST", "K", "FLEX"];
+    const posList = POSITION_LIST;
     posList.forEach(p => {
       map[p] = { maxPPG: 0, ppgSorted: [], adpSorted: [] };
     });
@@ -99,9 +99,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     // "Team projected offensive ranking (1-32, color scale where low value is greenish, high is redish)"
     
     const value = invert ? 33 - rank : rank;
-    if (value >= 25) return "text-[#2ea043]"; // Best
-    if (value >= 17) return "text-[#d29922]"; // Good
-    if (value >= 9) return "text-[#f0883e]";  // Average
+    if (value >= 26) return "text-[#2ea043]"; // Best
+    if (value >= 20) return "text-[#84A02E]"; // Good
+    if (value >= 14) return "text-[#d29922]"; // Average
+    if (value >= 8) return "text-[#f0883e]";  // Below Average
     return "text-[#f85149]"; // Poor
   };
 
@@ -109,10 +110,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     const max = posStats[position]?.maxPPG || 20;
     const ratio = ppg / max;
 
-    if (ratio > 0.85) return "text-[#2ea043]"; // Top tier for pos
-    if (ratio > 0.7) return "text-[#d29922]";  // Good tier
-    if (ratio > 0.5) return "text-[#f0883e]";  // Average
-    return "text-[#f85149]"; // Below average
+    if (ratio > 0.9) return "text-[#2ea043]"; // Top tier for pos
+    if (ratio > 0.7) return "text-[#84A02E]";  // Good tier
+    if (ratio > 0.5) return "text-[#d29922]";  // Average
+    if (ratio > 0.3) return "text-[#f0883e]";  // Below average
+    return "text-[#f85149]"; // Very bad
   };
 
   const getDraftValue = (player: any) => {
@@ -127,7 +129,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
   const getValueColor = (value: number) => {
     if (value > 5) return "text-[#2ea043]"; // High value
-    if (value > 0) return "text-[#d29922]"; // Slight value
+    if (value > 0) return "text-[#84A02E]"; // Slight value
     if (value === 0) return "text-[#8b949e]"; // Neutral
     if (value > -5) return "text-[#f0883e]"; // Slight reach
     return "text-[#f85149]"; // High reach
@@ -136,90 +138,55 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const getTagIcons = (player: any) => {
     const icons = [];
     
-    // 1. Injured (Highest Priority)
-    const isInjured = player.id === "p-5" || player.id === "p-12";
+    // 1. Injured
+    const isInjured = player.injury === "IR";
     if (isInjured) {
       icons.push({ icon: PlusSquare, label: "Injured", color: "text-red-500" });
     }
 
     // 2. Suspended
-    if (player.byeWeek === 14) {
+    if (player.status === "SUSPENDED") {
       icons.push({ icon: Lock, label: "Suspended", color: "text-yellow-500" });
     }
 
     // 3. Injury Risk (Cannot have both Injured and Injury Risk)
-    if (!isInjured && player.injuryHistory === "Significant") {
+    if (!isInjured && player.injury === "HURT") {
       icons.push({ icon: Bandage, label: "Injury Risk", color: "text-orange-400" });
     }
 
     // 4. Rookie
-    const isRookie = player.rank % 7 === 0;
+    const isRookie = player.experience === 0;
     if (isRookie) {
       icons.push({ icon: Baby, label: "Rookie", color: "text-blue-400" });
     }
 
     // 5. Old (Cannot have both Rookie and Old)
-    if (!isRookie && player.rank % 9 === 0) {
+    if (!isRookie && player.age > 30) {
       icons.push({ icon: Clock, label: "Old", color: "text-gray-500" });
     }
 
     // 6. New Team (Cannot have both Rookie and New Team)
-    if (!isRookie && player.rank % 11 === 0) {
+    if (!isRookie && player.newTeam) {
       icons.push({ icon: RefreshCcw, label: "New Team", color: "text-purple-400" });
     }
 
     // 7. Trending Up
-    const isTrendingUp = player.rank < 15;
+    const isTrendingUp = player.trend === "UP";
     if (isTrendingUp) {
       icons.push({ icon: TrendingUpIcon, label: "Trending Up", color: "text-green-500" });
     }
 
     // 8. Trending Down (Cannot have both Trending Up and Trending Down)
-    if (!isTrendingUp && player.rank > 120) {
+    if (!isTrendingUp && player.trend === "DOWN") {
       icons.push({ icon: TrendingDown, label: "Trending Down", color: "text-red-400" });
     }
 
     return icons;
   };
 
-  const TEAM_NAMES: Record<string, string> = {
-    "All": "All Teams",
-    "ARI": "Arizona",
-    "ATL": "Atlanta",
-    "BAL": "Baltimore",
-    "BUF": "Buffalo",
-    "CAR": "Carolina",
-    "CHI": "Chicago",
-    "CIN": "Cincinnati",
-    "CLE": "Cleveland",
-    "DAL": "Dallas",
-    "DEN": "Denver",
-    "DET": "Detroit",
-    "GB": "Green Bay",
-    "HOU": "Houston",
-    "IND": "Indianapolis",
-    "JAX": "Jacksonville",
-    "KC": "Kansas City",
-    "LV": "Las Vegas",
-    "LAC": "Los Angeles",
-    "LAR": "Los Angeles",
-    "MIA": "Miami",
-    "MIN": "Minnesota",
-    "NE": "New England",
-    "NO": "New Orleans",
-    "NYG": "New York",
-    "NYJ": "New York",
-    "PHI": "Philadelphia",
-    "PIT": "Pittsburgh",
-    "SEA": "Seattle",
-    "SF": "San Francisco",
-    "TB": "Tampa Bay",
-    "TEN": "Tennessee",
-    "WAS": "Washington"
-  };
-
-  const TEAMS_ALL = ["All", "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC", "LV", "LAC", "LAR", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"];
-  const POSITIONS = ["All", "QB", "RB", "WR", "TE", "FLEX", "DST", "K"];
+  const TEAM_NAMES = NFL_TEAM_MAP;
+  const TEAMS_ALL = ["All"].concat(NFL_ABBV_LIST);
+  const POSITIONS = ["All"].concat(POSITION_LIST);
   
   const sortedPlayers = React.useMemo(() => {
     let sortablePlayers = [...players];
@@ -310,11 +277,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
         <select 
           className="h-9 bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg px-3 focus:ring-primary/20 cursor-pointer min-w-[140px] transition-all hover:bg-[#1c2128]"
           value={currentFilters.team}
-          onChange={(e) => currentUpdateFilters({ team: e.target.value })}
+          onChange={(e) => currentUpdateFilters({ team: e.target.value as NFLTeamAbbv })}
         >
           {TEAMS_ALL.map(team => (
             <option key={team} value={team}>
-              {TEAM_NAMES[team] || team}
+              {TEAM_NAMES[team as NFLTeamAbbv] || team}
             </option>
           ))}
         </select>
@@ -323,7 +290,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
            {POSITIONS.map(pos => (
               <button
                 key={pos}
-                onClick={() => currentUpdateFilters({ pos })}
+                onClick={() => currentUpdateFilters({ pos: pos as Position })}
                 className={cn(
                   "px-3 py-1 text-[10px] font-bold rounded-md transition-all",
                   currentFilters.pos === pos ? "bg-primary text-black" : "text-[#8b949e] hover:text-white"
@@ -481,7 +448,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                       <Heart className="h-3 w-3 text-red-500 fill-red-500" />
                     )}
                     {playerTags[player.name]?.includes('target') && (
-                      <Crosshair className="h-3 w-3 text-white" />
+                      <Crosshair className="h-3 w-3 text-yellow-500" />
                     )}
                     
                     {/* Tag Management */}
@@ -507,7 +474,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                              <button 
                                className={cn(
                                  "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
-                                 playerTags[player.name]?.includes('target') ? "bg-primary/10 text-primary" : "text-[#c9d1d9] hover:bg-white/5"
+                                 playerTags[player.name]?.includes('target') ? "bg-yellow-500/10 text-yellow-500" : "text-[#c9d1d9] hover:bg-white/5"
                                )}
                                onClick={() => togglePlayerTag(player.id, 'target')}
                              >
@@ -602,8 +569,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                       </Button>
                     ) : (
                       <div className="text-[10px] font-mono text-[#484f58] uppercase italic flex items-center justify-center gap-1.5 w-full">
-                        <div className="h-1 w-1 rounded-full bg-[#484f58]" />
-                        Taken
+                        {pickInfo && pickInfo.pickedBy === "User" ? "Drafted" : `Taken`}
                       </div>
                     )}
                   </div>
@@ -612,7 +578,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               {divider && (
                  <div className="bg-primary/5 border-y border-primary/20 py-1.5 px-2 text-center flex items-center justify-center gap-4 my-0.5">
                    <div className="h-px bg-primary/20 flex-1" />
-                   <span className="text-[10px] font-mono text-primary font-bold tracking-widest uppercase shadow-[0_0_10px_rgba(46,160,67,0.2)]">
+                   <span className="text-[10px] font-mono text-primary font-bold tracking-widest uppercase">
                      RD {divider.round} - Pick {divider.pickOverall}
                    </span>
                    <div className="h-px bg-primary/20 flex-1" />

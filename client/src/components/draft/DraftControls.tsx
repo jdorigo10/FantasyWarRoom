@@ -2,7 +2,7 @@ import React from "react";
 import { useDraftStore } from "@/lib/draftStore";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Play, RotateCcw, MonitorPlay, AlertTriangle, ArrowRight, Clock } from "lucide-react";
+import { Play, RotateCcw, MonitorPlay, Trash2, ArrowRight, Clock } from "lucide-react";
 
 export function DraftControls() {
   const { currentPickIndex, simulatePick, resetDraft, undoLastPick, settings, picks, players } = useDraftStore();
@@ -159,7 +159,7 @@ export function DraftControls() {
            <MonitorPlay className="mr-2 h-3.5 w-3.5" /> Sim Pick
         </Button>
         <Button variant="destructive" size="sm" onClick={handleReset} className="h-8 text-xs">
-           <AlertTriangle className="mr-2 h-3.5 w-3.5" /> Reset
+           <Trash2 className="mr-2 h-3.5 w-3.5" /> Reset
         </Button>
       </div>
     </div>

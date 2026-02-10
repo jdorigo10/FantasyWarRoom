@@ -3,8 +3,7 @@ import { useDraftStore } from "@/lib/draftStore";
 import { useDraftStrategies } from "@/hooks/useDraftStrategies";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles, TrendingUp } from "lucide-react";
+import { TrendingUp, BotMessageSquare } from "lucide-react";
 
 interface TeamRosterProps {
   showSuggested?: boolean;
@@ -266,16 +265,19 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
       {showSuggested && suggestedPlayer && (
         <Card className="bg-[#1c2128] border-primary/20 border-2 p-4 shadow-[0_0_20px_rgba(46,160,67,0.1)] flex-shrink-0">
           <div className="flex items-center text-primary mb-3">
-             <Sparkles className="h-3 w-3 mr-2" />
+             <BotMessageSquare className="h-4 w-4 mr-2" />
              <h3 className="text-[10px] font-bold uppercase tracking-[0.15em]">WarRoom Suggestions</h3>
           </div>
           <div className="p-2.5 bg-primary/10 rounded border border-primary/20">
             <div className="flex justify-between items-start mb-1.5">
-               <div className="text-[10px] font-bold text-primary truncate">TARGET: {suggestedPlayer.name} ({suggestedPlayer.position}, {suggestedPlayer.team})</div>
+               <div className="flex gap-1.5">
+                <div className="text-[10px] font-bold text-[#adbac7]">Round {suggestedPlayer.round}{" -->  "}</div>
+                <div className="text-[10px] font-bold text-primary truncate">{suggestedPlayer.name} ({suggestedPlayer.position}, {suggestedPlayer.team})</div>
+               </div>
                <div className="text-[10px] font-mono font-bold text-primary">{suggestedPlayer.ppg}</div>
             </div>
             <p className="text-[9px] text-[#adbac7] leading-tight line-clamp-2">
-               Top strategic pick for Round {suggestedPlayer.round}. Projected to maximize your team's total PPG.
+               Projected to maximize your team's total PPG based on needs and availability.
             </p>
           </div>
         </Card>
