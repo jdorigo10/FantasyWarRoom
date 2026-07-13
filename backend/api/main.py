@@ -6,10 +6,10 @@ if sys.platform == "win32":
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.scrapers.playerScraper import scrape_player_info
 from backend.scrapers.teamScraper import scrape_team_info
+from backend.scrapers.teamSpecificScraper import scrape_team_specifics
+from backend.scrapers.playerScraper import scrape_player_info
 from backend.scrapers.playerSpecificScraper import scrape_player_specifics
-from backend.scrapers.pastPlayerScraper import scrape_past_year
 
 
 app = FastAPI()
@@ -34,18 +34,18 @@ def health():
 ### Scrapers ###
 ################
 
-@app.get("/api/players")
-async def get_players(year: str, position: str):
-    return await scrape_player_info(year, position)
-
 @app.get("/api/teams")
-async def get_teams(year: str):
-    return await scrape_team_info(year)
+async def get_teams():
+    return await scrape_team_info()
+
+@app.get("/api/teamSpecifics")
+async def get_team_specifics(year: str):
+    return await scrape_team_specifics(year)
+
+@app.get("/api/players")
+async def get_players(year: str):
+    return await scrape_player_info(year)
 
 @app.get("/api/playerSpecifics")
-async def get_player_specifics(year: str, playerIds: str):
-    return await scrape_player_specifics(year, playerIds)
-
-@app.get("/api/pastPlayers")
-async def get_past_players(year: str, position: str):
-    return await scrape_past_year(year, position)
+async def get_player_specifics(year: str):
+    return await scrape_player_specifics(year)

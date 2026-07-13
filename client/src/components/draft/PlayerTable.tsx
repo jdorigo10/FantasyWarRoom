@@ -90,19 +90,30 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     return map;
   }, [players]);
 
-  const getRankColor = (rank: number, invert = false) => {
-    // 1-32 range relative scale
-    // If invert is true: 1 is best (green), 32 is worst (red)
-    // If invert is false (SOS): 1 is best (green), 32 is worst (red) 
-    // Wait, user said SOS: high value is greenish, low is redish? 
-    // "Team stength of schedule (1-32, color scale where high value is greenish, low is redish)"
-    // "Team projected offensive ranking (1-32, color scale where low value is greenish, high is redish)"
+  const getSosColor = (sos: number) => {
+    // 0-1 range relative scale
+    // 1 is hardest, 0 is easiest
     
-    const value = invert ? 33 - rank : rank;
-    if (value >= 26) return "text-[#2ea043]"; // Best
-    if (value >= 20) return "text-[#84A02E]"; // Good
-    if (value >= 14) return "text-[#d29922]"; // Average
-    if (value >= 8) return "text-[#f0883e]";  // Below Average
+    if (sos <= 0.47) return "text-[#2ea043]"; // Best
+    if (sos <= 0.49) return "text-[#84A02E]"; // Good
+    if (sos <= 0.51) return "text-[#d29922]"; // Average
+    if (sos <= 0.53) return "text-[#f0883e]";  // Below Average
+    return "text-[#f85149]"; // Poor
+  };
+
+  const getOffPpgColor = (ppg: number) => {
+    if (ppg >= 27) return "text-[#2ea043]"; // Best
+    if (ppg >= 23) return "text-[#84A02E]"; // Good
+    if (ppg >= 21) return "text-[#d29922]"; // Average
+    if (ppg >= 19) return "text-[#f0883e]";  // Below Average
+    return "text-[#f85149]"; // Poor
+  };
+
+  const getDefPpgColor = (ppg: number) => {
+    if (ppg <= 19) return "text-[#2ea043]"; // Best
+    if (ppg <= 21) return "text-[#84A02E]"; // Good
+    if (ppg <= 23) return "text-[#d29922]"; // Average
+    if (ppg <= 25) return "text-[#f0883e]";  // Below Average
     return "text-[#f85149]"; // Poor
   };
 
@@ -120,6 +131,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const getDraftValue = (player: any) => {
     const stats = posStats[player.position];
     if (!stats) return 0;
+    if (player.adp >= 169) return 0;
     
     const adpRank = stats.adpSorted.indexOf(player.id) + 1;
     const ppgRank = stats.ppgSorted.indexOf(player.id) + 1;
@@ -137,6 +149,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
   const getTagIcons = (player: any) => {
     const icons = [];
+
+    if (player.position === "DST") {
+      return [];
+    }
     
     // 1. Injured
     const isInjured = player.injury === "IR";
@@ -155,13 +171,13 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     }
 
     // 4. Rookie
-    const isRookie = player.experience === 0;
+    const isRookie = player.rookie;
     if (isRookie) {
       icons.push({ icon: Baby, label: "Rookie", color: "text-blue-400" });
     }
 
-    // 5. Old (Cannot have both Rookie and Old)
-    if (!isRookie && player.age > 30) {
+    // 5. Old
+    if (player.age > 30) {
       icons.push({ icon: Clock, label: "Old", color: "text-gray-500" });
     }
 
@@ -211,16 +227,16 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
             bValue = b.ppg;
             break;
           case 'sos':
-            aValue = a.sos;
-            bValue = b.sos;
+            aValue = a.teamInfo.sos;
+            bValue = b.teamInfo.sos;
             break;
           case 'off':
-            aValue = a.offensiveRank;
-            bValue = b.offensiveRank;
+            aValue = a.teamInfo.ppgOffense;
+            bValue = b.teamInfo.ppgOffense;
             break;
           case 'def':
-            aValue = a.defensiveRank;
-            bValue = b.defensiveRank;
+            aValue = a.teamInfo.ppgDefense;
+            bValue = b.teamInfo.ppgDefense;
             break;
           case 'val':
             aValue = getDraftValue(a);
@@ -245,7 +261,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       if (!currentFilters.showDrafted && isPicked) return false;
 
       const matchesName = p.name.toLowerCase().includes(currentFilters.search.toLowerCase());
-      const matchesTeam = currentFilters.team === "All" || p.team === currentFilters.team;
+      const matchesTeam = currentFilters.team === "All" || p.teamInfo.teamAbbv === currentFilters.team;
       
       let matchesPos = true;
       if (currentFilters.pos !== "All") {
@@ -374,7 +390,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
                     <p className="font-bold text-primary mb-1">SOS</p>
-                    <p className="text-[#c9d1d9]">Strength of Schedule - based on last seasons records<br/>(Easiest = 32, Hardest = 1)</p>
+                    <p className="text-[#c9d1d9]">Strength of Schedule - based on last seasons records<br/>(Easiest = 0, Hardest = 1)</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -383,12 +399,12 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
                     <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('off')}>
-                      <span>OFF</span><span>RK{getSortIcon('off')}</span>
+                      <span>OFF</span><span>PPG{getSortIcon('off')}</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
                     <p className="font-bold text-primary mb-1">OFF RK</p>
-                    <p className="text-[#c9d1d9]">Teams Offensive Ranking for projected PPG scored<br/>(Best = 1, Worst = 32)</p>
+                    <p className="text-[#c9d1d9]">Teams Offensive PPG scored last season</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -397,12 +413,12 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
                     <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('def')}>
-                      <span>DEF</span><span>RK{getSortIcon('def')}</span>
+                      <span>DEF</span><span>PPG{getSortIcon('def')}</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
                     <p className="font-bold text-primary mb-1">DEF RK</p>
-                    <p className="text-[#c9d1d9]">Teams Defensive Ranking for projected PPG allowed<br/>(Best = 1, Worst = 32)</p>
+                    <p className="text-[#c9d1d9]">Teams Defensive PPG allowed last season</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -495,9 +511,9 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   <div className="text-[10px] text-[#8b949e] flex items-center mt-0.5 gap-1 truncate opacity-80">
                      <span className="font-bold text-[#c9d1d9]">{player.position}</span>
                      <span className="text-[#484f58]">•</span>
-                     <span className="uppercase">{player.team}</span>
+                     <span className="uppercase">{player.teamInfo.teamAbbv}</span>
                      <span className="text-[#484f58]">•</span>
-                     <span className="text-[#6e7681] uppercase">Bye {player.byeWeek}</span>
+                     <span className="text-[#6e7681] uppercase">Bye {player.teamInfo.byeWeek}</span>
                   </div>
                 </div>
                 <div className={cn("col-span-1 text-center font-mono text-[#8b949e] text-[11px]", showExtendedStats && "ml-2.5")}>
@@ -512,19 +528,27 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   </div>
                 )}
                 <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", showExtendedStats ? "-ml-5" : "", getPPGColor(player.ppg, player.position))}>
-                  {player.ppg}
+                  <div className="relative inline-block">
+                    {player.ppg}
+
+                    {player.projectedGames < 17 && (
+                      <span className="absolute -top-1 -right-4 text-[8px] leading-none text-gray-500">
+                        {player.projectedGames}g
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
                 {showExtendedStats && (
                   <>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] ml-4", getRankColor(player.sos, false))}>
-                      {player.sos}
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] ml-4", getSosColor(player.teamInfo.sos))}>
+                      {player.teamInfo.sos}
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-4", getRankColor(player.offensiveRank, true))}>
-                      {player.offensiveRank}
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-4", getOffPpgColor(player.teamInfo.ppgOffense))}>
+                      {player.teamInfo.ppgOffense}
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-4", getRankColor(player.defensiveRank, true))}>
-                      {player.defensiveRank}
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-4", getDefPpgColor(player.teamInfo.ppgDefense))}>
+                      {player.teamInfo.ppgDefense}
                     </div>
                   </>
                 )}

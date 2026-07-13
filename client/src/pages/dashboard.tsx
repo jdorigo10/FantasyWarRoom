@@ -9,36 +9,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
-import { Database, ShieldHalf, ClipboardClock, CalendarCheck , UserRoundSearch, Trophy, Sparkles, FileChartColumnIncreasing, SquareUserRound, UsersRound  } from "lucide-react";
-import { LOADER_STEPS, loadPlayerInfo, loadTeamInfo, assignTeamsToPlayers,
-          loadTeamOdds, determineTeamRankings, 
-          loadPlayerSpecifics, loadPastPlayerInfo, 
-          generateAIAnalysis } from "@/lib/dataLoader";
+import { Database, ShieldHalf, ClipboardClock, CalendarCheck , UserRoundSearch, Trophy, Sparkles, SquareUserRound, CircleCheck  } from "lucide-react";
+import { LOADER_STEPS, loadBaseTeamInfo, loadSeasonTeamInfo, loadBasePlayerInfo, loadSeasonPlayerInfo, loadPastPlayerInfo, generateAiAnalysis } from "@/lib/dataLoader";
 import { Player, PlayerTeam } from "@/lib/baseData";
 
 const STEP_ICONS: Record<string, any> = {
-  qb_info: SquareUserRound,
-  rb_info: SquareUserRound,
-  wr_info: SquareUserRound,
-  te_info: SquareUserRound,
-  dst_info: SquareUserRound,
-  k_info: SquareUserRound,
-  team_info: CalendarCheck,
-  player_teams: UsersRound,
-  team_scoring: ShieldHalf,
-  team_ranks: FileChartColumnIncreasing,
-  qb_specifics: UserRoundSearch,
-  rb_specifics: UserRoundSearch,
-  wr_specifics: UserRoundSearch,
-  te_specifics: UserRoundSearch,
-  k_specifics: UserRoundSearch,
-  past_qb_info: ClipboardClock,
-  past_rb_info: ClipboardClock,
-  past_wr_info: ClipboardClock,
-  past_te_info: ClipboardClock,
-  past_dst_info: ClipboardClock,
-  past_k_info: ClipboardClock,
-  ai_analysis: Sparkles
+  base_team_info: CalendarCheck,
+  season_team_info: ShieldHalf,
+  base_player_info: SquareUserRound,
+  season_player_info: UserRoundSearch,
+  past_player_info: ClipboardClock,
+  ai_analysis: Sparkles,
+  loading: CircleCheck
 };
 
 import { Input } from "@/components/ui/input";
@@ -78,72 +60,50 @@ export default function Dashboard() {
 
       let index = 0;
 
-      // Step 1: Load Base Player Info
-      for (const pos of ["QB", "RB", "WR", "TE", "DST", "K"]) {
-        setLoadingStep(index);
-        setProgress(((index) / LOADER_STEPS.length) * 100);
-        players = await loadPlayerInfo(pos, players);
-        index++;
-      }
-
-      // Sort and Edit Draft ranks so no gaps in the ranking (e.g. if top ranked player is 2, change to 1)
-      players.sort((a, b) => a.rank - b.rank);
-      players.forEach((player, index) => {
-        player.rank = index + 1;
-      });
-
-      // Step 2: Load Base Team Info
+      // Step 1: Load Team Base Info
       setLoadingStep(index);
-      setProgress(((index) / LOADER_STEPS.length) * 100);
-      playerTeams = await loadTeamInfo(playerTeams);
+      setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
+      playerTeams = await loadBaseTeamInfo(playerTeams);
       index++;
 
-      // Step 3: Assign Team Info to Players
+      // Step 2: Load Team Season Info
       setLoadingStep(index);
-      setProgress(((index) / LOADER_STEPS.length) * 100);
-      players = await assignTeamsToPlayers(players, playerTeams);
+      setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
+      playerTeams = await loadSeasonTeamInfo(playerTeams);
       index++;
 
-      // Step 4: Load Scoring Odds for Each Team
+      // Step 3: Load Player Base Info 
       setLoadingStep(index);
-      setProgress(((index) / LOADER_STEPS.length) * 100);
-      playerTeams = await loadTeamOdds(playerTeams);
+      setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
+      players = await loadBasePlayerInfo(players);
       index++;
 
-      // Step 5: Determine Offensive & Defensive Rankings for each Player
+      // Step 4: Load Player Season Info 
       setLoadingStep(index);
-      setProgress(((index) / LOADER_STEPS.length) * 100);
-      players = await determineTeamRankings(players, playerTeams);
+      setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
+      players = await loadSeasonPlayerInfo(players, playerTeams);
       index++;
 
-      // Step 6: Load Player Specifics (Age, Experience, Situation)
-      for (const pos of ["QB", "RB", "WR", "TE", "K"]) {
-          setLoadingStep(index);
-          setProgress(((index) / LOADER_STEPS.length) * 100);
-          players = await loadPlayerSpecifics(pos, players);  
-          index++;
-      }
-
-      // Step 7: Load Past 2 Years Player Insight
-      for (const pos of ["QB", "RB", "WR", "TE", "DST", "K"]) {
-        setLoadingStep(index);
-        setProgress(((index) / LOADER_STEPS.length) * 100);
-        players = await loadPastPlayerInfo(pos, players);
-        index++;
-      }
-
-      // Step 8: Generate AI Analysis for each Player
+      // Step 5: TODO Past Player Info
       setLoadingStep(index);
-      setProgress(((index) / LOADER_STEPS.length) * 100);
-      players = await generateAIAnalysis(players);
+      setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
+      await loadPastPlayerInfo();
+      index++;
+
+      // Step 6: TODO Generate AI Analysis
+      setLoadingStep(index);
+      setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
+      await generateAiAnalysis();
+      index++;
   
-      setProgress(((index + 1) / LOADER_STEPS.length) * 100);
+      setLoadingStep(index);
+      setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
       
       // Store the fully loaded players in the store
       setPlayers(players);
       
       // Small delay before showing UI
-      setTimeout(() => setIsInitializing(false), 300);
+      setTimeout(() => setIsInitializing(false), 1000);
     }
     
     loadData();

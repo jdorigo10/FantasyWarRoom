@@ -87,7 +87,7 @@ export function StrategyView() {
                               isDrafted ? "text-white" : "text-[#c9d1d9]"
                             )}>{player.name}</span>
                             <div className="flex items-center space-x-1 mt-0.5">
-                              <span className="text-[9px] font-bold text-[#484f58] uppercase">{player.team}</span>
+                              <span className="text-[9px] font-bold text-[#484f58] uppercase">{player.teamInfo.teamAbbv}</span>
                               <span className="text-[9px] text-[#8b949e] font-mono">{player.ppg}</span>
                             </div>
                           </>

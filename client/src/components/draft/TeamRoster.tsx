@@ -226,8 +226,8 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                           {slot.player.name}
                         </div>
                         <div className="text-[10px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
-                          <span className="font-bold">{slot.player.position} • {slot.player.team}</span>
-                          <span className="text-[#6e7681] opacity-80 uppercase">Bye {slot.player.byeWeek}</span>
+                          <span className="font-bold">{slot.player.position} • {slot.player.teamInfo.teamAbbv}</span>
+                          <span className="text-[#6e7681] opacity-80 uppercase">Bye {slot.player.teamInfo.byeWeek}</span>
                         </div>
                       </div>
                     ) : slot.placeholder ? (
@@ -237,8 +237,8 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
                           {slot.placeholder.name}
                         </div>
                         <div className="text-[10px] text-[#8b949e] uppercase font-mono mt-1 truncate flex items-center gap-3">
-                          <span className="font-bold">{slot.placeholder.position} • {slot.placeholder.team}</span>
-                          <span className="opacity-80 uppercase">Bye {slot.placeholder.byeWeek}</span>
+                          <span className="font-bold">{slot.placeholder.position} • {slot.placeholder.teamInfo.teamAbbv}</span>
+                          <span className="opacity-80 uppercase">Bye {slot.placeholder.teamInfo.byeWeek}</span>
                         </div>
                       </div>
                     ) : (
@@ -272,7 +272,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
             <div className="flex justify-between items-start mb-1.5">
                <div className="flex gap-1.5">
                 <div className="text-[10px] font-bold text-[#adbac7]">Round {suggestedPlayer.round}{" -->  "}</div>
-                <div className="text-[10px] font-bold text-primary truncate">{suggestedPlayer.name} ({suggestedPlayer.position}, {suggestedPlayer.team})</div>
+                <div className="text-[10px] font-bold text-primary truncate">{suggestedPlayer.name} ({suggestedPlayer.position}, {suggestedPlayer.teamInfo.teamAbbv})</div>
                </div>
                <div className="text-[10px] font-mono font-bold text-primary">{suggestedPlayer.ppg}</div>
             </div>

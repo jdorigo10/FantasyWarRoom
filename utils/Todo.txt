@@ -1,0 +1,14 @@
+2023
+- projected_ppg: does not exist, must find online
+- projected_games: does not exist, must find online
+
+- is_suspended: must check players who where suspended for that season
+- is_injured: must check players who where injured/hurt for that season
+
+2024
+- is_suspended: must check players who where suspended for that season
+- is_injured: must check players who where injured/hurt for that season
+
+2025
+- is_suspended: must check players who where suspended for that season
+- is_injured: must check players who where injured/hurt for that season
