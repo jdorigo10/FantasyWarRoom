@@ -84,10 +84,10 @@ export default function Dashboard() {
       players = await loadSeasonPlayerInfo(players, playerTeams);
       index++;
 
-      // Step 5: TODO Past Player Info
+      // Step 5: Load Past Player Info
       setLoadingStep(index);
       setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
-      await loadPastPlayerInfo();
+      players = await loadPastPlayerInfo(players);
       index++;
 
       // Step 6: TODO Generate AI Analysis
@@ -194,10 +194,10 @@ export default function Dashboard() {
     if (location === "/rankings") {
       return (
         <div className="flex-1 overflow-hidden p-6">
-          <Card className={cn("h-full flex flex-col shadow-xl transition-colors duration-500",
+          <Card className={cn("rounded-t h-full flex flex-col shadow-xl transition-colors duration-500",
             settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-            <div className={cn("p-6 border-b flex items-center justify-between transition-colors duration-500",
-              settings.theme === 'dark' ? "border-[#30363d] bg-[#0d1117]/50" : "border-gray-200 bg-gray-50/50")}>
+            <div className={cn("rounded-t p-6 border-b flex items-center justify-between transition-colors duration-500",
+              settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
                <div>
                   <h2 className={cn("text-xl font-display font-bold tracking-tight transition-colors duration-500",
                     settings.theme === 'dark' ? "text-white" : "text-gray-900")}>PLAYER RANKINGS</h2>

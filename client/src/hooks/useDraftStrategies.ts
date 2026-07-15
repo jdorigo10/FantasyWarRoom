@@ -3,7 +3,8 @@ import {useDraftStore} from '@/lib/draftStore';
 import {useMemo} from 'react';
 
 export function useDraftStrategies() {
-  const {players, settings, picks, pickedPlayers} = useDraftStore();
+  const {players, settings, picks, pickedPlayers, currentPickIndex} =
+      useDraftStore();
 
   const userActualPicks = useMemo(() => {
     const map: Record<number, Player> = {};
@@ -31,7 +32,6 @@ export function useDraftStrategies() {
 
     // 1. Pick 3 rounds for RBs
     const rbCombs = getCombinations(rounds, 3);
-
     for (const rbs of rbCombs) {
       const remainingAfterRb = rounds.filter(r => !rbs.includes(r));
       // 2. Pick 3 rounds for WRs
@@ -57,14 +57,13 @@ export function useDraftStrategies() {
           draftOrder[p.QB] = 'QB';
           draftOrder[p.TE] = 'TE';
 
-          // Fixed rounds
-          draftOrder[12] = 'DST';
-          draftOrder[14] = 'K';
-
-          // FILTER: Check conflicts with actual user picks
+          // Only validate the first 8 rounds when building the strategy.
+          // DST and K are handled flexibly in rounds 9-14 during simulation.
           let conflict = false;
           for (const [roundStr, player] of Object.entries(userActualPicks)) {
             const round = parseInt(roundStr);
+            if (round > 8) continue;
+
             if (draftOrder[round] !== player.position) {
               conflict = true;
               break;
@@ -78,35 +77,73 @@ export function useDraftStrategies() {
       }
     }
 
+    const getScenarioKey =
+        (position: string, scenarioPlayers: Record<string, any>) => {
+          if (['DST', 'K', 'QB', 'TE'].includes(position)) {
+            return `${position}1`;
+          }
+
+          let count = 1;
+          while (scenarioPlayers[`${position}${count}`]) count++;
+          return `${position}${count}`;
+        };
+
+    const getBestAvailable =
+        (position: string, round: number, userPickOverall: number,
+         draftedIds: Set<string>) => {
+          const eligible = players.filter(p => p.position === position)
+                               .filter(p => !draftedIds.has(p.id))
+                               .filter(p => !pickedPlayers.includes(p.id));
+
+          if (round > 8 && (position === 'DST' || position === 'K')) {
+            return eligible.sort((a, b) => b.ppg - a.ppg)[0] ||
+                players.find(
+                    p => p.position === position && !draftedIds.has(p.id) &&
+                        !pickedPlayers.includes(p.id)) ||
+                null;
+          }
+
+          const currentPickOverall = currentPickIndex + 1;
+          const isWithinThreePicks =
+              Math.abs(userPickOverall - currentPickOverall) <= 3;
+
+          if (isWithinThreePicks) {
+            return eligible.sort((a, b) => b.ppg - a.ppg)[0] ||
+                players.find(
+                    p => p.position === position && !draftedIds.has(p.id) &&
+                        !pickedPlayers.includes(p.id)) ||
+                null;
+          }
+
+          const byDraftPosition =
+              eligible.filter(p => p.adp > (userPickOverall - round));
+
+          if (byDraftPosition.length > 0) {
+            return byDraftPosition.sort((a, b) => b.ppg - a.ppg)[0];
+          }
+
+          return eligible.sort((a, b) => b.ppg - a.ppg)[0] ||
+              players.find(
+                  p => p.position === position && !draftedIds.has(p.id) &&
+                      !pickedPlayers.includes(p.id)) ||
+              null;
+        };
+
     // Simulate all scenarios
     const results = generatedStrategies.map((strat, idx) => {
       const scenarioPlayers: Record<string, any> = {};
       const draftedIds = new Set<string>();
+      const draftedPositions = new Set<string>();
       const draftOrder = strat.draftOrder;
 
-      // Simulation
-      for (let round = 1; round <= 14; round++) {
-        const pos = draftOrder[round];
-        if (!pos) continue;  // Skip rounds 9, 10, 11, 13
-
-        // Determine pick overall for user
+      for (let round = 1; round <= 16; round++) {
         const userPickOverall = round % 2 === 1 ?
             (round - 1) * settings.teamCount + settings.position :
             round * settings.teamCount - settings.position + 1;
 
-        // Check if user already made a pick in this round
         if (userActualPicks[round]) {
           const player = userActualPicks[round];
-
-          // Generate key
-          let key = pos;
-          if (['DST', 'K', 'QB', 'TE'].includes(pos))
-            key = `${pos}1`;
-          else {
-            let count = 1;
-            while (scenarioPlayers[`${pos}${count}`]) count++;
-            key = `${pos}${count}`;
-          }
+          const key = getScenarioKey(player.position, scenarioPlayers);
 
           scenarioPlayers[key] = {
             ...player,
@@ -116,51 +153,65 @@ export function useDraftStrategies() {
                     ?.pickOverall ||
                 userPickOverall
           };
+
           draftedIds.add(player.id);
+          draftedPositions.add(player.position);
           continue;
         }
 
-        // Otherwise simulate "Best Available"
-        const bestAvailable =
-            players.filter(p => p.position === pos)
-                .filter(
-                    p => !draftedIds.has(p.id))  // Not picked in this scenario
-                .filter(
-                    p => !pickedPlayers.includes(
-                        p.id))  // Not picked in real draft (by anyone)
-                .filter(p => p.adp > (userPickOverall - round))
-                .sort((a, b) => b.ppg - a.ppg)[0] ||
-            players.filter(
-                p => p.position === pos && !draftedIds.has(p.id) &&
-                    !pickedPlayers.includes(p.id))[0];
+        if (round <= 8) {
+          const pos = draftOrder[round];
+          if (!pos) continue;
 
-        if (bestAvailable) {
-          draftedIds.add(bestAvailable.id);
+          const bestAvailable =
+              getBestAvailable(pos, round, userPickOverall, draftedIds);
 
-          let key = pos;
-          if (pos === 'DST')
-            key = 'DST1';
-          else if (pos === 'K')
-            key = 'K1';
-          else if (pos === 'QB')
-            key = 'QB1';
-          else if (pos === 'TE')
-            key = 'TE1';
-          else {
-            // RB or WR
-            let count = 1;
-            while (scenarioPlayers[`${pos}${count}`]) {
-              count++;
-            }
-            key = `${pos}${count}`;
+          if (bestAvailable) {
+            draftedIds.add(bestAvailable.id);
+
+            const key = getScenarioKey(pos, scenarioPlayers);
+            scenarioPlayers[key] = {
+              ...bestAvailable,
+              round,
+              pickOverall: userPickOverall
+            };
           }
-
-          scenarioPlayers[key] = {
-            ...bestAvailable,
-            round,
-            pickOverall: userPickOverall
-          };
+          continue;
         }
+
+        const hasDST = draftedPositions.has('DST');
+        const hasK = draftedPositions.has('K');
+
+        if (hasDST && hasK) continue;
+
+        const candidatePositions =
+            [!hasDST ? 'DST' : null, !hasK ? 'K' : null].filter(Boolean) as
+            string[];
+
+        if (candidatePositions.length === 0) continue;
+
+        const candidates =
+            candidatePositions
+                .map(position => {
+                  const player = getBestAvailable(
+                      position, round, userPickOverall, draftedIds);
+                  return player ? {position, player} : null;
+                })
+                .filter(Boolean) as Array<{position: string; player: Player}>;
+
+        if (candidates.length === 0) continue;
+
+        const selected = candidates[0];
+
+        draftedIds.add(selected.player.id);
+        draftedPositions.add(selected.position);
+
+        const key = getScenarioKey(selected.position, scenarioPlayers);
+        scenarioPlayers[key] = {
+          ...selected.player,
+          round,
+          pickOverall: userPickOverall
+        };
       }
 
       // Determine FLEX and BENCH

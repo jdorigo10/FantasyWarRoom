@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Plus, Clock, Baby, TrendingUp as TrendingUpIcon, TrendingDown, RefreshCcw, PlusSquare, Bandage, Lock } from "lucide-react";
+import { Search, Plus, Clock, Baby, TrendingUp, RefreshCcw, PlusSquare, Bandage, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Heart, Crosshair } from "lucide-react";
+import { Heart, Crosshair, ChevronDown } from "lucide-react";
+import { Gem, Rocket, Star, CircleCheck, Eye, Minus, TrendingDown, TriangleAlert, ThumbsDown, Bomb, Dices } from "lucide-react";
 import { Position, POSITION_LIST, NFLTeamAbbv, NFL_ABBV_LIST, NFL_TEAM_MAP } from "@/lib/baseData";
 
 interface PlayerTableProps {
@@ -18,6 +19,9 @@ interface PlayerTableProps {
 export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const { players, pickedPlayers, picks, makePick, settings, filters, updateFilters, rankingsFilters, updateRankingsFilters, playerTags, togglePlayerTag, currentPickIndex } = useDraftStore();
   
+  // Check if draft is completed
+  const isDraftComplete = (currentPickIndex+1) > (16 * settings.teams.length);
+
   const userFuturePicks = React.useMemo(() => {
     const p = [];
     for (let r = 1; r <= settings.rounds; r++) {
@@ -47,6 +51,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   const currentTurnDivider = pickDividers.get(0);
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'rank', direction: 'asc' });
+  const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
 
   const currentFilters = showExtendedStats ? rankingsFilters : filters;
   const currentUpdateFilters = showExtendedStats ? updateRankingsFilters : updateFilters;
@@ -189,7 +194,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     // 7. Trending Up
     const isTrendingUp = player.trend === "UP";
     if (isTrendingUp) {
-      icons.push({ icon: TrendingUpIcon, label: "Trending Up", color: "text-green-500" });
+      icons.push({ icon: TrendingUp, label: "Trending Up", color: "text-green-500" });
     }
 
     // 8. Trending Down (Cannot have both Trending Up and Trending Down)
@@ -290,17 +295,24 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           />
         </div>
         
-        <select 
-          className="h-9 bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg px-3 focus:ring-primary/20 cursor-pointer min-w-[140px] transition-all hover:bg-[#1c2128]"
-          value={currentFilters.team}
-          onChange={(e) => currentUpdateFilters({ team: e.target.value as NFLTeamAbbv })}
-        >
-          {TEAMS_ALL.map(team => (
-            <option key={team} value={team}>
-              {TEAM_NAMES[team as NFLTeamAbbv] || team}
-            </option>
-          ))}
-        </select>
+        <div className="relative min-w-[160px]">
+          <select 
+            className="h-9 w-full appearance-none bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg pl-3 pr-9 focus:ring-primary/20 cursor-pointer transition-all hover:bg-[#1c2128]"
+            value={currentFilters.team}
+            onChange={(e) => currentUpdateFilters({ 
+              team: e.target.value as NFLTeamAbbv 
+            })}
+          >
+            {TEAMS_ALL.map(team => (
+              <option key={team} value={team}>
+                {TEAM_NAMES[team as NFLTeamAbbv] || team}
+              </option>
+            ))}
+          </select>
+          <ChevronDown 
+            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+          />
+        </div>
 
         <div className="flex bg-[#0d1117] rounded-lg border border-[#30363d] p-1">
            {POSITIONS.map(pos => (
@@ -450,8 +462,13 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
             return (
               <React.Fragment key={player.id}>
               <div 
+                onClick={() =>
+                  setExpandedPlayerId(
+                    expandedPlayerId === player.id ? null : player.id
+                  )
+                }
                 className={cn(
-                  "grid grid-cols-12 gap-0 px-2 py-2.5 items-center border-b border-[#30363d] hover:bg-white/[0.02] transition-colors group relative",
+                  "grid grid-cols-12 gap-0 px-2 py-2.5 items-center hover:bg-white/[0.02] transition-colors group relative cursor-pointer bg-[#0d1117]", expandedPlayerId === player.id ? "" : "border-b border-[#30363d]" ,
                   isPicked && "opacity-40 grayscale-[0.5]"
                 )}
               >
@@ -588,6 +605,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                         size="sm" 
                         className="h-7 w-full max-w-[80px] bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
                         onClick={() => makePick(player.id)}
+                        disabled={isDraftComplete}
                       >
                         Draft
                       </Button>
@@ -599,6 +617,162 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   </div>
                 )}
               </div>
+
+              {expandedPlayerId === player.id && (
+                <div className="px-3 py-3 border-b border-[#30363d] bg-[#0d1117]">
+                  <div className="px-4 py-4 bg-[#161b22] border border-[#30363d] rounded-md">
+
+                    {/* Player AI Stock / AI Insight */}
+                    <div className="flex items-start gap-3 mb-5">
+                      <div
+                        className={cn(
+                          "flex flex-col items-center justify-center h-12 w-15 rounded-md shrink-0 gap-0.5",
+                          player.stock === "DIAMOND" && "bg-cyan-400/10",
+                          player.stock === "BREAKOUT" && "bg-emerald-400/10",
+                          player.stock === "STAR" && "bg-yellow-400/10",
+                          player.stock === "STARTER" && "bg-green-400/10",
+                          player.stock === "SLEEPER" && "bg-purple-400/10",
+                          player.stock === "AVERAGE" && "bg-gray-400/10",
+                          player.stock === "OVERVALUED" && "bg-orange-400/10",
+                          player.stock === "RISKY" && "bg-amber-400/10",
+                          player.stock === "FADE" && "bg-orange-600/10",
+                          player.stock === "BUST" && "bg-red-500/10",
+                          player.stock === "WILDCARD" && "bg-pink-400/10"
+                        )}
+                      >
+                        {player.stock === "DIAMOND" && (
+                          <>
+                            <Gem className="h-4 w-4 text-cyan-400" />
+                            <span className="text-[8px] font-bold text-cyan-400">
+                              DIAMOND
+                            </span>
+                          </>
+                        )}
+                        {player.stock === "BREAKOUT" && (
+                          <>
+                            <Rocket className="h-4 w-4 text-emerald-400" />
+                            <span className="text-[8px] font-bold text-emerald-400">BREAKOUT</span>
+                          </>
+                        )}
+                        {player.stock === "STAR" && (
+                          <>
+                            <Star className="h-4 w-4 text-yellow-400" />
+                            <span className="text-[8px] font-bold text-yellow-400">STAR</span>
+                          </>
+                        )}
+                        {player.stock === "STARTER" && (
+                          <>
+                            <CircleCheck className="h-4 w-4 text-green-400" />
+                            <span className="text-[8px] font-bold text-green-400">STARTER</span>
+                          </>
+                        )}
+                        {player.stock === "SLEEPER" && (
+                          <>
+                            <Eye className="h-4 w-4 text-purple-400" />
+                            <span className="text-[8px] font-bold text-purple-400">SLEEPER</span>
+                          </>
+                        )}
+                        {player.stock === "AVERAGE" && (
+                          <>
+                            <Minus className="h-4 w-4 text-gray-400" />
+                          </>
+                        )}
+                        {player.stock === "OVERVALUED" && (
+                          <>
+                            <TrendingDown className="h-4 w-4 text-orange-400" />
+                            <span className="text-[8px] font-bold text-orange-400">OVERVALUED</span>
+                          </>
+                        )}
+                        {player.stock === "RISKY" && (
+                          <>
+                            <TriangleAlert className="h-4 w-4 text-amber-400" />
+                            <span className="text-[8px] font-bold text-amber-400">RISKY</span>
+                          </>
+                        )}
+                        {player.stock === "FADE" && (
+                          <>
+                            <ThumbsDown className="h-4 w-4 text-orange-600" />
+                            <span className="text-[8px] font-bold text-orange-600">FADE</span>
+                          </>
+                        )}
+                        {player.stock === "BUST" && (
+                          <>
+                            <Bomb className="h-4 w-4 text-red-500" />
+                            <span className="text-[8px] font-bold text-red-500">BUST</span>
+                          </>
+                        )}
+                        {player.stock === "WILDCARD" && (
+                          <>
+                            <Dices className="h-4 w-4 text-pink-400" />
+                            <span className="text-[8px] font-bold text-pink-400">WILDCARD</span>
+                          </>
+                        )}
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] text-[#8b949e] leading-relaxed max-w-2xl">
+                          {player.notes}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Previous Season */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">
+                          Previous Season
+                        </span>
+
+                        {!player.rookie && player.pastInfo.totalGames > 0 && (
+                          <span className="text-[10px] font-bold text-[#c9d1d9]">
+                            PPG = {player.pastInfo.ppg}&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;Games Played = {player.pastInfo.totalGames}
+                          </span>
+                        )}
+                      </div>
+
+                      {player.rookie || player.pastInfo.totalGames === 0 ? (
+                        <div className="h-[65px] border border-[#30363d] rounded-md flex items-center justify-center bg-[#0d1117]">
+                          <span className="text-[11px] text-[#6e7681] italic">
+                            Did not play last season
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="border border-[#30363d] rounded-md overflow-hidden">
+
+                          {/* Week Headers */}
+                          <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] bg-[#0d1117]">
+                            {Array.from({ length: 18 }).map((_, index) => (
+                              <div
+                                key={index}
+                                className="py-1.5 text-center text-[9px] font-mono text-[#6e7681] border-r border-[#30363d] last:border-r-0"
+                              >
+                                W{index + 1}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Weekly Points */}
+                          <div className="grid grid-cols-[repeat(18,minmax(0,1fr))]">
+                            {player.pastInfo.weeks.map((points, index) => (
+                              <div
+                                key={index}
+                                className={`py-2 text-center text-[10px] font-mono font-bold border-r border-t border-[#30363d] last:border-r-0 ${
+                                  points === -99 ? "text-[#6e7681]" : "text-[#c9d1d9]"
+                                }`}
+                              >
+                                {points === -99 ? "--" : points}
+                              </div>
+                            ))}
+                          </div>
+
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
               {divider && (
                  <div className="bg-primary/5 border-y border-primary/20 py-1.5 px-2 text-center flex items-center justify-center gap-4 my-0.5">
                    <div className="h-px bg-primary/20 flex-1" />

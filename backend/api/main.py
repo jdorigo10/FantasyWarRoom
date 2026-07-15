@@ -10,6 +10,7 @@ from backend.scrapers.teamScraper import scrape_team_info
 from backend.scrapers.teamSpecificScraper import scrape_team_specifics
 from backend.scrapers.playerScraper import scrape_player_info
 from backend.scrapers.playerSpecificScraper import scrape_player_specifics
+from backend.scrapers.pastPlayerScraper import scrape_past_player_info
 
 
 app = FastAPI()
@@ -49,3 +50,7 @@ async def get_players(year: str):
 @app.get("/api/playerSpecifics")
 async def get_player_specifics(year: str):
     return await scrape_player_specifics(year)
+
+@app.get("/api/pastPlayers")
+async def get_past_players(year: str):
+    return await scrape_past_player_info(year)

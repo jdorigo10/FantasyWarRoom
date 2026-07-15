@@ -1,6 +1,7 @@
 import httpx
 import json
 import sqlite3
+import math
 
 # Map of Position Names to their ESPN Slot IDs
 POSITION_IDS = {
@@ -110,16 +111,25 @@ for p in data.get("players", []):
         ppg = 0.0
         actualGames = 0
 
+    # Game by Game Points Scored
+    breakdown = [-99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99]
+    for stat in player_info.get("stats", []):
+        if str(stat.get("seasonId")) == str(year) and str(stat.get("statSourceId")) == str(0):
+            if int(stat.get("scoringPeriodId")) > 0:
+                breakdown[int(stat.get("scoringPeriodId"))-1] = float(stat.get("appliedTotal"))
+    breakdown_string = ", ".join(f"{value:.2f}" for value in breakdown)
+
     player = {
         "id": str(id),
         # year
         "team": str(team),
         "ppg": str(ppg),
-        "games": str(actualGames)
+        "games": str(actualGames),
+        "breakdown": str(breakdown_string)
     }
     players.append(player)
 
-    print(f"Scraped) {name}: PPG={ppg}, Games={actualGames}")
+    print(f"Scraped) {name}: PPG={ppg}, Games={actualGames} ({breakdown_string})")
 
 print(f"Total Players Scraped: {len(players)}")
 
@@ -137,16 +147,18 @@ if UPLOAD:
             season_year,
             team_id,
             actual_ppg,
-            actual_games
+            actual_games,
+            breakdown
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
     """, [
         (
             player["id"],
             year,
             player["team"],
             player["ppg"],
-            player["games"]
+            player["games"],
+            player["breakdown"]
         )
         for player in players
     ])

@@ -59,6 +59,9 @@ export function DraftControls() {
   const nextPicks = Array.from({length: 3}, (_, i) => currentPickIndex + 1 + i)
     .filter(idx => idx < settings.rounds * settings.teamCount);
 
+  // Check if draft is completed
+  const isDraftComplete = (currentPick?.overall ?? 0) > (16 * settings.teams.length);
+
   const renderMiniPick = (idx: number, isFuture: boolean) => {
       const details = getPickDetails(idx);
       if (!details) return null;
@@ -86,7 +89,7 @@ export function DraftControls() {
                       <div className="text-[8px] font-normal text-muted-foreground flex gap-1 mt-0.5">
                          <span>{player.position}</span>
                          <span>•</span>
-                         <span>{player.team}</span>
+                         <span>{player.teamInfo.teamAbbv}</span>
                       </div>
                   </div>
               ) : (
@@ -101,53 +104,76 @@ export function DraftControls() {
   return (
     <div className="bg-card border-b border-border p-2 flex items-center justify-between gap-4 overflow-hidden h-[80px]">
       
-      {/* Ticker Section */}
-      <div className="flex-1 flex items-center justify-center xl:justify-start gap-4 overflow-hidden">
-         {/* Previous Picks (Desktop) */}
-         <div className="hidden xl:flex items-center gap-2">
-             {prevPicks.map(idx => renderMiniPick(idx, false))}
-         </div>
+    {/* Ticker Section */}
+    <div className="flex-1 flex items-center justify-center xl:justify-start gap-4 overflow-hidden">
+        {/* Previous Picks (Desktop) */}
+        <div className="hidden xl:flex items-center gap-2">
+            {prevPicks.map(idx => renderMiniPick(idx, false))}
+        </div>
          
          {/* Current Pick - Hero */}
-         <div className={cn(
-             "flex-shrink-0 flex items-center justify-center px-4 py-1.5 rounded-lg border-2 shadow-sm transition-all duration-500 min-w-[240px]",
-             currentPick?.team?.isUser 
-                ? "bg-primary/10 border-primary shadow-[0_0_15px_rgba(46,160,67,0.15)]" 
+        <div
+        className={cn(
+            "flex-shrink-0 flex items-center justify-center px-4 py-1.5 rounded-lg border-2 shadow-sm transition-all duration-500 min-w-[240px]",
+            isDraftComplete
+            ? "bg-muted/30 border-border"
+            : currentPick?.team?.isUser
+                ? "bg-primary/10 border-primary shadow-[0_0_15px_rgba(46,160,67,0.15)]"
                 : "bg-card border-border"
-         )}>
-             <div className="flex flex-col items-center">
-                 {/* Top: Info */}
-                 <div className="text-[10px] font-mono text-muted-foreground font-bold bg-muted/50 px-2 py-0.5 rounded mb-0.5 border border-white/5">
-                    RD {currentPick?.round} • PICK {currentPick?.pick} <span className="opacity-30 mx-1">|</span> #{currentPick?.overall}
-                 </div>
+        )}
+        >
+        {isDraftComplete ? (
+            <div className="flex flex-col items-center">
+            <div className="text-xl font-display font-bold text-muted-foreground">
+                DRAFT COMPLETE
+            </div>
 
-                 {/* Middle: Name */}
-                 <div className={cn(
-                     "text-xl font-display font-bold whitespace-nowrap mb-0.5",
-                     currentPick?.team?.isUser ? "text-primary animate-pulse" : "text-foreground"
-                 )}>
-                    {currentPick?.team?.name}
-                 </div>
-                 
-                 {/* Bottom: Counter */}
-                 {picksUntilUp > 0 && (
-                     <div className="text-[9px] font-bold text-primary flex items-center gap-1 opacity-90 bg-primary/10 px-2 py-0.5 rounded-full mt-0.5">
-                        <Clock className="w-3 h-3" />
-                        {picksUntilUp} Pick{picksUntilUp !== 1 && 's'} Until You
-                     </div>
-                 )}
-                 {picksUntilUp === 0 && (
-                     <div className="text-[9px] font-bold text-primary animate-bounce bg-primary/10 px-2 py-0.5 rounded-full mt-0.5">
-                        MAKE YOUR SELECTION
-                     </div>
-                 )}
-             </div>
-         </div>
+            <div className="text-[9px] font-bold text-muted-foreground opacity-60 mt-0.5">
+                {16 * settings.teams.length} PICKS COMPLETED
+            </div>
+            </div>
+        ) : (
+            <div className="flex flex-col items-center">
+            {/* Top: Info */}
+            <div className="text-[10px] font-mono text-muted-foreground font-bold bg-muted/50 px-2 py-0.5 rounded mb-0.5 border border-white/5">
+                RD {currentPick?.round} • PICK {currentPick?.pick}
+                <span className="opacity-30 mx-1">|</span>
+                #{currentPick?.overall}
+            </div>
 
-         {/* Next Picks (Desktop) */}
-         <div className="hidden xl:flex items-center gap-2">
-             {nextPicks.map(idx => renderMiniPick(idx, true))}
-         </div>
+            {/* Middle: Name */}
+            <div
+                className={cn(
+                "text-xl font-display font-bold whitespace-nowrap mb-0.5",
+                currentPick?.team?.isUser
+                    ? "text-primary animate-pulse"
+                    : "text-foreground"
+                )}
+            >
+                {currentPick?.team?.name}
+            </div>
+
+            {/* Bottom: Counter */}
+            {picksUntilUp > 0 && (
+                <div className="text-[9px] font-bold text-primary flex items-center gap-1 opacity-90 bg-primary/10 px-2 py-0.5 rounded-full mt-0.5">
+                <Clock className="w-3 h-3" />
+                {picksUntilUp} Pick{picksUntilUp !== 1 && "s"} Until You
+                </div>
+            )}
+
+            {picksUntilUp === 0 && (
+                <div className="text-[9px] font-bold text-primary animate-bounce bg-primary/10 px-2 py-0.5 rounded-full mt-0.5">
+                MAKE YOUR SELECTION
+                </div>
+            )}
+            </div>
+        )}
+        </div>
+
+        {/* Next Picks (Desktop) */}
+        <div className="hidden xl:flex items-center gap-2">
+            {nextPicks.map(idx => renderMiniPick(idx, true))}
+        </div>
       </div>
 
       {/* Controls */}
@@ -155,7 +181,7 @@ export function DraftControls() {
         <Button variant="outline" size="sm" onClick={undoLastPick} className="h-8 text-xs border-white/10 hover:bg-white/5">
            <RotateCcw className="mr-2 h-3.5 w-3.5" /> Undo
         </Button>
-        <Button variant="secondary" size="sm" onClick={simulatePick} className="h-8 text-xs bg-secondary/20 text-secondary-foreground hover:bg-secondary/30">
+        <Button variant="secondary" size="sm" disabled={isDraftComplete} onClick={simulatePick} className="h-8 text-xs bg-secondary/20 text-secondary-foreground hover:bg-secondary/30">
            <MonitorPlay className="mr-2 h-3.5 w-3.5" /> Sim Pick
         </Button>
         <Button variant="destructive" size="sm" onClick={handleReset} className="h-8 text-xs">

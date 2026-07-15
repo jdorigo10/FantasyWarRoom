@@ -9,6 +9,19 @@ interface TeamRosterProps {
   showSuggested?: boolean;
 }
 
+function backupsOfPosFor(
+  pos: "QB" | "TE",
+  filledRoster: Array<{ slot: string; player: any; placeholder: any }>,
+  rosterPlayers: Array<any>
+) {
+  const startersOfPos = filledRoster.filter(
+    s => s.slot !== "BENCH" && s.player?.position === pos
+  ).length;
+
+  const rosterPlayersOfPos = rosterPlayers.filter(p => p.position === pos).length;
+  return rosterPlayersOfPos - startersOfPos;
+}
+
 export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
   const { players, picks, settings, updateSettings, currentPickIndex } = useDraftStore();
   const { scenarios } = useDraftStrategies();
@@ -124,32 +137,65 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
 
   // Re-evaluate bench placeholders
   const benchSuggestedPositions = new Set<string>();
+  const starterSlots = filledRoster.filter(s => s.slot !== "BENCH");
+  const emptyBenchSlots = filledRoster.filter(s => s.slot === "BENCH" && !s.player).length;
 
   filledRoster.forEach((slot) => {
     if (slot.slot === "BENCH" && !slot.player) {
-      const starterSlots = rosterSlots.filter(s => s.slot !== "BENCH");
-      
+      const remainingBenchSlots =
+        emptyBenchSlots - filledRoster.filter(
+          s => s.slot === "BENCH" && !s.player && s !== slot
+        ).length;
+
+      const starterQB = filledRoster.some(
+        s => s.slot !== "BENCH" && s.player?.position === "QB"
+      );
+      const starterTE = filledRoster.some(
+        s => s.slot !== "BENCH" && s.player?.position === "TE"
+      );
+      const hasFlex = starterSlots.some(s => s.slot === "FLEX" && s.player);
+
+      const backupQBNeeded = starterQB &&
+        !filledRoster.some(
+          s => s.slot !== "BENCH" && s.player?.position === "QB" && s.player?.name !== undefined
+        ); // placeholder, replaced below
+
+      const backupTENeeded = starterTE &&
+        !filledRoster.some(
+          s => s.slot !== "BENCH" && s.player?.position === "TE" && s.player?.name !== undefined
+        ); // placeholder, replaced below
+
       const fullPositions = (["QB", "RB", "WR", "TE", "DST", "K"] as const).filter(pos => {
         if (benchSuggestedPositions.has(pos as any)) return false;
 
-        const canFitInStarters = filledRoster.some(s => s.slot !== "BENCH" && !s.player && (s.pos.includes(pos) || (s.slot === "FLEX" && ["RB", "WR"].includes(pos))));
-        
-        if (!canFitInStarters) {
-          const startersOfPos = filledRoster.filter(s => s.slot !== "BENCH" && s.player?.position === pos).length;
-          const totalOfPos = rosterPlayers.filter(p => p.position === pos).length;
-          const backupsOfPos = totalOfPos - startersOfPos;
+        if (pos === "DST" || pos === "K") return false;
 
-          // Special logic for K: No backups suggested
-          if (pos === "K") return false;
+        const startersOfPos = filledRoster.filter(
+          s => s.slot !== "BENCH" && s.player?.position === pos
+        ).length;
 
-          // Special logic for QB/TE/DST: Suggest exactly 1 backup
-          if (["QB", "TE", "DST"].includes(pos)) {
-            return backupsOfPos === 0;
+        if (pos === "QB" || pos === "TE") {
+          return startersOfPos > 0 && hasFlex && backupsOfPosFor(pos, filledRoster, rosterPlayers) === 0;
+        }
+
+        if (pos === "RB" || pos === "WR") {
+          const hasRequiredStarters = startersOfPos >= 2;
+
+          if (!hasRequiredStarters) return false;
+
+          if (remainingBenchSlots === 2) {
+            if (backupQBNeeded && backupTENeeded) return false;
+            return true;
           }
 
-          // For RB/WR: Suggest 1 backup once starters/flex are full
-          return backupsOfPos === 0;
+          if (remainingBenchSlots === 1) {
+            if (backupQBNeeded || backupTENeeded) return false;
+            return true;
+          }
+
+          return true;
         }
+
         return false;
       });
 
@@ -158,7 +204,7 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
           .filter(p => !assignedPlaceholderIds.has(p.id))
           .filter(p => fullPositions.includes(p.position as any))
           .sort((a, b) => b.ppg - a.ppg)[0];
-        
+
         if (bestForBench) {
           slot.placeholder = bestForBench;
           assignedPlaceholderIds.add(bestForBench.id);

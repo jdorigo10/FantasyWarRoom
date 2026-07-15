@@ -1,25 +1,38 @@
-import {API_YEAR, NFLTeamAbbv, PastPlayerInfo, Player, PlayerTeam, Position} from './baseData';
+import {AI_Stock, API_YEAR, NFLTeamAbbv, PastPlayerInfo, Player, PlayerTeam, Position} from './baseData';
 
 // Helper to create a base player object with minimal data
 function createBasePlayer(item: {playerId: string, name: string}): Player {
   return {
-    id: item.playerId,      // STEP 3
-    name: item.name,        // STEP 3
-    position: 'All',        // STEP 3
-    teamInfo: null as any,  // STEP 4
-    age: -1,                // STEP 4
-    experience: -1,         // STEP 4
-    rank: 999,              // STEP 4
-    adp: 170,               // STEP 4
-    ppg: 0,                 // STEP 4
-    projectedGames: 0,      // STEP 4
-    newTeam: false,         // STEP 4
-    rookie: false,          // STEP 4
-    status: 'NA',           // STEP 4
-    injury: 'NA',           // STEP 4
-    pastInfo: null as any,  // STEP 5 - Get past player info from DB
-    trend: 'NORMAL',        // STEP 6 - TODO - AI Analyze? past info to predict
-    notes: 'NONE'           // STEP 6 - TODO - AI Analyze? past info to predict
+    id: item.playerId,  // STEP 3
+    name: item.name,    // STEP 3
+    position: 'All',    // STEP 3
+    teamInfo: {
+      teamId: '0',
+      teamAbbv: 'FA',
+      byeWeek: 0,
+      sos: 1,
+      ppgOffense: 0,
+      ppgDefense: 99
+    },                  // STEP 4
+    age: -1,            // STEP 4
+    experience: -1,     // STEP 4
+    rank: 9999,         // STEP 4
+    adp: 170,           // STEP 4
+    ppg: 0,             // STEP 4
+    projectedGames: 0,  // STEP 4
+    newTeam: false,     // STEP 4
+    rookie: false,      // STEP 4
+    status: 'NA',       // STEP 4
+    injury: 'NA',       // STEP 4
+    trend: 'NORMAL',    // STEP 5 - Get past player info from DB
+    pastInfo: {
+      ppg: 0,
+      totalGames: 0,
+      weeks: []
+    },                 // STEP 5 - Get past player info from DB
+    stock: 'AVERAGE',  // STEP 6 - TODO - AI Analyze? past info to predict
+    notes: 'No insight available'  // STEP 6 - TODO - AI Analyze? past info to
+                                   // predict
   };
 }
 
@@ -163,19 +176,43 @@ export async function loadSeasonPlayerInfo(
         p.injuryStatus as 'NA' | 'UNKNOWN' | 'HEALTHY' | 'HURT' | 'IR';
   }
 
-  const filteredPlayers = players.filter(p => p.rank !== 999);
-
+  const filteredPlayers = players.filter(p => p.rank <= 600);
 
   await new Promise(resolve => setTimeout(resolve, 500));
   return filteredPlayers;
 }
 
 /**
- * Step 5: TODO Past Player Info
+ * Step 5: Load Past Player Season Info
  */
-export async function loadPastPlayerInfo(): Promise<void> {
+export async function loadPastPlayerInfo(players: Player[]): Promise<Player[]> {
+  const res =
+      await fetch(`http://localhost:8000/api/pastPlayers?year=${API_YEAR - 1}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Past Player Information`);
+  }
+
+  const data = await res.json() as {players: any[]};
+
+  for (const p of data.players) {
+    const playerId = p.id;
+
+    let player = players.find(player => player.id === playerId);
+    if (!player) {
+      continue;
+    }
+
+    player.pastInfo.ppg = Number(parseFloat(p.ppg).toFixed(2));
+    player.pastInfo.totalGames = Number(p.games);
+
+    player.pastInfo.weeks =
+        String(p.breakdown)
+            .split(', ')
+            .map(value => Number(parseFloat(value).toFixed(2)));
+  }
+
   await new Promise(resolve => setTimeout(resolve, 500));
-  return;
+  return players;
 }
 
 /**
@@ -201,7 +238,7 @@ export const LOADER_STEPS: LoaderStep[] = [
   {key: 'season_team_info', label: 'Retrieving Season Team Information'},
   {key: 'base_player_info', label: 'Retrieving Base Player Information'},
   {key: 'season_player_info', label: 'Retrieving Season Player Information'},
-  {key: 'past_player_info', label: 'TODO: Retrieving Past Player Information'},
+  {key: 'past_player_info', label: 'Retrieving Past Player Information'},
   {key: 'ai_analysis', label: 'TODO: Generating AI Analysis for each Player'},
   {key: 'loading', label: 'Finalizing Tool'}
 ];
