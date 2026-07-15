@@ -336,7 +336,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
             onCheckedChange={(checked) => currentUpdateFilters({ showDrafted: !!checked })}
             className="border-primary data-[state=checked]:bg-primary h-4 w-4"
           />
-          <label htmlFor="show-drafted" className="text-[10px] font-mono text-[#8b949e] uppercase cursor-pointer select-none whitespace-nowrap">Show Drafted</label>
+          <label htmlFor="show-drafted" className="text-[10px] font-mono uppercase cursor-pointer select-none whitespace-nowrap">Show Drafted</label>
         </div>
       </div>
 
@@ -468,7 +468,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                   )
                 }
                 className={cn(
-                  "grid grid-cols-12 gap-0 px-2 py-2.5 items-center hover:bg-white/[0.02] transition-colors group relative cursor-pointer bg-[#0d1117]", expandedPlayerId === player.id ? "" : "border-b border-[#30363d]" ,
+                  "grid grid-cols-12 gap-0 px-2 py-2.5 items-center transition-colors group relative cursor-pointer bg-[#0d1117]", expandedPlayerId === player.id ? "bg-white/[0.02]" : "border-b border-[#30363d] hover:border-white hover:border" ,
                   isPicked && "opacity-40 grayscale-[0.5]"
                 )}
               >
@@ -619,7 +619,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               </div>
 
               {expandedPlayerId === player.id && (
-                <div className="px-3 py-3 border-b border-[#30363d] bg-[#0d1117]">
+                <div className={cn("px-3 py-3 border-b border-[#30363d] bg-white/[0.02]")}>
                   <div className="px-4 py-4 bg-[#161b22] border border-[#30363d] rounded-md">
 
                     {/* Player AI Stock / AI Insight */}

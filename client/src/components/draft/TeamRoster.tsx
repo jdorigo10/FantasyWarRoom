@@ -3,7 +3,7 @@ import { useDraftStore } from "@/lib/draftStore";
 import { useDraftStrategies } from "@/hooks/useDraftStrategies";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, BotMessageSquare } from "lucide-react";
+import { TrendingUp, BotMessageSquare, ChevronDown } from "lucide-react";
 
 interface TeamRosterProps {
   showSuggested?: boolean;
@@ -224,17 +224,22 @@ export function TeamRoster({ showSuggested = false }: TeamRosterProps) {
         <div className="p-4 border-b border-[#30363d] flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-display font-bold tracking-[0.2em] text-primary uppercase truncate mr-4">{viewedTeam.name}'s Roster</h2>
-            <select 
-              className="bg-[#0d1117] border border-[#30363d] text-xs text-white rounded-lg px-3 py-1.5 focus:ring-primary/20 cursor-pointer min-w-[100px] transition-all hover:bg-[#1c2128]"
-              value={settings.viewedTeamId}
-              onChange={(e) => updateSettings({ viewedTeamId: e.target.value })}
-            >
-              {settings.teams.map((t, idx) => (
-                <option key={t.id} value={t.id} className="bg-[#0d1117]">
-                  {idx + 1}. {t.name}{t.isUser ? " (user)" : ""}
-                </option>
-              ))}
-            </select>
+            <div className="relative min-w-[160px]">
+              <select 
+                className="h-8 w-full appearance-none bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg pl-3 pr-9 focus:ring-primary/20 cursor-pointer transition-all hover:bg-[#1c2128]"
+                value={settings.viewedTeamId}
+                onChange={(e) => updateSettings({ viewedTeamId: e.target.value })}
+              >
+                {settings.teams.map((t, idx) => (
+                  <option key={t.id} value={t.id} className="bg-[#0d1117]">
+                    {idx + 1}. {t.name}{t.isUser ? " (user)" : ""}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown 
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              />
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-[#8b949e] uppercase font-mono font-bold tracking-wider">Projected PPG</span>

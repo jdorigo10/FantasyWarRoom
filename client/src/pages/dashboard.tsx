@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useDraftStore } from "@/lib/draftStore";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DraftControls } from "@/components/draft/DraftControls";
-import { DraftBoard } from "@/components/draft/DraftBoard";
 import { PlayerTable } from "@/components/draft/PlayerTable";
 import { TeamRoster } from "@/components/draft/TeamRoster";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
-import { Database, ShieldHalf, ClipboardClock, CalendarCheck , UserRoundSearch, Trophy, Sparkles, SquareUserRound, CircleCheck  } from "lucide-react";
+import { Database, ShieldHalf, ClipboardClock, CalendarCheck , UserRoundSearch, Trophy, Sparkles, SquareUserRound, CircleCheck, ChevronDown  } from "lucide-react";
 import { LOADER_STEPS, loadBaseTeamInfo, loadSeasonTeamInfo, loadBasePlayerInfo, loadSeasonPlayerInfo, loadPastPlayerInfo, generateAiAnalysis } from "@/lib/dataLoader";
 import { Player, PlayerTeam } from "@/lib/baseData";
 
@@ -27,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { StrategyView } from "@/components/draft/StrategyView";
+import { RosterView } from "@/components/draft/RosterView";
 
 export default function Dashboard() {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -211,14 +211,18 @@ export default function Dashboard() {
       );
     }
 
+    if (location === "/roster") {
+      return <RosterView />;
+    }
+
     if (location === "/strategy") {
       return <StrategyView />;
     }
 
     if (location === "/settings") {
       return (
-        <div className="p-10 max-w-6xl mx-auto space-y-10 h-full">
-          <h1 className={cn("text-3xl font-display font-bold uppercase tracking-tight italic transition-colors duration-500",
+        <div className="flex-1 overflow-hidden p-6">
+          <h1 className={cn("p-4 text-3xl font-display font-bold uppercase tracking-tight italic transition-colors duration-500",
             settings.theme === 'dark' ? "text-white" : "text-gray-900")}>APP SETTINGS</h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-[calc(100%-5rem)]">
@@ -296,14 +300,19 @@ export default function Dashboard() {
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[11px] text-[#8b949e] uppercase font-mono">Team Count</label>
-                      <select 
-                        className={cn("w-full rounded-lg p-2.5 text-sm transition-colors",
-                          settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
-                        value={settings.teamCount}
-                        onChange={(e) => handleTeamCountChange(parseInt(e.target.value))}
-                      >
-                        {[8, 9, 10, 11, 12, 13, 14, 15, 16].map(num => <option key={num} value={num}>{num} Teams</option>)}
-                      </select>
+                      <div className="relative min-w-[160px]">
+                        <select
+                          className={cn("appearance-none w-full rounded-lg p-2.5 text-sm transition-colors border",
+                            settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
+                          value={settings.teamCount}
+                          onChange={(e) => handleTeamCountChange(parseInt(e.target.value))}
+                        >
+                          {[8, 9, 10, 11, 12, 13, 14, 15, 16].map(num => <option key={num} value={num}>{num} Teams</option>)}
+                        </select>
+                        <ChevronDown 
+                          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">

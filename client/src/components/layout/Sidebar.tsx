@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ListOrdered, Target, Settings, Trophy, BookOpen } from "lucide-react";
+import { LayoutDashboard, ListOrdered, Target, Settings, Trophy, BookOpen, SquareKanban } from "lucide-react";
 import { useDraftStore } from "@/lib/draftStore";
 
 export function Sidebar() {
@@ -10,6 +10,7 @@ export function Sidebar() {
   const navItems = [
     { label: "Draft Tool", icon: LayoutDashboard, href: "/" },
     { label: "Player Rankings", icon: ListOrdered, href: "/rankings" },
+    { label: "Roster View", icon: SquareKanban, href: "/roster" },
     { label: "Draft Strategy", icon: BookOpen, href: "/strategy" },
     { label: "Settings", icon: Settings, href: "/settings" }
   ];
@@ -58,15 +59,15 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-6 border-t border-[#30363d]">
-        <div className={cn("rounded-xl p-4 border transition-colors duration-500",
+      <div className="p-3 border-t border-[#30363d]">
+        <div className={cn("rounded-xl p-3 border transition-colors duration-500",
           settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-widest">v1.0</span>
+            <span className="text-[10px] font-mono text-[#8b949e] tracking-widest">v1.0</span>
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
           </div>
           <p className={cn("text-[11px] font-mono transition-colors",
-            settings.theme === 'dark' ? "text-[#c9d1d9]" : "text-gray-900")}>RUNNING LOCALHOST</p>
+            settings.theme === 'dark' ? "text-[#c9d1d9]" : "text-gray-900")}>RUNNING OFFLINE</p>
         </div>
       </div>
     </div>

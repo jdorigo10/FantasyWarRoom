@@ -31,7 +31,7 @@ export function StrategyView() {
   return (
     <div className="flex-1 overflow-hidden p-6 flex flex-col space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-display font-bold tracking-tight text-white uppercase italic">
+        <h2 className="text-xl font-display font-bold tracking-tight uppercase italic">
           Strategy - Pick {settings.position} {" ("} {settings.teamCount}{" Team Draft)"}
         </h2>
         <div className="flex items-center space-x-2 text-[10px] text-[#8b949e] font-mono uppercase tracking-widest">

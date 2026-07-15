@@ -178,13 +178,13 @@ export function DraftControls() {
 
       {/* Controls */}
       <div className="flex items-center space-x-2 border-l pl-4 border-border/50">
-        <Button variant="outline" size="sm" onClick={undoLastPick} className="h-8 text-xs border-white/10 hover:bg-white/5">
+        <Button variant="outline" size="sm" disabled={currentPick?.overall == 1} onClick={undoLastPick} className="h-8 text-xs border-white/10 hover:bg-white/5 text-secondary-foreground">
            <RotateCcw className="mr-2 h-3.5 w-3.5" /> Undo
         </Button>
         <Button variant="secondary" size="sm" disabled={isDraftComplete} onClick={simulatePick} className="h-8 text-xs bg-secondary/20 text-secondary-foreground hover:bg-secondary/30">
            <MonitorPlay className="mr-2 h-3.5 w-3.5" /> Sim Pick
         </Button>
-        <Button variant="destructive" size="sm" onClick={handleReset} className="h-8 text-xs">
+        <Button variant="destructive" size="sm" disabled={currentPick?.overall == 1} onClick={handleReset} className="h-8 text-xs">
            <Trash2 className="mr-2 h-3.5 w-3.5" /> Reset
         </Button>
       </div>
