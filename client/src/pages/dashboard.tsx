@@ -126,7 +126,7 @@ export default function Dashboard() {
             
             <div className="space-y-2">
               <h1 className={cn("text-2xl font-display font-bold tracking-tight uppercase italic transition-colors duration-500",
-                settings.theme === 'dark' ? "text-white" : "text-gray-900")}>FANTASY WARROOM</h1>
+                settings.theme === 'dark' ? "text-white" : "text-gray-900")}>FANTASY FOOTBALL</h1>
               <p className="text-[#8b949e] text-[10px] uppercase tracking-[0.3em] font-mono">Draft Analysis Tool</p>
             </div>
 

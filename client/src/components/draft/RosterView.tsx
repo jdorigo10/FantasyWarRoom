@@ -314,6 +314,13 @@ export function RosterView() {
                     Current Rosters
                 </h2>
                 <div className="flex items-center gap-3">
+                    <Button className="h-7 w-full max-w-[180px] bg-primary/10 text-primary hover:bg-primary/20 hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
+                        onClick={() => null}
+                        disabled={!isDraftComplete}
+                    >
+                        <Download className="h-3 w-3 text-primary" />
+                        <span className="text-[#8b949e]">Export Draft to CSV File</span>
+                    </Button>
                     <Button
                         variant="outline"
                         className="h-7 border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-black"
@@ -321,13 +328,6 @@ export function RosterView() {
                     >
                         <ExternalLink className="mr-2 h-3.5 w-3.5" />
                         Pop Out
-                    </Button>
-                    <Button className="h-7 w-full max-w-[180px] bg-primary/10 text-primary hover:bg-primary/20 hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
-                        onClick={() => null}
-                        disabled={!isDraftComplete}
-                    >
-                        <Download className="h-3 w-3 text-primary" />
-                        <span className="text-[#8b949e]">Export Draft to CSV File</span>
                     </Button>
                 </div>
             </div>
