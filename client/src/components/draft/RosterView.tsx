@@ -1,15 +1,31 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Player } from "@/lib/baseData";
+import { useLocation } from "wouter";
 import { getCurrentPickTeamId, getNextPickTeamId, useDraftStore } from "@/lib/draftStore";
 import { useDraftStrategies } from "@/hooks/useDraftStrategies";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, ArrowUpDown } from "lucide-react";
+import { Download, ArrowUpDown, ExternalLink } from "lucide-react";
 
 export function RosterView() {
       const { picks, players, settings, currentPickIndex } = useDraftStore();
+      const isDetached = typeof window !== "undefined" && window.name === "roster-popup";
+      const [refreshKey, setRefreshKey] = useState(0);
+
+      useEffect(() => {
+        if (!isDetached) return;
+
+        const handleStorage = (event: StorageEvent) => {
+          if (event.key === "fantasy-warroom-draft-state") {
+            setRefreshKey((value) => value + 1);
+          }
+        };
+
+        window.addEventListener("storage", handleStorage);
+        return () => window.removeEventListener("storage", handleStorage);
+      }, [isDetached]);
 
       // Helper for pick info
       const getPickDetails = (index: number) => {
@@ -169,7 +185,7 @@ export function RosterView() {
           }
 
           if (isUserTeam) {
-              return cn(isHeader ? "border border-[#7C7C7C] bg-[#0f1419]/30 text-white font-bold" : "border border-[#7C7C7C] bg-[#0f1419]/0 text-white font-bold");
+              return cn(isHeader ? "border border-[#7C7C7C] bg-[#0f1419]/30 text-white font-bold backdrop-blur-sm" : "border border-[#7C7C7C] bg-[#0f1419]/0 text-white font-bold");
           }
 
           return cn(
@@ -209,24 +225,116 @@ export function RosterView() {
           } as React.CSSProperties;
       };
 
+      const openDetachedRoster = () => {
+          const url = `${window.location.origin}/roster-popup`;
+          const popup = window.open(url, "roster-popup", "width=1400,height=900,left=140,top=100,resizable,scrollbars=no");
+          if (popup) {
+              popup.focus();
+          }
+      };
+
+      if (isDetached) {
+        return (
+          <div className="h-screen w-screen overflow-hidden bg-[#0d1117] p-3">
+            <Card className="h-full w-full min-h-0 bg-[#161b22] border-[#30363d] overflow-hidden flex flex-col shadow-2xl">
+              <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto">
+                <div className="min-w-[720px] p-3">
+                  <div className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${settings.teams.length}, minmax(140px, 1fr))` }}>
+                    <div className="sticky left-0 top-0 z-30 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
+                      Pos
+                    </div>
+                    {settings.teams.map((team, index) => (
+                      <div
+                        key={team.id || index}
+                        className={cn(
+                          "sticky top-0 z-20 flex h-16 items-center justify-center rounded-lg px-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
+                          getTeamColumnClasses(team, true)
+                        )}
+                        style={getTeamColumnStyle(team, true)}
+                      >
+                        <div className="flex flex-col items-center">
+                          <span>{getPickArrowName(team)}</span>
+                          <span className="mt-1 text-[9px] text-[#8b949e] leading-none font-bold">
+                            {`${getProjectedStartingPpg(team.id).toFixed(1)} pts`}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {positionLabels.map((label, rowIndex) => (
+                      <React.Fragment key={`${label}-${rowIndex}`}>
+                        {rowIndex === 9 && (
+                          <div className="col-span-full my-1 h-0 border-t-2 border-dashed border-[#8b949e]" />
+                        )}
+                        <div className="sticky left-0 z-10 flex h-12 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[11px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
+                          {label}
+                        </div>
+                        {settings.teams.map((team, teamIndex) => {
+                          const rosterSlots = getRosterSlotsForTeam(team.id);
+                          const slot = rosterSlots[rowIndex];
+
+                          return (
+                            <div
+                              key={`${team.id || teamIndex}-row-${rowIndex}`}
+                              className={cn(
+                                "flex h-12 items-center justify-center rounded-lg px-2 text-center text-xs",
+                                getTeamColumnClasses(team)
+                              )}
+                              style={getTeamColumnStyle(team)}
+                            >
+                              {slot?.player ? (
+                                <div className="flex min-w-0 flex-col items-center justify-center">
+                                  <div className="truncate text-[11px] font-bold text-white leading-snug">
+                                    {slot.player.name}
+                                  </div>
+                                  <div className="mt-0.5 truncate text-[10px] font-mono uppercase text-[#8b949e]">
+                                    <span className="font-bold">{slot.player.position} • {slot.player.teamInfo.teamAbbv}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-[11px] font-mono uppercase tracking-wider text-[#8b949e]">--</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        );
+      }
+
       return (
-        <div className="flex-1 overflow-hidden p-6 flex flex-col space-y-6">
+        <div className="flex-1 min-h-0 overflow-hidden p-6 flex flex-col space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-display font-bold tracking-tight uppercase italic">
                     Current Rosters
                 </h2>
-                <Button className="h-7 w-full max-w-[180px] bg-primary/10 text-primary hover:bg-primary/20 hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
-                    onClick={() => null}
-                    disabled={!isDraftComplete}
-                >
-                    <Download className="h-3 w-3 text-primary" />
-                    <span className="text-[#8b949e]">Export Draft to CSV File</span>
-                </Button>
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="outline"
+                        className="h-7 border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-black"
+                        onClick={openDetachedRoster}
+                    >
+                        <ExternalLink className="mr-2 h-3.5 w-3.5" />
+                        Pop Out
+                    </Button>
+                    <Button className="h-7 w-full max-w-[180px] bg-primary/10 text-primary hover:bg-primary/20 hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
+                        onClick={() => null}
+                        disabled={!isDraftComplete}
+                    >
+                        <Download className="h-3 w-3 text-primary" />
+                        <span className="text-[#8b949e]">Export Draft to CSV File</span>
+                    </Button>
+                </div>
             </div>
 
             <div className="flex flex-1 min-h-0 overflow-hidden">
-                <Card className="flex-1 bg-[#161b22] border-[#30363d] overflow-hidden flex flex-col shadow-2xl">
-                    <div ref={scrollContainerRef} className="flex-1 overflow-auto">
+                <Card className="flex-1 min-h-0 bg-[#161b22] border-[#30363d] overflow-hidden flex flex-col shadow-2xl">
+                    <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-auto">
                         <div className="min-w-[720px] p-3">
                             <div className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${settings.teams.length}, minmax(140px, 1fr))` }}>
                                 <div className="sticky left-0 top-0 z-30 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">

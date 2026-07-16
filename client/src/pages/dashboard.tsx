@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
-import { Database, ShieldHalf, ClipboardClock, CalendarCheck , UserRoundSearch, Trophy, Sparkles, SquareUserRound, CircleCheck, ChevronDown  } from "lucide-react";
+import { Database, ShieldHalf, ClipboardClock, CalendarCheck , UserRoundSearch, Trophy, Sparkles, SquareUserRound, CircleCheck, ChevronDown, ExternalLink  } from "lucide-react";
 import { LOADER_STEPS, loadBaseTeamInfo, loadSeasonTeamInfo, loadBasePlayerInfo, loadSeasonPlayerInfo, loadPastPlayerInfo, generateAiAnalysis } from "@/lib/dataLoader";
 import { Player, PlayerTeam } from "@/lib/baseData";
 
@@ -180,6 +180,15 @@ export default function Dashboard() {
     updateSettings({ teams: updatedTeams });
   };
 
+  const openDetachedView = (view: "rankings" | "roster") => {
+    const route = view === "rankings" ? "/rankings-popup" : "/roster-popup";
+    const url = `${window.location.origin}${route}`;
+    const popup = window.open(url, `${view}-popup`, "width=1400,height=900,left=120,top=80,resizable,scrollbars=no");
+    if (popup) {
+      popup.focus();
+    }
+  };
+
   const toggleUserTeam = (id: string) => {
     // Only allow one user team
     const updatedTeams = settings.teams.map(t => ({
@@ -202,6 +211,14 @@ export default function Dashboard() {
                   <h2 className={cn("text-xl font-display font-bold tracking-tight transition-colors duration-500",
                     settings.theme === 'dark' ? "text-white" : "text-gray-900")}>PLAYER RANKINGS</h2>
                </div>
+               <Button
+                  variant="outline"
+                  className="h-8 border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-black"
+                  onClick={() => openDetachedView("rankings")}
+               >
+                  <ExternalLink className="mr-2 h-3.5 w-3.5" />
+                  Pop Out
+               </Button>
             </div>
             <div className="flex-1 min-h-0">
                <PlayerTable showExtendedStats />
