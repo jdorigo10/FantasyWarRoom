@@ -2,7 +2,7 @@ import {Player} from '@/lib/baseData';
 import {useDraftStore} from '@/lib/draftStore';
 import {useMemo} from 'react';
 
-export function useDraftStrategies() {
+export function useLiveStrategies() {
   const {players, settings, picks, pickedPlayers, currentPickIndex} =
       useDraftStore();
 
@@ -267,7 +267,30 @@ export function useDraftStrategies() {
       };
     });
 
-    return results.sort((a, b) => b.totalPPG - a.totalPPG).slice(0, 25);
+    function getFirstUndraftedSuggestion(
+        strategy: typeof results[number], draftedIds: Set<string>) {
+      return Object.values(strategy.players)
+          .filter(Boolean)
+          .sort((a, b) => a.round - b.round)
+          .find(player => !draftedIds.has(player.id));
+    }
+
+    const draftedIds =
+        new Set(Object.values(userActualPicks).filter(Boolean).map(p => p.id));
+
+    const seen = new Set<string>();
+
+    return results.sort((a, b) => b.totalPPG - a.totalPPG)
+        .filter(strategy => {
+          const player = getFirstUndraftedSuggestion(strategy, draftedIds);
+
+          if (!player) return false;
+          if (seen.has(player.id)) return false;
+
+          seen.add(player.id);
+          return true;
+        })
+        .slice(0, 25);
   }, [players, settings, picks, pickedPlayers, userActualPicks]);
 
   return {scenarios, userActualPicks};

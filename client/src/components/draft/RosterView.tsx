@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Player } from "@/lib/baseData";
 import { useLocation } from "wouter";
 import { getCurrentPickTeamId, getNextPickTeamId, useDraftStore } from "@/lib/draftStore";
-import { useDraftStrategies } from "@/hooks/useDraftStrategies";
+import { useLiveStrategies } from "@/hooks/useLiveStrategies";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -240,21 +240,21 @@ export function RosterView() {
               <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto">
                 <div className="min-w-[720px] p-3">
                   <div className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${settings.teams.length}, minmax(140px, 1fr))` }}>
-                    <div className="sticky left-0 top-0 z-30 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
+                    <div className="sticky left-0 top-0 z-30 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
                       Pos
                     </div>
                     {settings.teams.map((team, index) => (
                       <div
                         key={team.id || index}
                         className={cn(
-                          "sticky top-0 z-20 flex h-16 items-center justify-center rounded-lg px-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
+                          "sticky top-0 z-20 flex h-16 items-center justify-center rounded-lg px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
                           getTeamColumnClasses(team, true)
                         )}
                         style={getTeamColumnStyle(team, true)}
                       >
                         <div className="flex flex-col items-center">
                           <span>{getPickArrowName(team)}</span>
-                          <span className="mt-1 text-[9px] text-[#8b949e] leading-none font-bold">
+                          <span className="mt-1 text-[10px] text-[#8b949e] leading-none font-bold">
                             {`${getProjectedStartingPpg(team.id).toFixed(1)} pts`}
                           </span>
                         </div>
@@ -266,7 +266,7 @@ export function RosterView() {
                         {rowIndex === 9 && (
                           <div className="col-span-full my-1 h-0 border-t-2 border-dashed border-[#8b949e]" />
                         )}
-                        <div className="sticky left-0 z-10 flex h-12 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[11px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
+                        <div className="sticky left-0 z-10 flex h-12 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
                           {label}
                         </div>
                         {settings.teams.map((team, teamIndex) => {
@@ -314,13 +314,6 @@ export function RosterView() {
                     Current Rosters
                 </h2>
                 <div className="flex items-center gap-3">
-                    <Button className="h-7 w-full max-w-[180px] bg-primary/10 text-primary hover:bg-primary/20 hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
-                        onClick={() => null}
-                        disabled={!isDraftComplete}
-                    >
-                        <Download className="h-3 w-3 text-primary" />
-                        <span className="text-[#8b949e]">Export Draft to CSV File</span>
-                    </Button>
                     <Button
                         variant="outline"
                         className="h-7 border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-black"
@@ -337,21 +330,21 @@ export function RosterView() {
                     <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-auto">
                         <div className="min-w-[720px] p-3">
                             <div className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${settings.teams.length}, minmax(140px, 1fr))` }}>
-                                <div className="sticky left-0 top-0 z-30 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
+                                <div className="sticky left-0 top-0 z-30 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
                                     Pos
                                 </div>
                                 {settings.teams.map((team, index) => (
                                     <div
                                         key={team.id || index}
                                         className={cn(
-                                            "sticky top-0 z-20 flex h-16 items-center justify-center rounded-lg px-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
+                                            "sticky top-0 z-20 flex h-16 items-center justify-center rounded-lg px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
                                             getTeamColumnClasses(team, true)
                                         )}
                                         style={getTeamColumnStyle(team, true)}
                                     >
                                         <div className="flex flex-col items-center">
                                             <span>{getPickArrowName(team)}</span>
-                                            <span className="mt-1 text-[9px] text-[#8b949e] leading-none font-bold">
+                                            <span className="mt-1 text-[10px] text-[#8b949e] leading-none font-bold">
                                                 {`${getProjectedStartingPpg(team.id).toFixed(1)} pts`}
                                             </span>
                                         </div>
@@ -363,7 +356,7 @@ export function RosterView() {
                                         {rowIndex === 9 && (
                                             <div className="col-span-full my-1 h-0 border-t-2 border-dashed border-[#8b949e]" />
                                         )}
-                                        <div className="sticky left-0 z-10 flex h-12 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[11px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
+                                        <div className="sticky left-0 z-10 flex h-12 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
                                             {label}
                                         </div>
                                         {settings.teams.map((team, teamIndex) => {

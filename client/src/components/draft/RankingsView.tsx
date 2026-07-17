@@ -24,25 +24,6 @@ export function RankingsView() {
         "h-full w-full min-h-0 overflow-hidden border shadow-2xl flex flex-col",
         settings.theme === "dark" ? "border-[#30363d] bg-[#161b22]" : "border-gray-200 bg-white"
       )}>
-        <div className={cn(
-          "flex items-center justify-between border-b px-4 py-3",
-          settings.theme === "dark" ? "border-[#30363d] bg-[#161b22]/90" : "border-gray-200 bg-white"
-        )}>
-          <div>
-            <h2 className={cn(
-              "text-sm font-display font-bold uppercase tracking-[0.2em]",
-              settings.theme === "dark" ? "text-white" : "text-gray-900"
-            )}>
-              PLAYER RANKINGS
-            </h2>
-            <p className={cn(
-              "text-[10px] uppercase tracking-[0.3em]",
-              settings.theme === "dark" ? "text-[#8b949e]" : "text-gray-500"
-            )}>
-              Draft board
-            </p>
-          </div>
-        </div>
 
         <div className="flex-1 min-h-0 overflow-hidden">
           <PlayerTable showExtendedStats />

@@ -25,7 +25,8 @@ const STEP_ICONS: Record<string, any> = {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { StrategyView } from "@/components/draft/StrategyView";
+import { LiveStrategyView } from "@/components/draft/LiveStrategyView";
+import { SavedStrategyView } from "@/components/draft/SavedStrategyView";
 import { RosterView } from "@/components/draft/RosterView";
 
 export default function Dashboard() {
@@ -202,28 +203,31 @@ export default function Dashboard() {
   const renderContent = () => {
     if (location === "/rankings") {
       return (
-        <div className="flex-1 overflow-hidden p-6">
-          <Card className={cn("rounded-t h-full flex flex-col shadow-xl transition-colors duration-500",
-            settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-            <div className={cn("rounded-t p-6 border-b flex items-center justify-between transition-colors duration-500",
+
+        <div className="flex-1 min-h-0 overflow-hidden p-6 flex flex-col space-y-6">
+          <div className="flex items-center justify-between">
+              <h2 className="text-xl font-display font-bold tracking-tight uppercase italic">
+                  Player Rankings
+              </h2>
+              <div className="flex items-center gap-3">
+                  <Button
+                      variant="outline"
+                      className="h-7 border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-black"
+                      onClick={() => openDetachedView("rankings")}
+                  >
+                      <ExternalLink className="mr-2 h-3.5 w-3.5" />
+                      Pop Out
+                  </Button>
+              </div>
+          </div>
+          <div className="flex flex-1 min-h-0 overflow-hidden">
+            <Card className={cn("flex-1 min-h-0 bg-[#161b22] border-[#30363d] overflow-hidden flex flex-col shadow-2xl",
               settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
-               <div>
-                  <h2 className={cn("text-xl font-display font-bold tracking-tight transition-colors duration-500",
-                    settings.theme === 'dark' ? "text-white" : "text-gray-900")}>PLAYER RANKINGS</h2>
-               </div>
-               <Button
-                  variant="outline"
-                  className="h-8 border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-black"
-                  onClick={() => openDetachedView("rankings")}
-               >
-                  <ExternalLink className="mr-2 h-3.5 w-3.5" />
-                  Pop Out
-               </Button>
-            </div>
-            <div className="flex-1 min-h-0">
-               <PlayerTable showExtendedStats />
-            </div>
-          </Card>
+              <div className="flex-1 min-h-0">
+                <PlayerTable showExtendedStats />
+              </div>
+            </Card>
+          </div>
         </div>
       );
     }
@@ -232,8 +236,12 @@ export default function Dashboard() {
       return <RosterView />;
     }
 
-    if (location === "/strategy") {
-      return <StrategyView />;
+    if (location === "/liveStrategy") {
+      return <LiveStrategyView />;
+    }
+
+    if (location === "/savedStrategy") {
+      return <SavedStrategyView />;
     }
 
     if (location === "/settings") {
@@ -386,12 +394,12 @@ export default function Dashboard() {
           <div className={cn("rounded-lg border p-6 flex flex-col min-h-0 shadow-xl transition-colors duration-500",
             settings.theme === 'dark' ? "bg-[#161b22] border-[#30363d]" : "bg-white border-gray-200")}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-sm font-display font-bold tracking-[0.2em] text-primary uppercase flex items-center">
+              <h2 className="text-m font-display font-bold tracking-[0.2em] text-primary uppercase flex items-center">
                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse mr-3" />
                  BIG BOARD
               </h2>
             </div>
-            <div className={cn("flex-1 min-h-0 rounded border transition-colors duration-500",
+            <div className={cn("flex-1 min-h-0 rounded-xl border transition-colors duration-500 overflow-hidden",
               settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d]" : "bg-gray-50 border-gray-200")}>
                <PlayerTable />
             </div>
@@ -399,7 +407,7 @@ export default function Dashboard() {
         </div>
 
         <div className="lg:col-span-4 h-full flex flex-col space-y-6 min-h-0">
-          <TeamRoster showSuggested />
+          <TeamRoster />
         </div>
       </div>
     );

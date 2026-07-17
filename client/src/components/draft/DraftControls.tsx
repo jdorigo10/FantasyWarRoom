@@ -1,8 +1,172 @@
 import React from "react";
-import { useDraftStore } from "@/lib/draftStore";
+import { DraftSettings, Player } from "@/lib/baseData";
+import { useDraftStore, DraftPick } from "@/lib/draftStore";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Play, RotateCcw, MonitorPlay, Trash2, ArrowRight, Clock } from "lucide-react";
+import { Play, RotateCcw, MonitorPlay, Trash2, ArrowRight, Clock, Download } from "lucide-react";
+import * as XLSX from "xlsx-js-style";
+
+export async function exportDraft(
+    picks: DraftPick[],
+    players: Player[],
+    settings: DraftSettings
+) {
+    //
+    // Build rows
+    //
+    const rows: any[][] = [];
+
+    // Row 1 - Pick Numbers
+    const pickHeader = ["Pick"];
+    for (let i = 0; i < settings.teams.length; i++) {
+        pickHeader.push((i + 1).toString());
+    }
+    rows.push(pickHeader);
+
+    // Row 2 - Team Names
+    const teamHeader = ["Round"];
+    for (const team of settings.teams) {
+        teamHeader.push(team.name);
+    }
+    rows.push(teamHeader);
+
+    // Draft rows
+    for (let round = 1; round <= 16; round++) {
+        const row: any[] = [round];
+
+        for (const team of settings.teams) {
+
+            const pick = picks.find(p =>
+                p.round === round &&
+                p.teamId === team.id
+            );
+
+            if (!pick) {
+                row.push("");
+                continue;
+            }
+
+            const player = players.find(p => p.id === pick.playerId);
+
+            row.push(
+                player
+                    ? `${player.name} (${player.position})`
+                    : ""
+            );
+        }
+
+        rows.push(row);
+    }
+
+    //
+    // Create worksheet
+    //
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+    //
+    // Column widths
+    //
+    worksheet["!cols"] = rows[0].map((_, index) => ({
+        wch: index === 0 ? 8 : 28
+    }));
+
+    //
+    // Freeze first column + first 2 rows
+    //
+    worksheet["!freeze"] = {
+        xSplit: 1,
+        ySplit: 2
+    };
+
+    //
+    // Styles
+    //
+    const headerStyle = {
+        font: {
+            bold: true
+        },
+        alignment: {
+            horizontal: "center",
+            vertical: "center"
+        }
+    };
+
+    const roundStyle = {
+        alignment: {
+            horizontal: "center",
+            vertical: "center"
+        }
+    };
+
+    //
+    // Style first two rows
+    //
+    const totalCols = settings.teams.length + 1;
+
+    for (let c = 0; c < totalCols; c++) {
+
+        const cell1 = XLSX.utils.encode_cell({ r: 0, c });
+        const cell2 = XLSX.utils.encode_cell({ r: 1, c });
+
+        if (worksheet[cell1]) worksheet[cell1].s = headerStyle;
+        if (worksheet[cell2]) worksheet[cell2].s = headerStyle;
+    }
+
+    //
+    // Style first column
+    //
+    for (let r = 2; r < rows.length; r++) {
+
+        const cell = XLSX.utils.encode_cell({
+            r,
+            c: 0
+        });
+
+        if (worksheet[cell]) worksheet[cell].s = roundStyle;
+    }
+
+    //
+    // Workbook
+    //
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Draft");
+
+    const buffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array"
+    });
+
+    //
+    // Filename
+    //
+    const today = new Date();
+
+    const fileName =
+        `Draft_${String(today.getMonth() + 1).padStart(2, "0")}` +
+        `${String(today.getDate()).padStart(2, "0")}` +
+        `${today.getFullYear()}.xlsx`;
+
+    //
+    // Show Save As dialog
+    //
+    const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [
+            {
+                description: "Excel Workbook",
+                accept: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+                        ".xlsx"
+                    ]
+                }
+            }
+        ]
+    });
+
+    const writable = await handle.createWritable();
+    await writable.write(buffer);
+    await writable.close();
+}
 
 export function DraftControls() {
   const { currentPickIndex, simulatePick, resetDraft, undoLastPick, settings, picks, players } = useDraftStore();
@@ -123,14 +287,23 @@ export function DraftControls() {
         )}
         >
         {isDraftComplete ? (
-            <div className="flex flex-col items-center">
-            <div className="text-xl font-display font-bold text-muted-foreground">
-                DRAFT COMPLETE
-            </div>
+            <div className="flex-1 flex items-center justify-center xl:justify-start gap-4 overflow-hidden">
+                <div className="flex flex-col items-center">
+                    <div className="text-xl font-display font-bold">
+                        DRAFT COMPLETE
+                    </div>
 
-            <div className="text-[9px] font-bold text-muted-foreground opacity-60 mt-0.5">
-                {16 * settings.teams.length} PICKS COMPLETED
-            </div>
+                    <div className="text-[9px] font-bold opacity-60 mt-0.5">
+                        {16 * settings.teams.length} PICKS COMPLETED
+                    </div>
+                </div>
+
+                <Button className="h-7 w-full max-w-[180px] text-primary hover:text-black font-bold text-[10px] uppercase border-primary/20 bg-primary/10 hover:bg-primary/20"
+                    onClick={() => exportDraft(picks, players, settings)}
+                >
+                    <Download className="h-3 w-3" />
+                    <span>Export Draft to CSV File</span>
+                </Button>
             </div>
         ) : (
             <div className="flex flex-col items-center">
@@ -147,7 +320,7 @@ export function DraftControls() {
                 "text-xl font-display font-bold whitespace-nowrap mb-0.5",
                 currentPick?.team?.isUser
                     ? "text-primary animate-pulse"
-                    : "text-foreground"
+                    : "text-foreground animate-pulse"
                 )}
             >
                 {currentPick?.team?.name}

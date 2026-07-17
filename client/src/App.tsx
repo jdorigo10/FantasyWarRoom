@@ -16,7 +16,8 @@ function Router() {
       <Route path="/roster" component={Dashboard} />
       <Route path="/roster-popup" component={RosterView} />
       <Route path="/rankings-popup" component={RankingsView} />
-      <Route path="/strategy" component={Dashboard} />
+      <Route path="/liveStrategy" component={Dashboard} />
+      <Route path="/savedStrategy" component={Dashboard} />
       <Route path="/settings" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>

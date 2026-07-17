@@ -123,13 +123,53 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
   };
 
   const getPPGColor = (ppg: number, position: string) => {
-    const max = posStats[position]?.maxPPG || 20;
-    const ratio = ppg / max;
+    let topTier = false;
+    let goodTier = false;
+    let avgTier = false;
+    let badTier = false;
 
-    if (ratio > 0.9) return "text-[#2ea043]"; // Top tier for pos
-    if (ratio > 0.7) return "text-[#84A02E]";  // Good tier
-    if (ratio > 0.5) return "text-[#d29922]";  // Average
-    if (ratio > 0.3) return "text-[#f0883e]";  // Below average
+    if (position === "QB") {
+      if (ppg > 12) badTier = true; 
+      if (ppg > 14) avgTier = true;
+      if (ppg > 16) goodTier = true;
+      if (ppg > 18) topTier = true;
+    }
+    else if (position === "RB") {
+      if (ppg > 10) badTier = true; 
+      if (ppg > 13) avgTier = true;
+      if (ppg > 16) goodTier = true;
+      if (ppg > 18) topTier = true;
+    }
+    else if (position === "WR") {
+      if (ppg > 10) badTier = true; 
+      if (ppg > 12) avgTier = true;
+      if (ppg > 14) goodTier = true;
+      if (ppg > 18) topTier = true;
+    }
+    else if (position === "TE") {
+      if (ppg > 8) badTier = true; 
+      if (ppg > 9) avgTier = true;
+      if (ppg > 10) goodTier = true;
+      if (ppg > 13) topTier = true;
+    }
+    else if (position === "DST") {
+      if (ppg > 5) badTier = true; 
+      if (ppg > 5.75) avgTier = true;
+      if (ppg > 6.25) goodTier = true;
+      if (ppg > 7) topTier = true;
+    }
+    else if (position === "K") {
+      if (ppg > 7.5) badTier = true; 
+      if (ppg > 8) avgTier = true;
+      if (ppg > 8.5) goodTier = true;
+      if (ppg > 10) topTier = true;
+    }
+
+
+    if (topTier) return "text-[#2ea043]"; // Top tier for pos
+    if (goodTier) return "text-[#84A02E]";  // Good tier
+    if (avgTier) return "text-[#d29922]";  // Average
+    if (badTier) return "text-[#f0883e]";  // Below average
     return "text-[#f85149]"; // Very bad
   };
 
@@ -288,8 +328,8 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
         <div className="relative flex-1 max-w-[280px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#8b949e]" />
           <Input 
-            placeholder="Search for Player" 
-            className="h-9 pl-9 bg-[#0d1117] border-[#30363d] text-[11px] focus:ring-primary/20" 
+            placeholder="Search..." 
+            className="h-9 pl-9 bg-[#0d1117] border-[#30363d] text-[12px] focus:ring-primary/20" 
             value={currentFilters.search}
             onChange={(e) => currentUpdateFilters({ search: e.target.value })}
           />
@@ -297,7 +337,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
         
         <div className="relative min-w-[160px]">
           <select 
-            className="h-9 w-full appearance-none bg-[#0d1117] border border-[#30363d] text-[11px] text-white rounded-lg pl-3 pr-9 focus:ring-primary/20 cursor-pointer transition-all hover:bg-[#1c2128]"
+            className="h-9 w-full appearance-none bg-[#0d1117] border border-[#30363d] text-[12px] text-white rounded-lg pl-3 pr-9 focus:ring-primary/20 cursor-pointer transition-all hover:bg-[#1c2128]"
             value={currentFilters.team}
             onChange={(e) => currentUpdateFilters({ 
               team: e.target.value as NFLTeamAbbv 
@@ -341,7 +381,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-12 gap-0 px-2 py-2.5 bg-[#161b22] text-[11px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d] min-h-[40px] items-center select-none">
+        <div className="grid grid-cols-12 gap-0 px-2 py-2.5 bg-[#161b22] text-[12px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d] min-h-[40px] items-center select-none">
           <div className="col-span-1 text-center pr-0.5 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('rank')}>
             RK{getSortIcon('rank')}
           </div>
@@ -364,11 +404,21 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           {showExtendedStats && (
             <TooltipProvider>
               <Tooltip delayDuration={300}>
-                <TooltipTrigger asChild>
-                  <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-2.5 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('val')}>
-                    <span>DRAFT</span><span>VAL{getSortIcon('val')}</span>
-                  </div>
-                </TooltipTrigger>
+                                  <TooltipTrigger asChild>
+                    <div
+                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-11"
+                      onClick={() => handleSort('val')}
+                    >
+                      <div className="leading-none flex flex-col justify-center text-[11px] text-center">
+                        <span>DRAFT</span>
+                        <span>VAL</span>
+                      </div>
+
+                      <span className="ml-1">
+                        {getSortIcon('val')}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
                 <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
                   <p className="font-bold text-primary mb-1">Draft Value</p>
                   <p className="text-[#c9d1d9]">ADP (rank) subtracted by PPG (rank)</p>
@@ -410,8 +460,18 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               <TooltipProvider>
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
-                    <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('off')}>
-                      <span>OFF</span><span>PPG{getSortIcon('off')}</span>
+                    <div
+                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-11"
+                      onClick={() => handleSort('off')}
+                    >
+                      <div className="leading-none flex flex-col justify-center text-[11px] text-center">
+                        <span>OFF</span>
+                        <span>PPG</span>
+                      </div>
+
+                      <span className="ml-1">
+                        {getSortIcon('off')}
+                      </span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
@@ -424,8 +484,18 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               <TooltipProvider>
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
-                    <div className="col-span-1 text-center leading-none flex flex-col justify-center text-[10px] -ml-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('def')}>
-                      <span>DEF</span><span>PPG{getSortIcon('def')}</span>
+                    <div
+                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-11"
+                      onClick={() => handleSort('def')}
+                    >
+                      <div className="leading-none flex flex-col justify-center text-[11px] text-center">
+                        <span>DEF</span>
+                        <span>PPG</span>
+                      </div>
+
+                      <span className="ml-1">
+                        {getSortIcon('def')}
+                      </span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-[#161b22] border-[#30363d] text-[11px] p-2 leading-relaxed">
@@ -446,7 +516,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
         <ScrollArea className="flex-1">
           {currentTurnDivider && (
              <div className="bg-primary/20 border-b border-primary/30 py-2 px-2 text-center flex items-center justify-center gap-4 sticky top-0 z-20 backdrop-blur-md shadow-lg">
-               <span className="text-[11px] font-mono text-primary font-bold tracking-widest uppercase animate-pulse">
+               <span className="text-[12px] font-mono text-primary font-bold tracking-widest uppercase animate-pulse">
                  ⚡ Your Turn: RD {currentTurnDivider.round} - Pick {currentTurnDivider.pickOverall} ⚡
                </span>
              </div>
@@ -474,7 +544,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               >
                 <div className="col-span-1 font-mono text-[11px] text-[#6e7681] text-center pr-0.5">#{player.rank}</div>
                 <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>
-                  <div className="text-[13px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
+                  <div className="text-[14px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
                     {player.name}
                     {/* User Tags Display - uses player.name as key */}
                     {playerTags[player.name]?.includes('favorite') && (
@@ -520,12 +590,12 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     )}
 
                     {isPicked && pickInfo && (
-                      <span className="text-[8px] font-mono text-primary border border-primary/20 px-0.5 rounded uppercase whitespace-nowrap ml-1">
+                      <span className="text-[10px] font-mono text-primary border border-primary/20 px-0.5 rounded uppercase whitespace-nowrap ml-1">
                         {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
                       </span>
                     )}
                   </div>
-                  <div className="text-[10px] text-[#8b949e] flex items-center mt-0.5 gap-1 truncate opacity-80">
+                  <div className="text-[12px] text-[#8b949e] flex items-center mt-0.5 gap-1 truncate opacity-80">
                      <span className="font-bold text-[#c9d1d9]">{player.position}</span>
                      <span className="text-[#484f58]">•</span>
                      <span className="uppercase">{player.teamInfo.teamAbbv}</span>
@@ -533,23 +603,23 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                      <span className="text-[#6e7681] uppercase">Bye {player.teamInfo.byeWeek}</span>
                   </div>
                 </div>
-                <div className={cn("col-span-1 text-center font-mono text-[#8b949e] text-[11px]", showExtendedStats && "ml-2.5")}>
+                <div className={cn("col-span-1 text-center font-mono text-[#8b949e] text-[12px]", showExtendedStats && "ml-2.5")}>
                   {player.adp}
-                  <div className="text-[8px] text-primary opacity-60">
+                  <div className="text-[10px] text-primary opacity-60">
                     (RD{Math.ceil(player.adp / settings.teamCount)})
                   </div>
                 </div>
                 {showExtendedStats && (
-                  <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-2.5", getValueColor(getDraftValue(player)))}>
+                  <div className={cn("col-span-1 text-center font-mono font-bold text-[12px] -ml-2.5", getValueColor(getDraftValue(player)))}>
                     {getDraftValue(player) > 0 ? `+${getDraftValue(player)}` : getDraftValue(player)}
                   </div>
                 )}
-                <div className={cn("col-span-1 text-center font-mono font-bold text-[12px]", showExtendedStats ? "-ml-5" : "", getPPGColor(player.ppg, player.position))}>
+                <div className={cn("col-span-1 text-center font-mono font-bold text-[14px]", showExtendedStats ? "-ml-5" : "", getPPGColor(player.ppg, player.position))}>
                   <div className="relative inline-block">
                     {player.ppg}
 
                     {player.projectedGames < 17 && (
-                      <span className="absolute -top-1 -right-4 text-[8px] leading-none text-gray-500">
+                      <span className="absolute -top-1 -right-4 text-[9px] leading-none text-gray-500">
                         {player.projectedGames}g
                       </span>
                     )}
@@ -558,13 +628,13 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 
                 {showExtendedStats && (
                   <>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] ml-4", getSosColor(player.teamInfo.sos))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[12px] ml-4", getSosColor(player.teamInfo.sos))}>
                       {player.teamInfo.sos}
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-4", getOffPpgColor(player.teamInfo.ppgOffense))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[12px] -ml-4", getOffPpgColor(player.teamInfo.ppgOffense))}>
                       {player.teamInfo.ppgOffense}
                     </div>
-                    <div className={cn("col-span-1 text-center font-mono font-bold text-[11px] -ml-4", getDefPpgColor(player.teamInfo.ppgDefense))}>
+                    <div className={cn("col-span-1 text-center font-mono font-bold text-[12px] -ml-4", getDefPpgColor(player.teamInfo.ppgDefense))}>
                       {player.teamInfo.ppgDefense}
                     </div>
                   </>
@@ -577,21 +647,21 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                         <TooltipTrigger asChild>
                           <div className="flex justify-center gap-0.5 cursor-help hover:bg-white/5 rounded transition-colors w-full h-full min-h-[20px] items-center">
                             {tags.slice(0, 5).map((tag, i) => (
-                              <tag.icon key={i} className={cn("h-3.5 w-3.5", tag.color)} />
+                              <tag.icon key={i} className={cn("h-5 w-5", tag.color)} />
                             ))}
-                            {tags.length > 5 && <span className="text-[8px] text-[#484f58] font-bold">+{tags.length - 5}</span>}
+                            {tags.length > 5 && <span className="text-[10px] text-[#484f58] font-bold">+{tags.length - 5}</span>}
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side="left" className="bg-[#161b22] border-[#30363d] p-3 shadow-2xl min-w-[200px] z-50">
                           <div className="space-y-2.5">
                             {tags.map((tag, i) => (
                               <div key={i} className="flex items-start gap-3">
-                                <tag.icon className={cn("h-4 w-4 shrink-0 mt-0.5", tag.color)} />
-                                <span className="text-[11px] text-[#c9d1d9] leading-relaxed">{tag.label}</span>
+                                <tag.icon className={cn("h-5 w-5 shrink-0 mt-0", tag.color)} />
+                                <span className="text-[12px] text-[#c9d1d9] leading-relaxed">{tag.label}</span>
                               </div>
                             ))}
                             {tags.length === 0 && (
-                              <p className="text-[11px] text-[#8b949e] italic text-center py-1">No Tags</p>
+                              <p className="text-[12px] text-[#8b949e] italic text-center py-1">No Tags</p>
                             )}
                           </div>
                         </TooltipContent>
@@ -626,18 +696,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     <div className="flex items-start gap-3 mb-5">
                       <div
                         className={cn(
-                          "flex flex-col items-center justify-center h-12 w-15 rounded-md shrink-0 gap-0.5",
-                          player.stock === "DIAMOND" && "bg-cyan-400/10",
-                          player.stock === "BREAKOUT" && "bg-emerald-400/10",
-                          player.stock === "STAR" && "bg-yellow-400/10",
-                          player.stock === "STARTER" && "bg-green-400/10",
-                          player.stock === "SLEEPER" && "bg-purple-400/10",
-                          player.stock === "AVERAGE" && "bg-gray-400/10",
-                          player.stock === "OVERVALUED" && "bg-orange-400/10",
-                          player.stock === "RISKY" && "bg-amber-400/10",
-                          player.stock === "FADE" && "bg-orange-600/10",
-                          player.stock === "BUST" && "bg-red-500/10",
-                          player.stock === "WILDCARD" && "bg-pink-400/10"
+                          "flex flex-col items-center justify-center h-12 w-15 rounded-md shrink-0 gap-0.5 bg-gray-400/10",
                         )}
                       >
                         {player.stock === "DIAMOND" && (
@@ -710,7 +769,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                       </div>
 
                       <div>
-                        <p className="text-[11px] text-[#8b949e] leading-relaxed max-w-2xl">
+                        <p className="text-[12px] text-[#8b949e] leading-relaxed max-w-2xl">
                           {player.notes}
                         </p>
                       </div>
@@ -719,12 +778,12 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     {/* Previous Season */}
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">
+                        <span className="text-[12px] font-bold text-[#8b949e] uppercase tracking-wider">
                           Previous Season
                         </span>
 
                         {!player.rookie && player.pastInfo.totalGames > 0 && (
-                          <span className="text-[10px] font-bold text-[#c9d1d9]">
+                          <span className="text-[12px] font-bold text-[#c9d1d9]/90">
                             PPG = {player.pastInfo.ppg}&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;Games Played = {player.pastInfo.totalGames}
                           </span>
                         )}
@@ -732,7 +791,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
                       {player.rookie || player.pastInfo.totalGames === 0 ? (
                         <div className="h-[65px] border border-[#30363d] rounded-md flex items-center justify-center bg-[#0d1117]">
-                          <span className="text-[11px] text-[#6e7681] italic">
+                          <span className="text-[12px] text-[#6e7681] italic">
                             Did not play last season
                           </span>
                         </div>
@@ -744,7 +803,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                             {Array.from({ length: 18 }).map((_, index) => (
                               <div
                                 key={index}
-                                className="py-1.5 text-center text-[9px] font-mono text-[#6e7681] border-r border-[#30363d] last:border-r-0"
+                                className="py-1.5 text-center text-[10px] font-mono text-[#6e7681] border-r border-[#30363d] last:border-r-0"
                               >
                                 W{index + 1}
                               </div>
@@ -756,7 +815,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                             {player.pastInfo.weeks.map((points, index) => (
                               <div
                                 key={index}
-                                className={`py-2 text-center text-[10px] font-mono font-bold border-r border-t border-[#30363d] last:border-r-0 ${
+                                className={`py-2 text-center text-[11px] font-mono font-bold border-r border-t border-[#30363d] last:border-r-0 ${
                                   points === -99 ? "text-[#6e7681]" : "text-[#c9d1d9]"
                                 }`}
                               >
@@ -776,7 +835,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               {divider && (
                  <div className="bg-primary/5 border-y border-primary/20 py-1.5 px-2 text-center flex items-center justify-center gap-4 my-0.5">
                    <div className="h-px bg-primary/20 flex-1" />
-                   <span className="text-[10px] font-mono text-primary font-bold tracking-widest uppercase">
+                   <span className="text-[12px] font-mono text-primary font-bold tracking-widest uppercase">
                      RD {divider.round} - Pick {divider.pickOverall}
                    </span>
                    <div className="h-px bg-primary/20 flex-1" />

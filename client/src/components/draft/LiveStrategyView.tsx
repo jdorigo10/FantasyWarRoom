@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { useDraftStore } from "@/lib/draftStore";
-import { useDraftStrategies } from "@/hooks/useDraftStrategies";
+import { useLiveStrategies } from "@/hooks/useLiveStrategies";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Info, ArrowUpDown } from "lucide-react";
 
-export function StrategyView() {
+export function LiveStrategyView() {
   const { settings } = useDraftStore();
-  const { scenarios, userActualPicks } = useDraftStrategies();
+  const { scenarios, userActualPicks } = useLiveStrategies();
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const sortedScenarios = useMemo(() => {
@@ -29,32 +29,33 @@ export function StrategyView() {
   ];
 
   return (
-    <div className="flex-1 overflow-hidden p-6 flex flex-col space-y-6">
+    <div className="flex-1 min-h-0 overflow-hidden p-6 flex flex-col space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-display font-bold tracking-tight uppercase italic">
-          Strategy - Pick {settings.position} {" ("} {settings.teamCount}{" Team Draft)"}
+          Live Strategies
         </h2>
-        <div className="flex items-center space-x-2 text-[10px] text-[#8b949e] font-mono uppercase tracking-widest">
+        <div className="flex items-center gap-3">
           <Info className="h-3 w-3 text-primary" />
-          <span>Top 25 Projected Scenarios (Sorted by Total PPG)</span>
+          <span className="text-l text-[#8b949e] font-semibold uppercase tracking-widest">Pick {settings.position} {" ("}{settings.teamCount}{" Team Draft)"}</span>
         </div>
       </div>
 
-      <Card className="flex-1 min-h-0 bg-[#161b22] border-[#30363d] overflow-hidden flex flex-col shadow-2xl">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <Card className="flex-1 min-h-0 bg-[#161b22] border-[#30363d] overflow-hidden flex flex-col shadow-2xl">
         <ScrollArea className="flex-1">
           <div className="min-w-[1200px]">
             <div className="grid grid-cols-[repeat(10,minmax(115px,1fr))_120px] gap-0 border-b border-[#30363d] bg-[#0d1117] text-[10px] font-bold text-[#8b949e] uppercase tracking-tighter sticky top-0 z-20">
               {columns.map(col => (
-                <div key={col.id} className="p-4 border-r border-[#30363d] text-center bg-[#0d1117]">
+                <div key={col.id} className="p-4 border-r border-[#30363d] text-center bg-[#0d1117] text-xs">
                   {col.label}
                 </div>
               ))}
               <div 
-                className="p-4 flex items-center justify-center space-x-2 cursor-pointer hover:bg-white/5 transition-colors text-primary bg-[#0d1117]"
+                className="p-4 flex items-center justify-center space-x-2 cursor-pointer hover:bg-white/5 transition-colors text-primary bg-[#0d1117] text-xs"
                 onClick={() => setSortDir(prev => prev === 'desc' ? 'asc' : 'desc')}
               >
                 <span>TOTAL PPG</span>
-                <ArrowUpDown className="h-3 w-3" />
+                <ArrowUpDown className="h-6 w-6" />
               </div>
             </div>
 
@@ -76,7 +77,7 @@ export function StrategyView() {
                         {player ? (
                           <>
                             <div className={cn(
-                              "text-[8px] font-mono mb-1 uppercase tracking-tighter font-bold",
+                              "text-[9px] font-mono mb-1 uppercase tracking-tighter font-bold",
                               isDrafted ? "text-primary" : "text-primary"
                             )}>
                               {isDrafted && <span className="mr-1">✓</span>}
@@ -87,8 +88,9 @@ export function StrategyView() {
                               isDrafted ? "text-white" : "text-[#c9d1d9]"
                             )}>{player.name}</span>
                             <div className="flex items-center space-x-1 mt-0.5">
-                              <span className="text-[9px] font-bold text-[#484f58] uppercase">{player.teamInfo.teamAbbv}</span>
-                              <span className="text-[9px] text-[#8b949e] font-mono">{player.ppg}</span>
+                              <span className="text-[10px] font-bold text-[#8b949e]/80 uppercase">{player.teamInfo.teamAbbv}</span>
+                              <span className="text-[11px] font-mono text-white/50"> • </span>
+                              <span className="text-[10px] text-[#8b949e]/80 font-bold">{player.ppg}</span>
                             </div>
                           </>
                         ) : (
@@ -108,6 +110,7 @@ export function StrategyView() {
           </div>
         </ScrollArea>
       </Card>
+      </div>
     </div>
   );
 }
