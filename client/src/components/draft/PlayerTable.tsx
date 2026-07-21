@@ -591,15 +591,14 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
             const tags = getTagIcons(player);
 
             const currentIndex = playerOverallIndex.get(player.id) ?? 0;
-            let numPlayers = getDraftedPlayersAfterPick(currentIndex);
 
             let dividers = []
             if (idx == 0) {
-              dividers = [...pickDividers.entries()].filter(([pickOverall]) => Number(pickOverall) <= Number(currentIndex)+numPlayers);
+              dividers = [...pickDividers.entries()].filter(([pickOverall]) => Number(pickOverall) <= Number(currentIndex)+getDraftedPlayersAfterPick(currentIndex));
             }
             else {
               const prevIndex = playerOverallIndex.get(sortedPlayers[idx-1].id) ?? 0;
-              dividers = [...pickDividers.entries()].filter(([pickOverall]) => Number(prevIndex)+numPlayers < Number(pickOverall) && Number(pickOverall) <= Number(currentIndex)+numPlayers);
+              dividers = [...pickDividers.entries()].filter(([pickOverall]) => Number(prevIndex)+getDraftedPlayersAfterPick(prevIndex) < Number(pickOverall) && Number(pickOverall) <= Number(currentIndex)+getDraftedPlayersAfterPick(currentIndex));
             }
             dividers = dividers.filter(([pickOverall]) => Number(pickOverall) != currentPickIndex+1);
             
