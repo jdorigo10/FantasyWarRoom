@@ -7,10 +7,18 @@ import { TeamRoster } from "@/components/draft/TeamRoster";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {useStrategyStore} from '@/hooks/useSavedStrategy';
 import { useLocation } from "wouter";
 import { Database, ShieldHalf, ClipboardClock, CalendarCheck , UserRoundSearch, Trophy, Sparkles, SquareUserRound, CircleCheck, ChevronDown, ExternalLink  } from "lucide-react";
 import { LOADER_STEPS, loadBaseTeamInfo, loadSeasonTeamInfo, loadBasePlayerInfo, loadSeasonPlayerInfo, loadPastPlayerInfo, generateAiAnalysis } from "@/lib/dataLoader";
 import { Player, PlayerTeam } from "@/lib/baseData";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const STEP_ICONS: Record<string, any> = {
   base_team_info: CalendarCheck,
@@ -36,6 +44,7 @@ export default function Dashboard() {
   const [location] = useLocation();
   const { settings, updateSettings, resetDraft, setPlayers } = useDraftStore();
   const initRef = useRef(false);
+  const {setLoaded} = useStrategyStore();
 
   useEffect(() => {
     // Apply theme and accent color
@@ -101,7 +110,7 @@ export default function Dashboard() {
       setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
       
       // Store the fully loaded players in the store
-      setPlayers(players);
+      await setPlayers(players);
       
       // Small delay before showing UI
       setTimeout(() => setIsInitializing(false), 1000);
@@ -152,6 +161,8 @@ export default function Dashboard() {
 
   const handleTeamCountChange = (count: number) => {
     if (confirm("Changing team count will reset the current draft. Continue?")) {
+      setLoaded(false);  // resets loaded startegies
+
       const newTeams = Array.from({ length: count }, (_, i) => ({
         id: `team-${i + 1}`,
         name: `Team ${i + 1}`,
@@ -191,6 +202,8 @@ export default function Dashboard() {
   };
 
   const toggleUserTeam = (id: string) => {
+    setLoaded(false);  // resets loaded startegies
+
     // Only allow one user team
     const updatedTeams = settings.teams.map(t => ({
       ...t,
@@ -293,12 +306,12 @@ export default function Dashboard() {
                   <label className="text-xs font-bold text-[#8b949e] uppercase tracking-widest">Accent Color</label>
                   <div className="grid grid-cols-6 gap-3">
                     {[
-                      { name: "Red", color: "#f85149" },
-                      { name: "Orange", color: "#f0883e" },
-                      { name: "Yellow", color: "#d29922" },
-                      { name: "Green", color: "#2ea043" },
+                      { name: "Mint", color: "#5eead4" },
+                      { name: "Sky", color: "#38bdf8" },
+                      { name: "Blue", color: "#388bfd" },
+                      { name: "Navy", color: "#2563eb" },
                       { name: "Purple", color: "#8957e5" },
-                      { name: "Blue", color: "#388bfd" }
+                      { name: "Pink", color: "#ec4899" },
                     ].map(item => (
                       <div 
                         key={item.name} 
@@ -325,19 +338,32 @@ export default function Dashboard() {
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[11px] text-[#8b949e] uppercase font-mono">Team Count</label>
-                      <div className="relative min-w-[160px]">
-                        <select
-                          className={cn("appearance-none w-full rounded-lg p-2.5 text-sm transition-colors border",
-                            settings.theme === 'dark' ? "bg-[#0d1117] border-[#30363d] text-white" : "bg-gray-50 border-gray-200 text-gray-900")}
-                          value={settings.teamCount}
-                          onChange={(e) => handleTeamCountChange(parseInt(e.target.value))}
-                        >
-                          {[8, 9, 10, 11, 12, 13, 14, 15, 16].map(num => <option key={num} value={num}>{num} Teams</option>)}
-                        </select>
-                        <ChevronDown 
-                          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                        />
-                      </div>
+                      <Select
+                          value={String(settings.teamCount)}
+                          onValueChange={(value) =>
+                              handleTeamCountChange(parseInt(value))
+                          }
+                      >
+                          <SelectTrigger className="w-[240px]">
+                              <SelectValue placeholder="Teams" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                              {[8, 9, 10, 11, 12, 13, 14, 15, 16].map((num) => (
+                                <SelectItem key={num} value={String(num)}
+                                      className="
+                                          cursor-pointer
+                                          focus:bg-primary
+                                          focus:text-primary-foreground
+                                          data-[highlighted]:bg-primary
+                                          data-[highlighted]:text-primary-foreground
+                                      "
+                                  >
+                                      {num} Teams
+                                  </SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">

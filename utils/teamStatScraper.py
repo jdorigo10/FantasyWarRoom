@@ -89,7 +89,7 @@ print(f"Total Teams Scraped: {len(teams)}")
 
 
 # Upload to SQLite
-db_path = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\past_info.db"
+db_path = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\fantasy_info.db"
 
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()

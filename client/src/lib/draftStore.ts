@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 
-import {DraftSettings, INITIAL_SETTINGS, NFLTeamAbbv, Player, PlayerTeam, Position} from './baseData';
+import {API_YEAR, DraftSettings, INITIAL_SETTINGS, NFLTeamAbbv, Player, PlayerTeam, Position} from './baseData';
 
 export interface DraftPick {
   round: number;
@@ -34,47 +34,35 @@ interface DraftState {
   simulatePick: () => void;
   togglePlayerTag: (playerId: string, tag: 'favorite'|'target') => void;
   getPlayerTags: (playerId: string) => string[];
-  setPlayers: (players: Player[]) => void;
+  setPlayers: (players: Player[]) => Promise<void>;
 }
 
 const STORAGE_KEY = 'fantasy-warroom-settings';
-const TAGS_KEY = 'fantasy-warroom-player-tags';
 const DRAFT_STATE_KEY = 'fantasy-warroom-draft-state';
 
 // Load and validate tags - uses player NAME as key (not ID)
 // Also cleans up tags for players that no longer exist in the app
-const loadTags = (players: Player[]): Record<string, string[]> => {
-  const stored = localStorage.getItem(TAGS_KEY);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored) as Record<string, string[]>;
+const loadTags = async(): Promise<Record<string, string[]>> => {
+  const response =
+      await fetch(`http://localhost:8000/api/tags?year=${API_YEAR}`);
 
-      // Get all valid player names from current data
-      const validPlayerNames = new Set(players.map(p => p.name));
-
-      // Filter out any players that no longer exist
-      const cleaned: Record<string, string[]> = {};
-      let hasChanges = false;
-
-      for (const [playerName, tags] of Object.entries(parsed)) {
-        if (validPlayerNames.has(playerName) && tags.length > 0) {
-          cleaned[playerName] = tags;
-        } else {
-          hasChanges = true;  // Mark that we removed something
-        }
-      }
-
-      // Save cleaned version if we removed stale entries
-      if (hasChanges) {
-        localStorage.setItem(TAGS_KEY, JSON.stringify(cleaned));
-      }
-
-      return cleaned;
-    } catch (e) {
-      console.error('Failed to parse stored tags', e);
-    }
+  if (!response.ok) {
+    throw new Error('Failed to Load Tags');
   }
-  return {};
+
+  const data = await response.json() as {tags: any[]};
+
+  // taggedPlayers: PlayerId -> List of Tags
+  const taggedPlayers: Record<string, string[]> = {};
+  for (const t of data.tags) {
+    const playerId = t.playerId;
+
+    taggedPlayers[playerId] = [];
+    if (Number(t.favorite) === 1) taggedPlayers[playerId].push('favorite');
+    if (Number(t.target) === 1) taggedPlayers[playerId].push('target');
+  }
+
+  return taggedPlayers;
 };
 
 const loadSettings = (): DraftSettings => {
@@ -466,38 +454,61 @@ export const useDraftStore = create<DraftState>((set, get) => {
       state.makePick(candidates[0].id);
     },
 
-    togglePlayerTag: (playerId, tag) => setWithPersistence((state) => {
-      // Find player by ID to get their name
-      const player = state.players.find(p => p.id === playerId);
-      if (!player) return state;
+    togglePlayerTag: (playerId, tag) => {
+      const state = get();
+      const currentTags = state.playerTags[playerId] || [];
 
-      const playerName = player.name;
-      const currentTags = state.playerTags[playerName] || [];
-      let newTags;
+      let newTags: string[];
       if (currentTags.includes(tag)) {
         newTags = currentTags.filter(t => t !== tag);
       } else {
         newTags = [...currentTags, tag];
       }
-      const updated = {...state.playerTags, [playerName]: newTags};
-      localStorage.setItem(TAGS_KEY, JSON.stringify(updated));
-      return {playerTags: updated};
-    }),
+
+      const updatedTags = {...state.playerTags, [playerId]: newTags};
+
+      // Update UI immediately
+      setWithPersistence(() => ({playerTags: updatedTags}));
+
+      // Save to DB
+      const payload = {
+        year: API_YEAR,
+        tags: Object.entries(updatedTags)
+                  .filter(([_, tags]) => tags.length > 0)
+                  .map(([id, tags]) => ({
+                         playerId: Number(id),
+                         favorite: (tags.includes('favorite') ? 1 : 0),
+                         target: (tags.includes('target') ? 1 : 0),
+                       }))
+      };
+
+      fetch('http://localhost:8000/api/updateTags', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }).catch(err => {
+        console.error('Failed to save tags:', err);
+      });
+    },
 
     // Helper to get tags for a player by ID (looks up by name internally)
     getPlayerTags: (playerId: string) => {
       const state = get();
-      const player = state.players.find(p => p.id === playerId);
-      if (!player) return [];
-      return state.playerTags[player.name] || [];
+      return state.playerTags[playerId] || [];
     },
 
     // Set players from dataLoader
-    setPlayers: (players) => setWithPersistence((state) => ({
-                                                  ...state,
-                                                  players,
-                                                  playerTags: loadTags(players),
-                                                })),
+    setPlayers: async (players) => {
+      const playerTags = await loadTags();
+
+      setWithPersistence((state) => ({
+                           ...state,
+                           players,
+                           playerTags,
+                         }));
+    },
   };
 });
 

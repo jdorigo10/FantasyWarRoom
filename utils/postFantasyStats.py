@@ -54,7 +54,7 @@ response = httpx.get(ESPN_FF_API, headers=headers)
 data = response.json()
 
 # GET EXISTING PLAYERS FROM DB
-db_path = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\past_info.db"
+db_path = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\fantasy_info.db"
 
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
@@ -136,7 +136,7 @@ print(f"Total Players Scraped: {len(players)}")
 
 # Upload stats to the database
 if UPLOAD:
-    db_path = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\past_info.db"
+    db_path = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\fantasy_info.db"
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()

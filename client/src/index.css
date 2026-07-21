@@ -53,8 +53,8 @@
   --popover: 0 0% 15%;
   --popover-foreground: 0 0% 90%;
   
-  --primary: var(--primary-custom, #2ea043);
-  --primary-custom: #2ea043;
+  --primary: var(--primary-custom, #388bfd);
+  --primary-custom: #388bfd;
   --primary-foreground: 0 0% 10%;
   
   --secondary: 0 0% 20%;

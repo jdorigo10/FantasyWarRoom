@@ -1,5 +1,3 @@
-import config from '../config.json';
-
 export type Position = 'All'|'QB'|'RB'|'WR'|'TE'|'FLEX'|'DST'|'K';
 export const POSITION_LIST: Position[] =
     ['QB', 'RB', 'WR', 'TE', 'FLEX', 'DST', 'K'];
@@ -129,20 +127,20 @@ export interface DraftSettings {
   draftYear: string;
 }
 
+export const API_YEAR = 2026;
+
 export const INITIAL_SETTINGS: DraftSettings = {
   teamCount: 10,
   position: 1,
-  scoring: config.scoring as 'Standard' | 'PPR' | 'Half-PPR',
+  scoring: 'PPR' as 'Standard' | 'PPR' | 'Half-PPR',
   rounds: 16,
   theme: 'dark',
-  accentColor: '#2ea043',
+  accentColor: '#388bfd',
   teams: Array.from({length: 10}, (_, i) => ({
                                     id: `team-${i + 1}`,
                                     name: `Team ${i + 1}`,
                                     isUser: i === 0,
                                   })),
   viewedTeamId: 'team-1',
-  draftYear: config.draftYear,
+  draftYear: String(API_YEAR),
 };
-
-export const API_YEAR = 2026;

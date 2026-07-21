@@ -1,13 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useDraftStore } from "@/lib/draftStore";
 import { Player } from "@/lib/baseData";
 import { useLiveStrategies } from "@/hooks/useLiveStrategies";
+import { initializeStrategyStore, useStrategyStore } from "@/hooks/useSavedStrategy";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { TrendingUp, BotMessageSquare, ChevronDown, Medal, Trophy } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 function backupsOfPosFor(
   pos: "QB" | "TE",
@@ -24,12 +32,19 @@ function backupsOfPosFor(
 
 export function TeamRoster() {
   const [, setLocation] = useLocation();
-  const { players, picks, settings, updateSettings, currentPickIndex } = useDraftStore();
-  const { scenarios } = useLiveStrategies();
+  const { players, picks, settings, updateSettings, currentPickIndex, pickedPlayers } = useDraftStore();
+  const userActualPicks = useMemo(() => {
+      const map: Record<number, Player> = {};
+      picks.filter(p => p.pickedBy === 'User').forEach(p => {
+      const player = players.find(pl => pl.id === p.playerId);
+      if (player) map[p.round] = player;
+      });
+      return map;
+  }, [picks, players]);
 
   const viewedTeam = settings.teams.find(t => t.id === settings.viewedTeamId) || settings.teams[0];
 
-    // Helper for pick info
+  // Helper for pick info
   const getPickDetails = (index: number) => {
     if (index < 0) return null;
     const round = Math.floor(index / settings.teamCount) + 1;
@@ -66,6 +81,7 @@ export function TeamRoster() {
   }
   
   // Calculate Live Suggestion
+  const { scenarios } = useLiveStrategies();
   const liveSuggestions: (Player | null)[] = [];
   if (scenarios.length > 0) {
     for (let i = 0; i < Math.min(5, scenarios.length); i++) {
@@ -87,8 +103,50 @@ export function TeamRoster() {
     liveSuggestions.push(null);
   }
 
+  // Calculate Saved Suggestion
+  initializeStrategyStore();
+  const { savedStrats } = useStrategyStore();
+  const matchingStrategies = savedStrats.filter(strategy => {
+      return Object.entries(userActualPicks).every(([roundStr, pickedPlayer]) => {
+          // Ignore rounds 9+
+          if (Number(roundStr) > 8) {
+              return true;
+          }
+
+          const round = strategy.rounds.find(r => r.round === Number(roundStr));
+
+          if (!round) {
+              return false;
+          }
+
+          return round.players.some(
+              p => p.position === pickedPlayer.position
+          );
+      });
+  });
+  const topStrategy =
+      matchingStrategies.length > 0
+          ? matchingStrategies.sort((a, b) => a.rank - b.rank)[0]
+          : null;
   const savedSuggestions: (Player | null)[] = [];
-  savedSuggestions.push(null);
+  if (topStrategy) {
+    const round = topStrategy.rounds[Math.floor(nextUserPickIndex / settings.teamCount)];
+
+    const pickedPlayerIds = new Set(
+        picks.map(pick => pick.playerId)
+    );
+
+    const availablePlayers = round.players.filter(
+        player => !pickedPlayerIds.has(player.id)
+    );
+
+    savedSuggestions.push(...availablePlayers);
+    if (savedSuggestions.length === 0) {
+        savedSuggestions.push(null);
+    }
+  } else {
+      savedSuggestions.push(null);
+  }
 
   // Define roster slots
   const rosterSlots = [
@@ -273,22 +331,33 @@ export function TeamRoster() {
         <div className="p-4 border-b border-[#30363d] flex-shrink-0">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-display font-bold tracking-[0.2em] text-primary uppercase truncate mr-4">{viewedTeam.name}'s Roster</h2>
-            <div className="relative min-w-[160px]">
-              <select 
-                className="h-10 w-full appearance-none bg-[#0d1117] border border-[#30363d] text-[12px] text-white rounded-lg pl-3 pr-9 focus:ring-primary/20 cursor-pointer transition-all hover:bg-[#1c2128]"
+            <Select
                 value={settings.viewedTeamId}
-                onChange={(e) => updateSettings({ viewedTeamId: e.target.value })}
-              >
-                {settings.teams.map((t, idx) => (
-                  <option key={t.id} value={t.id} className="bg-[#0d1117]">
-                    {idx + 1}. {t.name}{t.isUser ? " (user)" : ""}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown 
-                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-              />
-            </div>
+                onValueChange={(value) =>
+                    updateSettings({ viewedTeamId: value })
+                }
+            >
+                <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Roster" />
+                </SelectTrigger>
+                <SelectContent className="max-h-150 overflow-y-auto">
+                    {settings.teams.map((t, idx) => (
+                        <SelectItem
+                            key={t.id}
+                            value={t.id}
+                            className="
+                                cursor-pointer
+                                focus:bg-primary
+                                focus:text-primary-foreground
+                                data-[highlighted]:bg-primary
+                                data-[highlighted]:text-primary-foreground
+                            "
+                        >
+                            {idx + 1}. {t.name}{t.isUser ? " (user)" : ""}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[12px] text-[#8b949e] uppercase font-mono font-bold tracking-wider">Projected PPG</span>
@@ -367,7 +436,7 @@ export function TeamRoster() {
           Suggested Picks for Round {Math.floor(nextUserPickIndex / settings.teamCount) + 1}
         </div>
         <div className="flex items-center justify-between">
-          <span className=" pl-13 text-[10px] text-[#8b949e] uppercase font-mono text-center tracking-wider">Live Strategy</span>
+          <span className="pl-13 text-[10px] text-[#8b949e] uppercase font-mono text-center tracking-wider">Live Strategy</span>
           <span className="pr-13 text-[10px] text-[#8b949e] uppercase font-mono text-center tracking-wider">Saved Strategy</span>
         </div>
 
@@ -414,7 +483,7 @@ export function TeamRoster() {
 
           {/* Saved Strategy */}
           <div className="flex flex-col gap-2 overflow-y-auto pl-0">
-            {(savedSuggestions) && savedSuggestions.map((player, index) =>
+            {(savedSuggestions.length >0) && savedSuggestions.map((player, index) =>
               player ? (
                 <Button
                   key={player.id}

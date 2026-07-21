@@ -54,7 +54,7 @@ export function RosterView() {
       const currentPick = getPickDetails(currentPickIndex);
 
       const userTeamId = settings.teams.find(team => team.isUser)?.id;
-      const accentColor = settings.accentColor || "#2ea043";
+      const accentColor = settings.accentColor || "#388bfd";
       const currentPickTeamId = getCurrentPickTeamId(currentPickIndex, settings);
       const nextPickTeamId = getNextPickTeamId(currentPickIndex, settings);
       const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -266,7 +266,7 @@ export function RosterView() {
                         {rowIndex === 9 && (
                           <div className="col-span-full my-1 h-0 border-t-2 border-dashed border-[#8b949e]" />
                         )}
-                        <div className="sticky left-0 z-10 flex h-12 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
+                        <div className="sticky left-0 z-10 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
                           {label}
                         </div>
                         {settings.teams.map((team, teamIndex) => {
@@ -277,22 +277,22 @@ export function RosterView() {
                             <div
                               key={`${team.id || teamIndex}-row-${rowIndex}`}
                               className={cn(
-                                "flex h-12 items-center justify-center rounded-lg px-2 text-center text-xs",
+                                "flex h-16 items-center justify-center rounded-lg px-2 text-center text-xs",
                                 getTeamColumnClasses(team)
                               )}
                               style={getTeamColumnStyle(team)}
                             >
                               {slot?.player ? (
                                 <div className="flex min-w-0 flex-col items-center justify-center">
-                                  <div className="truncate text-[11px] font-bold text-white leading-snug">
+                                  <div className="truncate text-[12px] font-bold text-white leading-snug">
                                     {slot.player.name}
                                   </div>
-                                  <div className="mt-0.5 truncate text-[10px] font-mono uppercase text-[#8b949e]">
+                                  <div className="mt-0.5 truncate text-[11px] font-mono uppercase text-[#8b949e]">
                                     <span className="font-bold">{slot.player.position} • {slot.player.teamInfo.teamAbbv}</span>
                                   </div>
                                 </div>
                               ) : (
-                                <span className="text-[11px] font-mono uppercase tracking-wider text-[#8b949e]">--</span>
+                                <span className="text-[12px] font-mono uppercase tracking-wider text-[#8b949e]">--</span>
                               )}
                             </div>
                           );
@@ -356,7 +356,7 @@ export function RosterView() {
                                         {rowIndex === 9 && (
                                             <div className="col-span-full my-1 h-0 border-t-2 border-dashed border-[#8b949e]" />
                                         )}
-                                        <div className="sticky left-0 z-10 flex h-12 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
+                                        <div className="sticky left-0 z-10 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
                                             {label}
                                         </div>
                                         {settings.teams.map((team, teamIndex) => {
@@ -367,22 +367,22 @@ export function RosterView() {
                                                 <div
                                                     key={`${team.id || teamIndex}-row-${rowIndex}`}
                                                     className={cn(
-                                                        "flex h-12 items-center justify-center rounded-lg px-2 text-center text-xs",
+                                                        "flex h-16 items-center justify-center rounded-lg px-2 text-center text-xs",
                                                         getTeamColumnClasses(team)
                                                     )}
                                                     style={getTeamColumnStyle(team)}
                                                 >
                                                     {slot?.player ? (
                                                         <div className="flex min-w-0 flex-col items-center justify-center">
-                                                            <div className="truncate text-[11px] font-bold text-white leading-snug">
+                                                            <div className="truncate text-[12px] font-bold text-white leading-snug">
                                                                 {slot.player.name}
                                                             </div>
-                                                            <div className="mt-0.5 truncate text-[10px] font-mono uppercase text-[#8b949e]">
+                                                            <div className="mt-0.5 truncate text-[11px] font-mono uppercase text-[#8b949e]">
                                                                 <span className="font-bold">{slot.player.position} • {slot.player.teamInfo.teamAbbv}</span>
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-[11px] font-mono uppercase tracking-wider text-[#8b949e]">--</span>
+                                                        <span className="text-[12px] font-mono uppercase tracking-wider text-[#8b949e]">--</span>
                                                     )}
                                                 </div>
                                             );

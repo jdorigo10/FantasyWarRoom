@@ -1,7 +1,8 @@
 import {AI_Stock, API_YEAR, NFLTeamAbbv, PastPlayerInfo, Player, PlayerTeam, Position} from './baseData';
 
 // Helper to create a base player object with minimal data
-function createBasePlayer(item: {playerId: string, name: string}): Player {
+export function createBasePlayer(item: {playerId: string, name: string}):
+    Player {
   return {
     id: item.playerId,  // STEP 3
     name: item.name,    // STEP 3

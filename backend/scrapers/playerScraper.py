@@ -1,7 +1,7 @@
 import sqlite3
 
 async def scrape_player_info(year: str):    
-    db_path = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\past_info.db"
+    db_path = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\fantasy_info.db"
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()

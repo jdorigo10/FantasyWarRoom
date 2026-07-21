@@ -11,6 +11,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Heart, Crosshair, ChevronDown } from "lucide-react";
 import { Gem, Rocket, Star, CircleCheck, Eye, Minus, TrendingDown, TriangleAlert, ThumbsDown, Bomb, Dices } from "lucide-react";
 import { Position, POSITION_LIST, NFLTeamAbbv, NFL_ABBV_LIST, NFL_TEAM_MAP } from "@/lib/baseData";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface PlayerTableProps {
   showExtendedStats?: boolean;
@@ -38,17 +45,63 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     return p;
   }, [settings, currentPickIndex]);
 
+  const playerOverallIndex = new Map(
+      [...players]
+          .sort((a, b) => Number(a.rank) - Number(b.rank))
+          .map((player, index) => [
+              player.id,
+              index + 1
+          ])
+  );
+
+  function getDraftedPlayersAfterPick(pickOverall: number) {
+    return picks.filter(
+        pick => (playerOverallIndex.get(pick.playerId) ?? 0) > pickOverall
+    ).length;
+  }
+
   const pickDividers = React.useMemo(() => {
-    const map = new Map();
+    const map = new Map<Number, any>();
     userFuturePicks.forEach(p => {
-      const gap = p.pickOverall - (currentPickIndex + 1);
-      if (gap >= 0) map.set(gap, p);
+      map.set(p.pickOverall, p);
     });
     return map;
   }, [userFuturePicks, currentPickIndex]);
 
-  let availableCount = 0;
-  const currentTurnDivider = pickDividers.get(0);
+  // Helper for pick info
+  const getPickDetails = (index: number) => {
+    if (index < 0) return null;
+    const round = Math.floor(index / settings.teamCount) + 1;
+    const pickInRound = (index % settings.teamCount) + 1;
+    const isEvenRound = (round - 1) % 2 === 0;
+    
+    let teamIndex;
+    if (isEvenRound) {
+        teamIndex = pickInRound - 1;
+    } else {
+        teamIndex = settings.teamCount - pickInRound;
+    }
+    
+    // Safety check
+    if (teamIndex < 0 || teamIndex >= settings.teams.length) return null;
+    
+    return {
+        round,
+        pick: pickInRound,
+        overall: index + 1,
+        team: settings.teams[teamIndex]
+    };
+  };
+  // Calculate picks until user
+  let nextUserPickIndex = -1;
+  // search forward for next user pick
+  for (let i = currentPickIndex; i < settings.rounds * settings.teamCount; i++) {
+      const details = getPickDetails(i);
+      if (details?.team?.isUser) {
+          nextUserPickIndex = i
+          break;
+      }
+  }
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'rank', direction: 'asc' });
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
@@ -334,25 +387,36 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
             onChange={(e) => currentUpdateFilters({ search: e.target.value })}
           />
         </div>
-        
-        <div className="relative min-w-[160px]">
-          <select 
-            className="h-9 w-full appearance-none bg-[#0d1117] border border-[#30363d] text-[12px] text-white rounded-lg pl-3 pr-9 focus:ring-primary/20 cursor-pointer transition-all hover:bg-[#1c2128]"
+
+        <Select
             value={currentFilters.team}
-            onChange={(e) => currentUpdateFilters({ 
-              team: e.target.value as NFLTeamAbbv 
-            })}
-          >
-            {TEAMS_ALL.map(team => (
-              <option key={team} value={team}>
-                {TEAM_NAMES[team as NFLTeamAbbv] || team}
-              </option>
-            ))}
-          </select>
-          <ChevronDown 
-            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-          />
-        </div>
+            onValueChange={(value) =>
+                currentUpdateFilters({ 
+                  team: value as NFLTeamAbbv 
+                })
+            }
+        >
+            <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Team" />
+            </SelectTrigger>
+            <SelectContent className="max-h-150 overflow-y-auto">
+                {TEAMS_ALL.map(team => (
+                    <SelectItem
+                        key={team}
+                        value={team}
+                        className="
+                            cursor-pointer
+                            focus:bg-primary
+                            focus:text-primary-foreground
+                            data-[highlighted]:bg-primary
+                            data-[highlighted]:text-primary-foreground
+                        "
+                    >
+                        {TEAM_NAMES[team as NFLTeamAbbv] || team}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
 
         <div className="flex bg-[#0d1117] rounded-lg border border-[#30363d] p-1">
            {POSITIONS.map(pos => (
@@ -514,23 +578,43 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           )}
         </div>
         <ScrollArea className="flex-1">
-          {currentTurnDivider && (
+          {(currentPickIndex == nextUserPickIndex) && (
              <div className="bg-primary/20 border-b border-primary/30 py-2 px-2 text-center flex items-center justify-center gap-4 sticky top-0 z-20 backdrop-blur-md shadow-lg">
                <span className="text-[12px] font-mono text-primary font-bold tracking-widest uppercase animate-pulse">
-                 ⚡ Your Turn: RD {currentTurnDivider.round} - Pick {currentTurnDivider.pickOverall} ⚡
+                 ⚡ Your Turn: RD {pickDividers.values().next().value.round} - Pick {pickDividers.values().next().value.pickOverall} ⚡
                </span>
              </div>
           )}
-          {sortedPlayers.map((player) => {
+          {sortedPlayers.map((player, idx) => {
             const isPicked = pickedPlayers.includes(player.id);
             const pickInfo = picks.find(p => p.playerId === player.id);
             const tags = getTagIcons(player);
-            
-            if (!isPicked) availableCount++;
-            const divider = !isPicked ? pickDividers.get(availableCount) : null;
+
+            const currentIndex = playerOverallIndex.get(player.id) ?? 0;
+            let numPlayers = getDraftedPlayersAfterPick(currentIndex);
+
+            let dividers = []
+            if (idx == 0) {
+              dividers = [...pickDividers.entries()].filter(([pickOverall]) => Number(pickOverall) <= Number(currentIndex)+numPlayers);
+            }
+            else {
+              const prevIndex = playerOverallIndex.get(sortedPlayers[idx-1].id) ?? 0;
+              dividers = [...pickDividers.entries()].filter(([pickOverall]) => Number(prevIndex)+numPlayers < Number(pickOverall) && Number(pickOverall) <= Number(currentIndex)+numPlayers);
+            }
+            dividers = dividers.filter(([pickOverall]) => Number(pickOverall) != currentPickIndex+1);
             
             return (
               <React.Fragment key={player.id}>
+              {dividers.map(([pickOverall, divider]) => (
+                 <div className="bg-primary/5 border-y border-primary/20 py-1.5 px-2 text-center flex items-center justify-center gap-4 my-0.5">
+                   <div className="h-px bg-primary/20 flex-1" />
+                   <span className="text-[12px] font-mono text-primary font-bold tracking-widest uppercase">
+                     RD {divider.round} - Pick {divider.pickOverall}
+                   </span>
+                   <div className="h-px bg-primary/20 flex-1" />
+                 </div>
+              ))}
+
               <div 
                 onClick={() =>
                   setExpandedPlayerId(
@@ -546,11 +630,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <div className={showExtendedStats ? "col-span-3" : "col-span-6"}>
                   <div className="text-[14px] font-semibold text-[#c9d1d9] flex items-center gap-1 truncate">
                     {player.name}
-                    {/* User Tags Display - uses player.name as key */}
-                    {playerTags[player.name]?.includes('favorite') && (
+                    {/* User Tags Display - uses player.id as key */}
+                    {playerTags[player.id]?.includes('favorite') && (
                       <Heart className="h-3 w-3 text-red-500 fill-red-500" />
                     )}
-                    {playerTags[player.name]?.includes('target') && (
+                    {playerTags[player.id]?.includes('target') && (
                       <Crosshair className="h-3 w-3 text-yellow-500" />
                     )}
                     
@@ -558,7 +642,11 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     {showExtendedStats && (
                       <Popover>
                         <PopoverTrigger asChild>
-                          <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:bg-white/10 rounded p-0.5 outline-none">
+                          <button className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:bg-white/10 rounded p-0.5 outline-none"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
                             <Plus className="h-3 w-3 text-[#8b949e]" />
                           </button>
                         </PopoverTrigger>
@@ -567,19 +655,25 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                              <button 
                                className={cn(
                                  "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
-                                 playerTags[player.name]?.includes('favorite') ? "bg-red-500/10 text-red-500" : "text-[#c9d1d9] hover:bg-white/5"
+                                 playerTags[player.id]?.includes('favorite') ? "bg-red-500/10 text-red-500" : "text-[#c9d1d9] hover:bg-white/5"
                                )}
-                               onClick={() => togglePlayerTag(player.id, 'favorite')}
+                               onClick={(e) => {
+                                e.stopPropagation();
+                                togglePlayerTag(player.id, 'favorite');
+                               }}
                              >
-                               <Heart className={cn("h-3 w-3", playerTags[player.name]?.includes('favorite') && "fill-current")} />
+                               <Heart className={cn("h-3 w-3", playerTags[player.id]?.includes('favorite') && "fill-current")} />
                                Favorite
                              </button>
                              <button 
                                className={cn(
                                  "w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-bold transition-colors",
-                                 playerTags[player.name]?.includes('target') ? "bg-yellow-500/10 text-yellow-500" : "text-[#c9d1d9] hover:bg-white/5"
+                                 playerTags[player.id]?.includes('target') ? "bg-yellow-500/10 text-yellow-500" : "text-[#c9d1d9] hover:bg-white/5"
                                )}
-                               onClick={() => togglePlayerTag(player.id, 'target')}
+                               onClick={(e) => {
+                                e.stopPropagation();
+                                togglePlayerTag(player.id, 'target');
+                               }}
                              >
                                <Crosshair className="h-3 w-3" />
                                Target
@@ -669,12 +763,15 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                     </TooltipProvider>
                   </div>
                 ) : (
-                  <div className="col-span-3 flex justify-center items-center px-2">
+                  <div className="col-span-3 flex justify-center items-center px-2" >
                     {!isPicked ? (
                       <Button 
-                        size="sm" 
+                        size="sm"
                         className="h-7 w-full max-w-[80px] bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
-                        onClick={() => makePick(player.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          makePick(player.id);
+                        }}
                         disabled={isDraftComplete}
                       >
                         Draft
@@ -830,16 +927,6 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
                   </div>
                 </div>
-              )}
-
-              {divider && (
-                 <div className="bg-primary/5 border-y border-primary/20 py-1.5 px-2 text-center flex items-center justify-center gap-4 my-0.5">
-                   <div className="h-px bg-primary/20 flex-1" />
-                   <span className="text-[12px] font-mono text-primary font-bold tracking-widest uppercase">
-                     RD {divider.round} - Pick {divider.pickOverall}
-                   </span>
-                   <div className="h-px bg-primary/20 flex-1" />
-                 </div>
               )}
               </React.Fragment>
             );
