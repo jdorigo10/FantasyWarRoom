@@ -177,7 +177,12 @@ export async function loadSeasonPlayerInfo(
         p.injuryStatus as 'NA' | 'UNKNOWN' | 'HEALTHY' | 'HURT' | 'IR';
   }
 
-  const filteredPlayers = players.filter(p => p.rank <= 600);
+  const filteredPlayers = players.filter(p => p.rank <= 600)
+                              .sort((a, b) => a.rank - b.rank)
+                              .map((player, index) => ({
+                                     ...player,
+                                     rank: index + 1,
+                                   }));
 
   await new Promise(resolve => setTimeout(resolve, 500));
   return filteredPlayers;

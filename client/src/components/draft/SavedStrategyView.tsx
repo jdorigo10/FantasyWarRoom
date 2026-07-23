@@ -664,9 +664,10 @@ export function SavedStrategyView() {
                                                                     )
                                                                     .sort((a, b) => a.rank - b.rank);
                                                         return (
+                                                            <div className="flex items-center">
                                                             <div
                                                                 key={`${round.round}-${index}`}
-                                                                className="flex items-center gap-3 rounded-md bg-black/20 p-2"
+                                                                className="flex items-center gap-3 rounded-md bg-black/20 p-2 w-full"
                                                             >
                                                                 {/* Position */}
                                                                 <Select
@@ -762,14 +763,14 @@ export function SavedStrategyView() {
                                                                 </div>
 
                                                                 {/* PPG */}
-                                                                <div className="ml-auto w-14 text-right font-bold text-primary mr-3">
+                                                                <div className="ml-auto w-20 text-right font-bold text-primary mr-2">
                                                                     {player.ppg.toFixed(1)}
                                                                 </div>
-
-                                                                <Button size="sm" className="absolute right-12 h-7 bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
-                                                                        onClick={() => deletePlayerSlot(round.round, index)}>
-                                                                    <X className="mr-0 h-4 w-4" />
-                                                                </Button>
+                                                            </div>
+                                                            <Button size="sm" className="ml-3 mb-1 h-8 bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
+                                                                    onClick={() => deletePlayerSlot(round.round, index)}>
+                                                                <X className="mr-0 h-4 w-4" />
+                                                            </Button>
                                                             </div>
                                                         );
                                                     })}

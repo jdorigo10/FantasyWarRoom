@@ -105,6 +105,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'rank', direction: 'asc' });
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
+  const [hideDividers, setHideDividers] = useState<boolean>(false);
 
   const currentFilters = showExtendedStats ? rankingsFilters : filters;
   const currentUpdateFilters = showExtendedStats ? updateRankingsFilters : updateFilters;
@@ -114,6 +115,14 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
+
+    if (key === 'rank' && direction === 'asc') {
+      setHideDividers(false);
+    }
+    else {
+      setHideDividers(true);
+    }
+
     setSortConfig({ key, direction });
   };
 
@@ -601,6 +610,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               dividers = [...pickDividers.entries()].filter(([pickOverall]) => Number(prevIndex)+getDraftedPlayersAfterPick(prevIndex) < Number(pickOverall) && Number(pickOverall) <= Number(currentIndex)+getDraftedPlayersAfterPick(currentIndex));
             }
             dividers = dividers.filter(([pickOverall]) => Number(pickOverall) != currentPickIndex+1);
+
+            if (hideDividers) {
+              dividers = [] as [Number, any][]
+            }
             
             return (
               <React.Fragment key={player.id}>
