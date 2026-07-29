@@ -48,8 +48,9 @@ export const NFL_TEAM_MAP: Record<NFLTeamAbbv, string> = {
   'WAS': 'Washington'
 }
 
-export type AI_Stock = 'DIAMOND' |  // Elite draft value and a must-target
-                                    // player at their current ADP.
+export type AI_Stock =
+    'NONE' | 'DIAMOND' |  // Elite draft value and a must-target
+                          // player at their current ADP.
     'BREAKOUT' |  // Strong signs of a major jump in fantasy production this
                   // season.
     'STAR' |      // Proven elite fantasy asset with consistently high-level

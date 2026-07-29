@@ -17,6 +17,7 @@ from backend.strategy.saveStrategy import save_strategy
 from backend.strategy.deleteStrategy import delete_strategy
 from backend.tags.loadTags import load_tags
 from backend.tags.updateTags import update_tags
+from backend.ai.playerAnalyzer import analyze
 
 
 app = FastAPI()
@@ -80,3 +81,7 @@ async def get_saved_tags(year: int):
 @app.post("/api/updateTags")
 async def post_updated_tags(data: dict = Body(...)):
     return await update_tags(data)
+
+@app.get("/api/analyze")
+async def ai_player_analysis(year: int):
+    return await analyze(year)

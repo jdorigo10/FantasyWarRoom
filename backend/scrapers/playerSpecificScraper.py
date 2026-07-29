@@ -60,6 +60,9 @@ async def scrape_player_specifics(year: str):
         injury_status = row[10]
         new_team = row[11]
 
+        # Outlook
+        outlook = row[12]
+
         player = {
             "id": str(id),
             "teamId": str(team_id),
@@ -71,7 +74,8 @@ async def scrape_player_specifics(year: str):
             "games": str(games),
             "suspensionStatus": str(suspension_status),
             "injuryStatus": str(injury_status),
-            "teamStatus": str(new_team)
+            "teamStatus": str(new_team),
+            "outlook": str(outlook)
         }
         players.append(player)
 

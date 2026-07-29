@@ -801,8 +801,9 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <div className={cn("px-3 py-3 border-b border-[#30363d] bg-white/[0.02]")}>
                   <div className="px-4 py-4 bg-[#161b22] border border-[#30363d] rounded-md">
 
-                    {/* Player AI Stock / AI Insight */}
+                    {/* Player AI Stock / Insight */}
                     <div className="flex items-start gap-3 mb-5">
+                      {player.stock != "NONE" && (
                       <div
                         className={cn(
                           "flex flex-col items-center justify-center h-12 w-15 rounded-md shrink-0 gap-0.5 bg-gray-400/10",
@@ -876,9 +877,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                           </>
                         )}
                       </div>
+                      )}
 
                       <div>
-                        <p className="text-[12px] text-[#8b949e] leading-relaxed max-w-2xl">
+                        <p className="text-[12px] text-[#8b949e] leading-relaxed">
                           {player.notes}
                         </p>
                       </div>

@@ -14,26 +14,21 @@ export function createBasePlayer(item: {playerId: string, name: string}):
       sos: 1,
       ppgOffense: 0,
       ppgDefense: 99
-    },                  // STEP 4
-    age: -1,            // STEP 4
-    experience: -1,     // STEP 4
-    rank: 9999,         // STEP 4
-    adp: 170,           // STEP 4
-    ppg: 0,             // STEP 4
-    projectedGames: 0,  // STEP 4
-    newTeam: false,     // STEP 4
-    rookie: false,      // STEP 4
-    status: 'NA',       // STEP 4
-    injury: 'NA',       // STEP 4
-    trend: 'NORMAL',    // STEP 5 - Get past player info from DB
-    pastInfo: {
-      ppg: 0,
-      totalGames: 0,
-      weeks: []
-    },                 // STEP 5 - Get past player info from DB
-    stock: 'AVERAGE',  // STEP 6 - TODO - AI Analyze? past info to predict
-    notes: 'No insight available'  // STEP 6 - TODO - AI Analyze? past info to
-                                   // predict
+    },                                             // STEP 4
+    age: -1,                                       // STEP 4
+    experience: -1,                                // STEP 4
+    rank: 9999,                                    // STEP 4
+    adp: 170,                                      // STEP 4
+    ppg: 0,                                        // STEP 4
+    projectedGames: 0,                             // STEP 4
+    newTeam: false,                                // STEP 4
+    rookie: false,                                 // STEP 4
+    status: 'NA',                                  // STEP 4
+    injury: 'NA',                                  // STEP 4
+    trend: 'NORMAL',                               // STEP 5
+    pastInfo: {ppg: 0, totalGames: 0, weeks: []},  // STEP 5
+    stock: 'NONE',  // STEP 6 - TODO - AI Analyze? past info to predict
+    notes: 'No insight available'  // STEP 4
   };
 }
 
@@ -175,6 +170,10 @@ export async function loadSeasonPlayerInfo(
         p.suspensionStatus as 'NA' | 'UNKNOWN' | 'CLEAR' | 'SUSPENDED';
     player.injury =
         p.injuryStatus as 'NA' | 'UNKNOWN' | 'HEALTHY' | 'HURT' | 'IR';
+
+    if (p.outlook != '') {
+      player.notes = p.outlook;
+    }
   }
 
   const filteredPlayers = players.filter(p => p.rank <= 600)
@@ -211,6 +210,12 @@ export async function loadPastPlayerInfo(players: Player[]): Promise<Player[]> {
     player.pastInfo.ppg = Number(parseFloat(p.ppg).toFixed(2));
     player.pastInfo.totalGames = Number(p.games);
 
+    if (player.ppg >= (player.pastInfo.ppg * 1.25)) {
+      player.trend = 'UP'
+    } else if (player.ppg <= (player.pastInfo.ppg * 0.75)) {
+      player.trend = 'DOWN'
+    }
+
     player.pastInfo.weeks =
         String(p.breakdown)
             .split(', ')
@@ -222,11 +227,16 @@ export async function loadPastPlayerInfo(players: Player[]): Promise<Player[]> {
 }
 
 /**
- * Step 6: TODO AI Analysis
+ * Step 6: AI Analysis for each player
  */
-export async function generateAiAnalysis(): Promise<void> {
+export async function generateAiAnalysis(players: Player[]): Promise<Player[]> {
+  /*const res = await
+  fetch(`http://localhost:8000/api/analyze?year=${API_YEAR}`); if (!res.ok) {
+    throw new Error(`Failed to AI Analyze Players`);
+  }*/
+
   await new Promise(resolve => setTimeout(resolve, 500));
-  return;
+  return players;
 }
 
 

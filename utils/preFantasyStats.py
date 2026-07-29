@@ -298,6 +298,9 @@ for position in POSITION_IDS:
         if (new_team == "TODO" or exp < 0) and (not draftRank or int(draftRank) >= 1000):
             continue
 
+        # Outlook
+        outlook = player_info.get("seasonOutlook", "")
+
         player = {
             "player_id": str(id),
             "year": str(year),
@@ -310,7 +313,8 @@ for position in POSITION_IDS:
             "games": projected_games,
             "suspended": suspended,
             "injured": injured,
-            "new_team": new_team
+            "new_team": new_team,
+            "outlook": outlook
         }
         players.append(player)
 
@@ -349,9 +353,10 @@ for position in POSITION_IDS:
                     projected_games,
                     is_suspended,
                     is_injured,
-                    new_team
+                    new_team,
+                    outlook
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(player_id, season_year)
                 DO UPDATE SET
                     team_id = player_preseason.team_id,
@@ -363,7 +368,8 @@ for position in POSITION_IDS:
                     projected_games = player_preseason.projected_games,
                     is_suspended = player_preseason.is_suspended,
                     is_injured = player_preseason.is_injured,
-                    new_team = player_preseason.new_team
+                    new_team = player_preseason.new_team,
+                    outlook = player_preseason.outlook
             """, [
                 (
                     player["player_id"],
@@ -377,7 +383,8 @@ for position in POSITION_IDS:
                     player["games"],
                     player["suspended"],
                     player["injured"],
-                    player["new_team"]
+                    player["new_team"],
+                    player["outlook"]
                 )
                 for player in players
             ])
@@ -396,9 +403,10 @@ for position in POSITION_IDS:
                     projected_games,
                     is_suspended,
                     is_injured,
-                    new_team
+                    new_team,
+                    outlook
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(player_id, season_year)
                 DO UPDATE SET
                     team_id = excluded.team_id,
@@ -410,7 +418,8 @@ for position in POSITION_IDS:
                     projected_games = excluded.projected_games,
                     is_suspended = excluded.is_suspended,
                     is_injured = excluded.is_injured,
-                    new_team = excluded.new_team
+                    new_team = excluded.new_team,
+                    outlook = excluded.outlook
             """, [
                 (
                     player["player_id"],
@@ -424,7 +433,8 @@ for position in POSITION_IDS:
                     player["games"],
                     player["suspended"],
                     player["injured"],
-                    player["new_team"]
+                    player["new_team"],
+                    player["outlook"]
                 )
                 for player in players
             ])
