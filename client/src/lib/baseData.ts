@@ -48,30 +48,8 @@ export const NFL_TEAM_MAP: Record<NFLTeamAbbv, string> = {
   'WAS': 'Washington'
 }
 
-export type AI_Stock =
-    'NONE' | 'DIAMOND' |  // Elite draft value and a must-target
-                          // player at their current ADP.
-    'BREAKOUT' |  // Strong signs of a major jump in fantasy production this
-                  // season.
-    'STAR' |      // Proven elite fantasy asset with consistently high-level
-                  // production.
-    'STARTER' |   // Reliable fantasy starter offering solid production and fair
-                  // value.
-    'SLEEPER' |   // Under-the-radar player with significant upside at their
-                  // current draft position.
-    'AVERAGE' |   // Projected and ranked near expectations with reasonable flex
-                  // or bench value.
-    'OVERVALUED' |  // Being drafted earlier than their projected production or
-                    // outlook justifies.
-    'RISKY' |  // High uncertainty or volatility due to injury, role, situation,
-               // or inconsistent production.
-    'FADE' |  // Player to avoid at their current ADP because the expected value
-              // does not justify the draft cost.
-    'BUST' |  // High risk of significantly underperforming expectations due to
-              // the player's current circumstances.
-    'WILDCARD'  // Wide range of possible outcomes with significant upside and
-                // downside.
-    ;
+export type AI_Stock = 'NONE' | 'SUPERSTAR' | 'STAR' | 'STARTER' | 'AVERAGE' |
+    'BENCH' | 'WAIVER' | 'AVOID';
 
 export interface PastPlayerInfo {
   ppg: number;

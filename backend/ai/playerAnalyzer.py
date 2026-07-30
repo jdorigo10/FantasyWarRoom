@@ -2,16 +2,26 @@
 Fantasy Football Player Stock Analyzer
 =======================================
 Reads historical + current preseason/postseason data from the
-FantasyWarRoom SQLite DB and assigns every player in a target season
-a "stock" label (DIAMOND, BREAKOUT, STAR, ...) plus a short outlook,
-by blending:
-  1) a COMP COHORT of historically similar players — same position,
-     similar age/experience, similar ADP & projection tier, and a
-     matching situation (injury/suspension/new-team status) — and how
-     THOSE players actually performed relative to their own
-     projections, weighted primarily; and
-  2) the player's OWN historical preseason-vs-actual track record,
-     weighted more lightly (see MAX_SELF_HISTORY_WEIGHT below).
+FantasyWarRoom SQLite DB and assigns every player (draft_rank 1-600)
+in a target season a roster-tier "stock" label:
+
+    SUPERSTAR -> STAR -> STARTER -> AVERAGE -> BENCH -> WAIVER -> AVOID
+
+Tiers are rank-based within each position, sized off LEAGUE_COUNT and
+the position roster-multipliers below, but boundaries "breathe" a bit:
+if the players straddling a nominal cutoff are within GAP_THRESHOLD_PCT
+of each other's expected PPG, the cutoff slides down to keep them
+together in the same tier (e.g. if QB 9-13 are all bunched together in
+a 10-team/1-QB league, all five land in the starting-caliber group).
+
+Expected PPG for each player blends (in configurable proportions):
+    1) their own historical preseason-vs-actual track record, and
+    2) a COMP COHORT of historically similar players (same position,
+       similar age/experience/ADP tier/projection tier, and a matching
+       injury/suspension/new-team situation where that data exists).
+Both fall back gracefully on seasons with missing data (2023 has no
+valid ADP/projected_ppg/projected_games; 2023-2024 have no injury or
+suspension status) -- see build_history / get_self_history / get_comp_cohort.
 
 Usage:
     Edit DB_PATH and YEAR below, then run:
@@ -32,47 +42,73 @@ import pandas as pd
 DB_PATH = r"C:\Users\jdori\Documents\jdorigo10-Repos\FantasyWarRoom\db\fantasy_info.db"
 YEAR = 2026
 
-MIN_COMPS = 8              # min comp-cohort size before we trust the comp signal
-AGE_WINDOW = 2              # +/- years for age-based comp matching
-ADP_PCT_WINDOW = 0.20       # +/- positional ADP-percentile window for comp matching
-PROJ_PCT_WINDOW = 0.20      # +/- positional projected_ppg-percentile window for comp matching
-BUST_THRESHOLD = 0.75       # actual/projected ratio below this = a "bust" outcome
-HIT_THRESHOLD = 1.15        # actual/projected ratio above this = a "hit" outcome
-BYE_MARKER = -99.0          # sentinel value in `breakdown` for bye/inactive weeks
-MAX_DRAFT_RANK = 600        # only generate a stock/description for players drafted this high or higher
+MIN_DRAFT_RANK = 1
+MAX_DRAFT_RANK = 600     # only players with draft_rank in [MIN_DRAFT_RANK, MAX_DRAFT_RANK] get a stock
 
-# How much to weigh THIS PLAYER'S own past performance vs. how similar players
-# (same position/age/experience/ADP/projection/injury-suspension-new_team situation)
-# have actually performed historically. 0.0 = ignore the player's own history
-# entirely and go purely off the comp cohort; 1.0 = ignore comps and go purely
-# off the player's own track record (capped, reached only after several seasons).
-MAX_SELF_HISTORY_WEIGHT = 0.35
-SELF_HISTORY_SEASON_CAP = 3   # seasons of own history needed to hit the max weight above
+# ---- league shape --------------------------------------------------
+LEAGUE_COUNT = 10         # number of teams in the league
 
-# how "established" a player's historical output must be to count as "already a stud"
-# (keeps BREAKOUT reserved for players who haven't had a big year yet)
-ESTABLISHED_QUALITY_PCT = 0.35   # top 35% of position, historically = "already a stud"
+# "starting caliber" pool size per position = LEAGUE_COUNT * multiplier.
+# This is the SUPERSTAR + STAR + STARTER pool combined (tiers 1-3).
+STARTER_MULTIPLIER = {
+    'QB': 1.0, 'RB': 2.0, 'WR': 2.0, 'TE': 1.0, 'DST': 1.0, 'K': 1.0,
+}
+
+# extra players (beyond the starting-caliber pool) added per tier, again as
+# LEAGUE_COUNT * multiplier. AVERAGE = flex-caliber, BENCH/WAIVER = deeper.
+AVERAGE_EXTRA_MULTIPLIER = {
+    'QB': 0.5, 'RB': 2.0, 'WR': 2.0, 'TE': 1.0, 'DST': 0.5, 'K': 0.5,
+}
+BENCH_EXTRA_MULTIPLIER = {
+    'QB': 0.5, 'RB': 1.0, 'WR': 1.0, 'TE': 0.5, 'DST': 0.5, 'K': 0.5,
+}
+WAIVER_EXTRA_MULTIPLIER = {
+    'QB': 0.5, 'RB': 1.0, 'WR': 1.0, 'TE': 0.5, 'DST': 0.5, 'K': 0.5,
+}
+
+# how many of the very top starting-caliber players can be SUPERSTAR (1 = only
+# the top guy, unless #2/#3 are close enough in expected PPG to join him)
+SUPERSTAR_BASE = 1
+SUPERSTAR_MAX = 3
+
+# nominal size of the STAR tier (the "handful" of players just below SUPERSTAR
+# but clearly above the rest of the starter pool), per position
+STAR_TIER_SIZE = {
+    'QB': 3, 'RB': 5, 'WR': 5, 'TE': 3, 'DST': 3, 'K': 3,
+}
+
+# how "close" (as a fraction of the boundary player's expected PPG) two
+# adjacent players' expected PPG must be to be treated as tied at a tier
+# boundary, and how many extra players a boundary is allowed to absorb
+GAP_THRESHOLD_PCT = 0.04
+MAX_BOUNDARY_EXTEND = 4
+
+# ---- expected-PPG blend weights ------------------------------------
+# Nominal weights (renormalized after zeroing out whichever signals are
+# unavailable for a given player/season -- e.g. no self-history yet, or a
+# thin comp cohort). Must reflect relative trust in each signal, not sum to 1.
+WEIGHT_SELF_HISTORY = 0.25      # trust in the player's own past beat-rate
+WEIGHT_COMP_COHORT = 0.55       # trust in how similar players actually did
+WEIGHT_RAW_PROJECTION = 0.20    # trust in the projection itself (ratio = 1.0)
+
+SELF_HISTORY_SEASON_CAP = 3     # seasons of own history needed for full self-history weight
+MIN_COMPS = 8                   # comp-cohort size needed for full comp-cohort weight
+
+# comp-matching windows
+AGE_WINDOW = 2                  # +/- years for age-based comp matching
+ADP_PCT_WINDOW = 0.20            # +/- positional ADP-percentile window for comp matching
+PROJ_PCT_WINDOW = 0.20           # +/- positional projected_ppg-percentile window for comp matching
+BUST_THRESHOLD = 0.75
+HIT_THRESHOLD = 1.15
+BYE_MARKER = -99.0               # sentinel value in `breakdown` for bye/inactive weeks
+
+# how "established" a player's historical output must be to count as
+# already having had a big year (top X% of position, 2+ seasons)
+ESTABLISHED_QUALITY_PCT = 0.35
 ESTABLISHED_MIN_SEASONS = 2
 
-# --- tier system used by the decision tree -------------------------------
-# Both ADP and expected output are bucketed into NUM_TIERS positional tiers
-# (tier 1 = best). "tier_drop"/"tier_gain" (see assign_stock) let the rules
-# speak in terms of "fell a tier or two" rather than raw percentile deltas.
-NUM_TIERS = 6
-DEEP_TIER = 5              # tier 5-6 (bottom third) = "deep / low relevance" player
-STRONG_EVIDENCE_HIT_RATE = 0.40   # comp hit-rate needed to pull a deep player off AVERAGE
-STRONG_EVIDENCE_BUST_RATE = 0.40  # comp bust-rate needed to pull a deep player off AVERAGE
-STRONG_EVIDENCE_RATIO = 1.35      # blended_ratio needed to count as a "huge/unexpected" year
+STOCK_ORDER = ['SUPERSTAR', 'STAR', 'STARTER', 'AVERAGE', 'BENCH', 'WAIVER', 'AVOID']
 
-BREAKOUT_AGE_WINDOW = {   # (min_age, max_age) commonly-cited breakout windows
-    'QB': (21, 27), 'RB': (20, 25), 'WR': (20, 26), 'TE': (21, 26),
-}
-DECLINE_AGE = {'QB': 38, 'RB': 29, 'WR': 31, 'TE': 30}  # rough position-specific decline cliffs
-
-POSITION_NAME = {
-    'QB': 'quarterback', 'RB': 'running back', 'WR': 'wide receiver',
-    'TE': 'tight end', 'DST': 'defense', 'K': 'kicker'
-}
 
 # ------------------------------------------------------------------
 # LOAD
@@ -108,7 +144,6 @@ def parse_breakdown(breakdown_str):
 
 
 def volatility_cv(breakdown_str):
-    """Coefficient of variation of game-to-game scoring (NaN if not enough data)."""
     vals = parse_breakdown(breakdown_str)
     if len(vals) < 3:
         return np.nan
@@ -131,16 +166,21 @@ def build_history(players, preseason, postseason):
     hist = preseason.merge(postseason, on=['player_id', 'season_year'], how='inner')
     hist = hist.merge(players[['player_id', 'position']], on='player_id', how='left')
 
+    # NOTE: beat_ratio requires a valid projected_ppg, which 2023 preseason rows
+    # don't have -- those rows naturally end up with beat_ratio = NaN and are
+    # excluded anywhere beat_ratio is required (comp cohorts, self-history ratio).
     hist['beat_ratio'] = hist.apply(lambda r: safe_div(r['actual_ppg'], r['projected_ppg']), axis=1)
     hist['games_ratio'] = hist.apply(lambda r: safe_div(r['actual_games'], r['projected_games']), axis=1)
     hist['cv'] = hist['breakdown'].apply(volatility_cv)
 
-    # positional ADP / projection percentile WITHIN each historical season
+    # positional percentiles WITHIN each historical season (NaN-safe: an all-NaN
+    # column, like average_draft_position in 2023, just produces all-NaN percentiles)
     hist['adp_pos_pct'] = hist.groupby(['season_year', 'position'])['average_draft_position'] \
         .rank(pct=True, ascending=True)
     hist['proj_pos_pct'] = hist.groupby(['season_year', 'position'])['projected_ppg'] \
         .rank(pct=True, ascending=False)
-    # positional percentile of ACTUAL output that season (low pct = elite tier finish)
+    # positional percentile of ACTUAL output (low pct = elite finish) -- only needs
+    # actual_ppg, so this is valid even for 2023 despite its missing projection data
     hist['actual_pos_pct'] = hist.groupby(['season_year', 'position'])['actual_ppg'] \
         .rank(pct=True, ascending=False)
     return hist
@@ -152,34 +192,36 @@ def build_history(players, preseason, postseason):
 def get_self_history(player_id, hist_prior):
     ph = hist_prior[hist_prior['player_id'] == player_id].sort_values('season_year')
     if ph.empty:
-        return dict(self_n_seasons=0, self_mean_beat_ratio=np.nan,
-                    self_trend_slope=np.nan, self_mean_cv=np.nan,
-                    self_last_actual_ppg=np.nan, self_best_actual_pos_pct=np.nan,
-                    self_established=False)
+        return dict(self_n_seasons=0, self_mean_beat_ratio=np.nan, self_trend_slope=np.nan,
+                    self_mean_cv=np.nan, self_last_actual_ppg=np.nan,
+                    self_best_actual_pos_pct=np.nan, self_established=False)
 
-    n = len(ph)
-    mean_beat = ph['beat_ratio'].mean()
-    mean_cv = ph['cv'].mean()
-    last_actual = ph['actual_ppg'].iloc[-1]
-    # best (lowest = most elite) positional finish percentile the player has ever posted
-    best_pos_pct = ph['actual_pos_pct'].min()
+    ph_actual = ph.dropna(subset=['actual_ppg'])       # valid even for 2023 (no projection needed)
+    ph_ratio = ph.dropna(subset=['beat_ratio'])        # needs a valid projected_ppg (excludes 2023)
+
+    n_ratio = len(ph_ratio)
+    mean_beat = ph_ratio['beat_ratio'].mean() if n_ratio > 0 else np.nan
+    mean_cv = ph_actual['cv'].mean() if len(ph_actual) > 0 else np.nan
+    last_actual = ph_actual['actual_ppg'].iloc[-1] if len(ph_actual) > 0 else np.nan
+    best_pos_pct = ph_actual['actual_pos_pct'].min() if len(ph_actual) > 0 else np.nan
 
     slope = np.nan
-    if n >= 2:
-        x = ph['season_year'].values.astype(float)
-        y = ph['actual_ppg'].values.astype(float)
+    if len(ph_actual) >= 2:
+        x = ph_actual['season_year'].values.astype(float)
+        y = ph_actual['actual_ppg'].values.astype(float)
         try:
             slope = float(np.polyfit(x, y, 1)[0])
         except Exception:
             slope = np.nan
 
-    established = bool(n >= ESTABLISHED_MIN_SEASONS and pd.notna(best_pos_pct)
+    established = bool(len(ph_actual) >= ESTABLISHED_MIN_SEASONS and pd.notna(best_pos_pct)
                         and best_pos_pct <= ESTABLISHED_QUALITY_PCT)
 
-    return dict(self_n_seasons=n, self_mean_beat_ratio=mean_beat,
-                self_trend_slope=slope, self_mean_cv=mean_cv,
-                self_last_actual_ppg=last_actual, self_best_actual_pos_pct=best_pos_pct,
-                self_established=established)
+    # self_n_seasons drives the self-history WEIGHT below, so it must reflect
+    # seasons where we actually have a usable beat_ratio, not just any past season
+    return dict(self_n_seasons=n_ratio, self_mean_beat_ratio=mean_beat, self_trend_slope=slope,
+                self_mean_cv=mean_cv, self_last_actual_ppg=last_actual,
+                self_best_actual_pos_pct=best_pos_pct, self_established=established)
 
 
 def _apply_comp_filters(pool, row, age_window, adp_window, proj_window,
@@ -197,6 +239,9 @@ def _apply_comp_filters(pool, row, age_window, adp_window, proj_window,
     if pd.notna(proj_pct):
         p = p[(p['proj_pos_pct'] >= proj_pct - proj_window) & (p['proj_pos_pct'] <= proj_pct + proj_window)]
 
+    # is_injured/is_suspended are unknown (NaN) in 2023-2024 historical rows, so a
+    # strict match against those seasons naturally fails and the relaxation
+    # cascade below drops these filters when the pool gets too small.
     if match_injury and pd.notna(row.get('is_injured')):
         p = p[p['is_injured'] == row['is_injured']]
     if match_suspended and pd.notna(row.get('is_suspended')):
@@ -206,9 +251,6 @@ def _apply_comp_filters(pool, row, age_window, adp_window, proj_window,
     return p
 
 
-# Progressively looser match tiers: start by requiring position + age + ADP tier +
-# projection tier + a matching injury/suspension/new-team situation, then relax
-# the situational and window constraints (in that order) until MIN_COMPS is hit.
 _COMP_RELAXATION_STEPS = [
     dict(age_window=AGE_WINDOW, adp_window=ADP_PCT_WINDOW, proj_window=PROJ_PCT_WINDOW,
          match_injury=True, match_suspended=True, match_new_team=True),
@@ -226,8 +268,8 @@ _COMP_RELAXATION_STEPS = [
 def get_comp_cohort(row, hist_prior):
     position = row['position']
     base_pool = hist_prior[hist_prior['position'] == position]
-    base_pool = base_pool[base_pool['player_id'] != row['player_id']]  # exclude own past rows
-    base_pool = base_pool.dropna(subset=['beat_ratio'])
+    base_pool = base_pool[base_pool['player_id'] != row['player_id']]
+    base_pool = base_pool.dropna(subset=['beat_ratio'])   # excludes 2023 rows (no valid projection)
 
     pool, match_tier = base_pool.iloc[0:0], None
     for i, step in enumerate(_COMP_RELAXATION_STEPS):
@@ -250,248 +292,194 @@ def get_comp_cohort(row, hist_prior):
         comp_bust_rate=float((pool['beat_ratio'] < BUST_THRESHOLD).mean()),
         comp_mean_games_ratio=float(pool['games_ratio'].mean()),
         comp_match_tier=match_tier,
-        comp_situation_matched=(match_tier == 0),   # tier 0 = injury+suspension+new_team all matched
+        comp_situation_matched=(match_tier == 0),
     )
 
 
 def blend_expected_ppg(row, self_feat, comp_feat):
     """
-    Expected output is driven primarily by the comp cohort (how similar players —
-    matched on position/age/experience/ADP/projection tier/injury/suspension/new-team
-    situation — actually performed), with the player's own track record folded in
-    at a weight capped by MAX_SELF_HISTORY_WEIGHT.
+    expected_ppg = projected_ppg * blended_ratio, where blended_ratio is a
+    confidence-weighted mix of: the player's own historical beat-rate, the
+    comp cohort's historical beat-rate, and the raw projection itself
+    (ratio = 1.0, i.e. "trust the projection as given"). Each signal's
+    weight is scaled down by how much of it is actually available, then
+    the three are renormalized to sum to 1 -- so a rookie with no self
+    history and a thin comp pool falls back almost entirely on the raw
+    projection, while an established veteran with a deep comp pool leans
+    on both history signals.
     """
     projected = row['projected_ppg']
     if pd.isna(projected):
-        return np.nan, np.nan, 0.0
+        return np.nan, np.nan, 0.0, 0.0
 
     self_n = self_feat['self_n_seasons']
     self_ratio = self_feat['self_mean_beat_ratio']
     comp_n = comp_feat['comp_n']
     comp_ratio = comp_feat['comp_mean_beat_ratio']
 
-    # self-history weight ramps up to MAX_SELF_HISTORY_WEIGHT as seasons accumulate,
-    # capped so the comp cohort always carries the majority of the signal by default
-    self_weight = MAX_SELF_HISTORY_WEIGHT * (min(self_n, SELF_HISTORY_SEASON_CAP) / SELF_HISTORY_SEASON_CAP) \
-        if self_n > 0 else 0.0
+    self_confidence = min(self_n, SELF_HISTORY_SEASON_CAP) / SELF_HISTORY_SEASON_CAP if self_n > 0 else 0.0
     if pd.isna(self_ratio):
-        self_weight = 0.0
+        self_confidence = 0.0
 
-    comp_ratio_eff = comp_ratio if (comp_n >= MIN_COMPS and not pd.isna(comp_ratio)) else 1.0
+    comp_confidence = min(comp_n / MIN_COMPS, 1.0) if comp_n > 0 else 0.0
+    if pd.isna(comp_ratio):
+        comp_confidence = 0.0
 
-    blended_ratio = self_weight * self_ratio + (1 - self_weight) * comp_ratio_eff if self_weight > 0 \
-        else comp_ratio_eff
+    w_self = WEIGHT_SELF_HISTORY * self_confidence
+    w_comp = WEIGHT_COMP_COHORT * comp_confidence
+    w_base = WEIGHT_RAW_PROJECTION   # the raw-projection signal is always available
 
-    if pd.isna(blended_ratio):
+    total_w = w_self + w_comp + w_base
+    if total_w <= 0:
         blended_ratio = 1.0
+    else:
+        blended_ratio = (
+            w_self * (self_ratio if pd.notna(self_ratio) else 1.0) +
+            w_comp * (comp_ratio if pd.notna(comp_ratio) else 1.0) +
+            w_base * 1.0
+        ) / total_w
 
-    return projected * blended_ratio, blended_ratio, self_weight
+    return projected * blended_ratio, blended_ratio, (w_self / total_w if total_w > 0 else 0.0), \
+        (w_comp / total_w if total_w > 0 else 0.0)
 
 
 def analyze_player(row, hist_prior):
-    self_feat = get_self_history(row['player_id'], hist_prior)
-    comp_feat = get_comp_cohort(row, hist_prior)
-    expected_ppg, blended_ratio, self_weight = blend_expected_ppg(row, self_feat, comp_feat)
-
+    # NOTE: self-history / comp-cohort blending is on pause for now -- expected_ppg
+    # is just the given projected_ppg as-is. get_self_history/get_comp_cohort/
+    # blend_expected_ppg are left in place below so this can be flipped back on
+    # later by swapping the two lines under "TO RE-ENABLE" back in.
     out = dict(row)
-    out.update(self_feat)
-    out.update(comp_feat)
-    out['expected_ppg'] = expected_ppg
-    out['blended_ratio'] = blended_ratio
-    out['self_weight'] = self_weight
+
+    # --- TO RE-ENABLE the comp/self-history blend, swap this block back in: ---
+    # self_feat = get_self_history(row['player_id'], hist_prior)
+    # comp_feat = get_comp_cohort(row, hist_prior)
+    # expected_ppg, blended_ratio, self_weight, comp_weight = blend_expected_ppg(row, self_feat, comp_feat)
+    # out.update(self_feat)
+    # out.update(comp_feat)
+    # out['blended_ratio'] = blended_ratio
+    # out['self_weight'] = self_weight
+    # out['comp_weight'] = comp_weight
+
+    out['expected_ppg'] = row['projected_ppg']
+    out.setdefault('comp_n', np.nan)
+    out.setdefault('comp_situation_matched', np.nan)
+    out.setdefault('self_n_seasons', np.nan)
+    out.setdefault('self_weight', np.nan)
+    out.setdefault('comp_weight', np.nan)
     return out
 
 
 # ------------------------------------------------------------------
-# STOCK DECISION LOGIC
+# ROSTER-TIER STOCK ASSIGNMENT
 # ------------------------------------------------------------------
-def tier_from_pct(pct):
-    """Bucket a 0..1 percentile (low = better) into 1..NUM_TIERS (tier 1 = best)."""
-    if pd.isna(pct):
-        return NUM_TIERS
-    t = int(pct * NUM_TIERS) + 1
-    return min(max(t, 1), NUM_TIERS)
-
-
-def assign_stock(r):
-    risk_injury = r.get('is_injured') in ('HURT', 'IR')
-    risk_susp = r.get('is_suspended') == 'SUSPENDED'
-    high_bust = pd.notna(r['comp_bust_rate']) and r['comp_bust_rate'] >= 0.35
-    high_vol = pd.notna(r.get('vol_pct')) and r['vol_pct'] >= 0.75
-    strong_trend_up = pd.notna(r['self_trend_slope']) and r['self_trend_slope'] > 1.5
-    strong_trend_down = pd.notna(r['self_trend_slope']) and r['self_trend_slope'] < -1.5
-
-    window = BREAKOUT_AGE_WINDOW.get(r['position'])
-    breakout_age = bool(window and pd.notna(r.get('age')) and
-                         window[0] <= r['age'] <= window[1] and (r.get('experience') or 0) <= 4)
-    young_or_uncertain = breakout_age or r['self_n_seasons'] <= 1
-
-    decline_age = DECLINE_AGE.get(r['position'])
-    is_declining_age = bool(decline_age is not None and pd.notna(r.get('age')) and r['age'] >= decline_age)
-
-    quality = 1 - r['exp_goodness_pct']    # 0..1, higher = stronger projected tier at the position
-    self_mean_beat = r.get('self_mean_beat_ratio', np.nan)
-    self_underperforms = pd.notna(self_mean_beat) and self_mean_beat < 0.8
-    already_established = r.get('self_established', False)
-    projects_far_above_past = (
-        pd.notna(r.get('blended_ratio')) and r['blended_ratio'] >= 1.30 and r['self_n_seasons'] >= 1
-    )
-
-    # --- tier math: "tier_drop" > 0 means the expected output tier is WORSE than
-    # where he's being drafted (i.e. he's overpriced); "tier_gain" > 0 means the
-    # opposite (he's a value). This lets rules speak in "fell a tier or two" terms.
-    adp_tier = tier_from_pct(r.get('adp_pos_pct'))
-    exp_tier = tier_from_pct(r['exp_goodness_pct'])
-    tier_drop = exp_tier - adp_tier
-    tier_gain = -tier_drop
-
-    # 0. Deep / low-ADP, low-projected players: default to AVERAGE unless there's
-    #    real evidence (comps or trend) of a real outcome in either direction —
-    #    most late picks with nothing standing out should just be AVERAGE.
-    is_deep = adp_tier >= DEEP_TIER and exp_tier >= DEEP_TIER
-    strong_evidence = (
-        (pd.notna(r['comp_hit_rate']) and r['comp_hit_rate'] >= STRONG_EVIDENCE_HIT_RATE) or
-        (pd.notna(r['comp_bust_rate']) and r['comp_bust_rate'] >= STRONG_EVIDENCE_BUST_RATE) or
-        (pd.notna(r.get('blended_ratio')) and r['blended_ratio'] >= STRONG_EVIDENCE_RATIO) or
-        strong_trend_up or strong_trend_down or risk_injury or risk_susp
-    )
-    if is_deep and not strong_evidence:
-        return 'AVERAGE'
-
-    # 1. BUST / FADE — reserved for a real, supported fall of 2+ tiers below where
-    #    the player is being drafted. Without that kind of support, even a big-name
-    #    early pick with a middling signal will NOT land here (falls through to
-    #    OVERVALUED at worst). BUST = personal red flag (injury/age/trend) driving
-    #    it; FADE = the comps/value say so without a specific personal flag.
-    red_flag_support = high_bust or self_underperforms or is_declining_age or strong_trend_down
-    if tier_drop >= 2 and red_flag_support:
-        return 'BUST' if (risk_injury or is_declining_age or strong_trend_down) else 'FADE'
-
-    # 2. WILDCARD — wide, two-sided range of outcomes, reserved for young/unproven
-    #    players rather than established veterans with a lot of data.
-    if young_or_uncertain and high_vol and pd.notna(r['comp_hit_rate']) and pd.notna(r['comp_bust_rate']) \
-            and r['comp_hit_rate'] >= 0.25 and r['comp_bust_rate'] >= 0.25:
-        return 'WILDCARD'
-
-    # 3. OVERVALUED — priced a tier or two ahead of the expected output, without
-    #    enough support to call it a bust/fade outright.
-    if tier_drop >= 1:
-        return 'OVERVALUED'
-
-    # 4. DIAMOND — elite of the elite only: either a top-tier player whose trend/
-    #    track record confirms he's staying (or getting) elite, or a still-strong
-    #    (top-2-tier) player who's jumped 2+ tiers of value. Kept intentionally rare.
-    elite_quality = exp_tier == 1
-    low_bust_risk = pd.isna(r['comp_bust_rate']) or r['comp_bust_rate'] < 0.20
-    confirmed_elite = elite_quality and low_bust_risk and not risk_injury and (
-        strong_trend_up or projects_far_above_past or
-        (already_established and pd.notna(self_mean_beat) and self_mean_beat >= 1.05)
-    )
-    value_diamond = tier_gain >= 2 and exp_tier <= 2 and low_bust_risk and not risk_injury
-    if confirmed_elite or value_diamond:
-        return 'DIAMOND'
-
-    # 5. STAR — proven, established, consistent production; this (along with
-    #    STARTER/AVERAGE below) should catch most properly-priced top picks.
-    if quality >= 0.80 and r['self_n_seasons'] >= 2 and \
-            (pd.isna(r['self_mean_cv']) or r['self_mean_cv'] < 0.55) and not risk_injury:
-        return 'STAR'
-
-    # 6. BREAKOUT — reserved for players who haven't already had a big year, kept
-    #    rare via a higher comp hit-rate bar and requiring they're not overpriced.
-    breakout_signal = strong_trend_up or projects_far_above_past or \
-        (breakout_age and pd.notna(r['comp_hit_rate']) and r['comp_hit_rate'] >= 0.40)
-    if breakout_signal and not already_established and not risk_injury:
-        return 'BREAKOUT'
-
-    # 7. SLEEPER — modest, ordinary value (a tier of upside, not 2+)
-    if tier_gain >= 1:
-        return 'SLEEPER'
-
-    # 8. RISKY — real injury/suspension/volatility risk on a player who'd still be
-    #    good if the situation resolves cleanly ("good if healthy").
-    if (risk_injury or risk_susp or high_vol) and quality >= 0.45:
-        return 'RISKY'
-
-    # 9. STARTER — reliable, unspectacular production
-    if quality <= 0.55 and (pd.isna(r['self_mean_cv']) or r['self_mean_cv'] < 0.6) and tier_drop <= 0:
-        return 'STARTER'
-
-    return 'AVERAGE'
-
-
-# ------------------------------------------------------------------
-# DESCRIPTION GENERATOR (<90 words)
-# ------------------------------------------------------------------
-LABEL_BLURB = {
-    'DIAMOND': "He's being drafted well below his projected output \u2014 a clear value target.",
-    'BREAKOUT': "Age, trend, and role all point toward a real step forward this year.",
-    'STAR': "He's an established, consistent difference-maker at the position.",
-    'STARTER': "Expect steady, dependable production in line with a solid weekly starter.",
-    'SLEEPER': "His ADP undersells his likely output \u2014 worth a look in the later rounds.",
-    'AVERAGE': "Production and cost look roughly in line with expectations.",
-    'OVERVALUED': "His draft cost is running ahead of what the data supports.",
-    'RISKY': "Health, role, or situational uncertainty make him a volatile bet.",
-    'FADE': "The gap between cost and expected output makes him easy to pass on.",
-    'BUST': "Age, injury trend, and comparable outcomes point to real disappointment risk.",
-    'WILDCARD': "Outcomes here run wide \u2014 real weekly-winner upside with real downside risk.",
-}
-
-
-def generate_description(r):
+def _soft_cutoff_rank(sorted_desc_ppg, nominal_rank, max_extend, gap_pct=GAP_THRESHOLD_PCT):
     """
-    Builds a loose, reason-fitting lead-in: whichever signal actually carried the
-    most weight in the call (comp cohort, with or without a matched situation, vs.
-    the player's own track record) is what gets described, rather than a fixed
-    template order.
+    Given expected_ppg values sorted descending, return an adjusted 1-indexed,
+    inclusive cutoff rank starting from `nominal_rank`: the boundary slides
+    outward (includes more players) while the next player's expected PPG is
+    within `gap_pct` of the current boundary player's, up to `max_extend`
+    extra players. This is what lets e.g. QB 9-13 all land in the same tier
+    when they're bunched tightly together.
     """
-    pos = r['position']
-    self_n = r['self_n_seasons']
-    comp_n = r['comp_n']
-    self_weight = r.get('self_weight', 0) or 0
-    comp_reliable = comp_n >= MIN_COMPS and pd.notna(r.get('comp_hit_rate'))
-    self_reliable = self_n >= 1 and pd.notna(r.get('self_mean_beat_ratio'))
+    n = len(sorted_desc_ppg)
+    rank = min(max(nominal_rank, 0), n)
+    if rank < 1:
+        return rank
+    extended = 0
+    while rank < n and extended < max_extend:
+        current_val = sorted_desc_ppg[rank - 1]
+        next_val = sorted_desc_ppg[rank]
+        if pd.isna(current_val) or pd.isna(next_val) or current_val <= 0:
+            break
+        gap = (current_val - next_val) / current_val
+        if gap <= gap_pct:
+            rank += 1
+            extended += 1
+        else:
+            break
+    return rank
 
-    parts = []
 
-    if comp_reliable and (not self_reliable or self_weight <= 0.5):
-        situation_note = " with a matching injury/suspension/team-change situation" \
-            if r.get('comp_situation_matched') else ""
-        parts.append(
-            f"{comp_n} historically similar {POSITION_NAME.get(pos, pos)}s{situation_note} "
-            f"hit their projection {r['comp_hit_rate']*100:.0f}% of the time and busted "
-            f"{r['comp_bust_rate']*100:.0f}% of the time."
-        )
-        if self_reliable:
-            parts.append(f"He's personally added {r['self_mean_beat_ratio']:.2f}x his own projections over {self_n} seasons.")
-    elif self_reliable:
-        parts.append(
-            f"Over his own last {self_n} season{'s' if self_n != 1 else ''} he's landed at "
-            f"{r['self_mean_beat_ratio']:.2f}x his preseason projection."
-        )
-        if comp_n > 0 and pd.notna(r.get('comp_hit_rate')):
-            parts.append(f"A smaller pool of comparable players skews a similar direction.")
-    else:
-        parts.append("Limited history and thin comps make this a lower-confidence, early-look projection.")
+def assign_position_tiers(pos_df, league_count):
+    """
+    pos_df: rows for a single position, with an 'expected_ppg' column.
+    Returns pos_df with a 'stock' column added.
+    """
+    pos = pos_df['position'].iloc[0]
+    ordered = pos_df.sort_values('expected_ppg', ascending=False, na_position='last')
+    ppg_sorted = ordered['expected_ppg'].to_numpy()
+    n = len(ordered)
 
-    parts.append(LABEL_BLURB.get(r['stock'], ""))
+    starter_count = round(league_count * STARTER_MULTIPLIER.get(pos, 1.0))
+    average_extra = round(league_count * AVERAGE_EXTRA_MULTIPLIER.get(pos, 0.5))
+    bench_extra = round(league_count * BENCH_EXTRA_MULTIPLIER.get(pos, 0.5))
+    waiver_extra = round(league_count * WAIVER_EXTRA_MULTIPLIER.get(pos, 0.5))
+    star_size = STAR_TIER_SIZE.get(pos, 3)
 
-    text = " ".join(p for p in parts if p)
-    words = text.split()
-    if len(words) > 90:
-        text = " ".join(words[:90]) + "..."
-    return text
+    # SUPERSTAR: starts at SUPERSTAR_BASE, can extend up to SUPERSTAR_MAX total
+    c1 = _soft_cutoff_rank(ppg_sorted, SUPERSTAR_BASE, max_extend=SUPERSTAR_MAX - SUPERSTAR_BASE)
+    # STAR: next `star_size` players after SUPERSTAR
+    c2_nominal = max(c1 + star_size, c1)
+    c2 = _soft_cutoff_rank(ppg_sorted, c2_nominal, max_extend=MAX_BOUNDARY_EXTEND)
+    c2 = max(c2, c1)
+    # STARTER: fills out the rest of the starting-caliber pool
+    c3_nominal = max(starter_count, c2)
+    c3 = _soft_cutoff_rank(ppg_sorted, c3_nominal, max_extend=MAX_BOUNDARY_EXTEND)
+    c3 = max(c3, c2)
+    # AVERAGE: flex-caliber extension
+    c4_nominal = c3 + average_extra
+    c4 = _soft_cutoff_rank(ppg_sorted, c4_nominal, max_extend=MAX_BOUNDARY_EXTEND)
+    c4 = max(c4, c3)
+    # BENCH: just missed starting caliber, tier 1
+    c5_nominal = c4 + bench_extra
+    c5 = _soft_cutoff_rank(ppg_sorted, c5_nominal, max_extend=MAX_BOUNDARY_EXTEND)
+    c5 = max(c5, c4)
+    # WAIVER: just missed starting caliber, tier 2
+    c6_nominal = c5 + waiver_extra
+    c6 = _soft_cutoff_rank(ppg_sorted, c6_nominal, max_extend=MAX_BOUNDARY_EXTEND)
+    c6 = max(c6, c5)
+
+    cutoffs = [c1, c2, c3, c4, c5, c6]
+    labels = ['SUPERSTAR', 'STAR', 'STARTER', 'AVERAGE', 'BENCH', 'WAIVER']
+
+    stocks = []
+    for i in range(n):
+        rank = i + 1
+        assigned = 'AVOID'
+        for cutoff, label in zip(cutoffs, labels):
+            if rank <= cutoff:
+                assigned = label
+                break
+        stocks.append(assigned)
+
+    ordered = ordered.copy()
+    ordered['stock'] = stocks
+    return ordered
 
 
 # ------------------------------------------------------------------
 # MAIN PIPELINE
 # ------------------------------------------------------------------
-def analyze(year):
+async def player_analyzer(year, league_count):
+    df = analyze(year, league_count)
+
+    players = []
+    for row in df.itertuples():
+        print(f"{row.full_name} - {row.stock}")
+        players.append({
+            "id": str(row.player_id),
+            "stock": str(row.stock)
+        })
+
+    return {"players": players}
+
+
+def analyze(year, league_count):
     """
-    Run the full stock analysis for `year`, reading from the DB_PATH configured
-    at the top of this file. Returns a DataFrame with one row per player
-    (draft_rank <= MAX_DRAFT_RANK) including their assigned stock label and
-    a short generated outlook.
+    Run the full stock analysis for `year`, reading from DB_PATH and using the
+    league-shape / weighting config at the top of this file. Returns a
+    DataFrame with one row per player with draft_rank in
+    [MIN_DRAFT_RANK, MAX_DRAFT_RANK], including their assigned stock tier.
     """
     players, preseason, postseason = load_data(DB_PATH)
     hist = build_history(players, preseason, postseason)
@@ -503,10 +491,12 @@ def analyze(year):
 
     target_pre = target_pre.merge(players, on='player_id', how='left')
 
-    # only players drafted within a relevant range get a stock/description generated
-    target_pre = target_pre[target_pre['draft_rank'] <= MAX_DRAFT_RANK].copy()
+    target_pre = target_pre[
+        (target_pre['draft_rank'] >= MIN_DRAFT_RANK) & (target_pre['draft_rank'] <= MAX_DRAFT_RANK)
+    ].copy()
     if target_pre.empty:
-        raise ValueError(f"No players with draft_rank <= {MAX_DRAFT_RANK} found for season_year={year}")
+        raise ValueError(f"No players with draft_rank in [{MIN_DRAFT_RANK}, {MAX_DRAFT_RANK}] "
+                         f"found for season_year={year}")
 
     target_pre['adp_pos_pct'] = target_pre.groupby('position')['average_draft_position'] \
         .rank(pct=True, ascending=True)
@@ -516,34 +506,28 @@ def analyze(year):
     records = [analyze_player(row, hist_prior) for _, row in target_pre.iterrows()]
     result = pd.DataFrame(records)
 
-    # positional "goodness" percentile of expected output (low = elite tier at that position)
-    result['exp_goodness_pct'] = result.groupby('position')['expected_ppg'] \
-        .rank(pct=True, ascending=False)
-    # value_vs_adp: positive = being drafted worse than his expected output deserves (value)
-    result['value_vs_adp'] = result['adp_pos_pct'] - result['exp_goodness_pct']
+    result = pd.concat(
+        [assign_position_tiers(g, league_count) for _, g in result.groupby('position', group_keys=False)],
+        ignore_index=True,
+    )
+    result['stock'] = pd.Categorical(result['stock'], categories=STOCK_ORDER, ordered=True)
 
-    # combined volatility signal -> percentile within position (higher = more volatile)
-    result['vol_raw'] = result[['self_mean_cv', 'comp_std_beat_ratio']].mean(axis=1, skipna=True)
-    result['vol_pct'] = result.groupby('position')['vol_raw'].rank(pct=True, ascending=True)
-
-    result['stock'] = result.apply(assign_stock, axis=1)
-    result['description'] = result.apply(generate_description, axis=1)
-
-    cols = ['player_id', 'full_name', 'position', 'age', 'experience',
+    cols = ['player_id', 'full_name', 'position', 'age', 'experience', 'draft_rank',
             'average_draft_position', 'projected_ppg', 'expected_ppg',
-            'comp_n', 'comp_situation_matched', 'self_n_seasons', 'self_weight',
-            'stock', 'description']
-    result = result[cols].sort_values(['position', 'average_draft_position'])
+            'comp_n', 'comp_situation_matched', 'self_n_seasons', 'self_weight', 'comp_weight',
+            'stock']
+    result = result[cols].sort_values(['position', 'stock', 'expected_ppg'],
+                                       ascending=[True, True, False])
     return result
 
 
 if __name__ == "__main__":
-    df = analyze(YEAR)
+    df = analyze(YEAR, LEAGUE_COUNT)
     output_csv = f"player_stock_{YEAR}.csv"
     df.to_csv(output_csv, index=False)
     print(f"Wrote {len(df)} player rows to {output_csv}\n")
+    print(df['stock'].value_counts().reindex(STOCK_ORDER))
+    print()
 
     with pd.option_context('display.max_rows', None, 'display.max_colwidth', 60):
-        print(df[['full_name', 'position', 'average_draft_position',
-                   'projected_ppg', 'expected_ppg', 'stock']].to_string(index=False))
-        
+        print(df[['full_name', 'position', 'average_draft_position', 'projected_ppg', 'expected_ppg', 'stock']].to_string(index=False))

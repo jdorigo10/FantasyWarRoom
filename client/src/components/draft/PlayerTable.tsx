@@ -9,7 +9,7 @@ import { Search, Plus, Clock, Baby, TrendingUp, RefreshCcw, PlusSquare, Bandage,
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Heart, Crosshair, ChevronDown } from "lucide-react";
-import { Gem, Rocket, Star, CircleCheck, Eye, Minus, TrendingDown, TriangleAlert, ThumbsDown, Bomb, Dices } from "lucide-react";
+import { Sparkles, Sofa, Star, ThumbsUp, Eye, Minus, TrendingDown, ThumbsDown } from "lucide-react";
 import { Position, POSITION_LIST, NFLTeamAbbv, NFL_ABBV_LIST, NFL_TEAM_MAP } from "@/lib/baseData";
 import {
     Select,
@@ -803,24 +803,17 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
                     {/* Player AI Stock / Insight */}
                     <div className="flex items-start gap-3 mb-5">
-                      {player.stock != "NONE" && (
                       <div
                         className={cn(
                           "flex flex-col items-center justify-center h-12 w-15 rounded-md shrink-0 gap-0.5 bg-gray-400/10",
                         )}
                       >
-                        {player.stock === "DIAMOND" && (
+                        {player.stock === "SUPERSTAR" && (
                           <>
-                            <Gem className="h-4 w-4 text-cyan-400" />
-                            <span className="text-[8px] font-bold text-cyan-400">
-                              DIAMOND
+                            <Sparkles className="h-4 w-4 text-red-400" />
+                            <span className="text-[8px] font-bold text-red-400">
+                              SUPERSTAR
                             </span>
-                          </>
-                        )}
-                        {player.stock === "BREAKOUT" && (
-                          <>
-                            <Rocket className="h-4 w-4 text-emerald-400" />
-                            <span className="text-[8px] font-bold text-emerald-400">BREAKOUT</span>
                           </>
                         )}
                         {player.stock === "STAR" && (
@@ -831,53 +824,35 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                         )}
                         {player.stock === "STARTER" && (
                           <>
-                            <CircleCheck className="h-4 w-4 text-green-400" />
+                            <ThumbsUp className="h-4 w-4 text-green-400" />
                             <span className="text-[8px] font-bold text-green-400">STARTER</span>
-                          </>
-                        )}
-                        {player.stock === "SLEEPER" && (
-                          <>
-                            <Eye className="h-4 w-4 text-purple-400" />
-                            <span className="text-[8px] font-bold text-purple-400">SLEEPER</span>
                           </>
                         )}
                         {player.stock === "AVERAGE" && (
                           <>
                             <Minus className="h-4 w-4 text-gray-400" />
+                            <span className="text-[8px] font-bold text-gray-400">AVERAGE</span>
                           </>
                         )}
-                        {player.stock === "OVERVALUED" && (
+                        {player.stock === "BENCH" && (
                           <>
-                            <TrendingDown className="h-4 w-4 text-orange-400" />
-                            <span className="text-[8px] font-bold text-orange-400">OVERVALUED</span>
+                            <Sofa className="h-4 w-4 text-amber-400" />
+                            <span className="text-[8px] font-bold text-amber-400">BENCH</span>
                           </>
                         )}
-                        {player.stock === "RISKY" && (
+                        {player.stock === "WAIVER" && (
                           <>
-                            <TriangleAlert className="h-4 w-4 text-amber-400" />
-                            <span className="text-[8px] font-bold text-amber-400">RISKY</span>
+                            <Eye className="h-4 w-4 text-orange-600" />
+                            <span className="text-[8px] font-bold text-orange-600">WAIVER</span>
                           </>
                         )}
-                        {player.stock === "FADE" && (
+                        {player.stock === "AVOID" && (
                           <>
-                            <ThumbsDown className="h-4 w-4 text-orange-600" />
-                            <span className="text-[8px] font-bold text-orange-600">FADE</span>
-                          </>
-                        )}
-                        {player.stock === "BUST" && (
-                          <>
-                            <Bomb className="h-4 w-4 text-red-500" />
-                            <span className="text-[8px] font-bold text-red-500">BUST</span>
-                          </>
-                        )}
-                        {player.stock === "WILDCARD" && (
-                          <>
-                            <Dices className="h-4 w-4 text-pink-400" />
-                            <span className="text-[8px] font-bold text-pink-400">WILDCARD</span>
+                            <ThumbsDown className="h-4 w-4 text-red-500" />
+                            <span className="text-[8px] font-bold text-red-500">AVOID</span>
                           </>
                         )}
                       </div>
-                      )}
 
                       <div>
                         <p className="text-[12px] text-[#8b949e] leading-relaxed">
@@ -903,7 +878,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                       {player.rookie || player.pastInfo.totalGames === 0 ? (
                         <div className="h-[65px] border border-[#30363d] rounded-md flex items-center justify-center bg-[#0d1117]">
                           <span className="text-[12px] text-[#6e7681] italic">
-                            Did not play last season
+                            No stats from last season
                           </span>
                         </div>
                       ) : (

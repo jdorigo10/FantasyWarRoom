@@ -27,8 +27,8 @@ export function createBasePlayer(item: {playerId: string, name: string}):
     injury: 'NA',                                  // STEP 4
     trend: 'NORMAL',                               // STEP 5
     pastInfo: {ppg: 0, totalGames: 0, weeks: []},  // STEP 5
-    stock: 'NONE',  // STEP 6 - TODO - AI Analyze? past info to predict
-    notes: 'No insight available'  // STEP 4
+    stock: 'NONE',                                 // STEP 6
+    notes: 'No insight available'                  // STEP 4
   };
 }
 
@@ -229,11 +229,26 @@ export async function loadPastPlayerInfo(players: Player[]): Promise<Player[]> {
 /**
  * Step 6: AI Analysis for each player
  */
-export async function generateAiAnalysis(players: Player[]): Promise<Player[]> {
-  /*const res = await
-  fetch(`http://localhost:8000/api/analyze?year=${API_YEAR}`); if (!res.ok) {
+export async function generateAiAnalysis(
+    players: Player[], teamCount: Number): Promise<Player[]> {
+  const res = await fetch(`http://localhost:8000/api/analyze?year=${
+      API_YEAR}&league_count=${teamCount}`);
+  if (!res.ok) {
     throw new Error(`Failed to AI Analyze Players`);
-  }*/
+  }
+
+  const data = await res.json() as {players: any[]};
+
+  for (const p of data.players) {
+    const playerId = p.id;
+
+    let player = players.find(player => player.id === playerId);
+    if (!player) {
+      continue;
+    }
+
+    player.stock = p.stock as AI_Stock;
+  }
 
   await new Promise(resolve => setTimeout(resolve, 500));
   return players;
@@ -255,6 +270,6 @@ export const LOADER_STEPS: LoaderStep[] = [
   {key: 'base_player_info', label: 'Retrieving Base Player Information'},
   {key: 'season_player_info', label: 'Retrieving Season Player Information'},
   {key: 'past_player_info', label: 'Retrieving Past Player Information'},
-  {key: 'ai_analysis', label: 'TODO: Generating AI Analysis for each Player'},
+  {key: 'ai_analysis', label: 'Generating AI Analysis for each Player'},
   {key: 'loading', label: 'Finalizing Tool'}
 ];

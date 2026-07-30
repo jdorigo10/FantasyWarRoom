@@ -103,7 +103,7 @@ export default function Dashboard() {
       // Step 6: Generate AI Analysis
       setLoadingStep(index);
       setProgress(((index) / (LOADER_STEPS.length-1)) * 100);
-      players = await generateAiAnalysis(players);
+      players = await generateAiAnalysis(players, settings.teamCount);
       index++;
   
       setLoadingStep(index);
