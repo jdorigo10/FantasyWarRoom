@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Heart, Crosshair, ChevronDown } from "lucide-react";
 import { Sparkles, Sofa, Star, ThumbsUp, Eye, Minus, TrendingDown, ThumbsDown } from "lucide-react";
 import { Position, POSITION_LIST, NFLTeamAbbv, NFL_ABBV_LIST, NFL_TEAM_MAP } from "@/lib/baseData";
+import { ComparePlayersModal } from "@/components/draft/PlayerCompare";
 import {
     Select,
     SelectContent,
@@ -105,7 +106,14 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'rank', direction: 'asc' });
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState<String[]>([]);
   const [hideDividers, setHideDividers] = useState<boolean>(false);
+
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const comparePlayers = selectedPlayerIds
+    .slice(0, 8)
+    .map((id) => players.find((player) => player.id === id))
+    .filter(Boolean);
 
   const currentFilters = showExtendedStats ? rankingsFilters : filters;
   const currentUpdateFilters = showExtendedStats ? updateRankingsFilters : updateFilters;
@@ -451,7 +459,26 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
           />
           <label htmlFor="show-drafted" className="text-[10px] font-mono uppercase cursor-pointer select-none whitespace-nowrap">Show Drafted</label>
         </div>
+
+        {selectedPlayerIds.length > 1 && (
+          <Button
+            size="sm"
+            className="ml-auto h-7 w-full max-w-[100px] bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
+            disabled={selectedPlayerIds.length > 8}
+            onClick={() => {
+              if (selectedPlayerIds.length <= 8) setIsCompareOpen(true);
+            }}
+          >
+            Compare
+          </Button>
+        )}
       </div>
+
+      <ComparePlayersModal
+        isOpen={isCompareOpen}
+        players={comparePlayers}
+        onClose={() => setIsCompareOpen(false)}
+      />
 
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-12 gap-0 px-2 py-2.5 bg-[#161b22] text-[12px] font-bold text-[#8b949e] uppercase tracking-tighter border-b border-[#30363d] min-h-[40px] items-center select-none">
@@ -479,7 +506,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               <Tooltip delayDuration={300}>
                                   <TooltipTrigger asChild>
                     <div
-                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-11"
+                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-13"
                       onClick={() => handleSort('val')}
                     >
                       <div className="leading-none flex flex-col justify-center text-[11px] text-center">
@@ -534,7 +561,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
                     <div
-                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-11"
+                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-14"
                       onClick={() => handleSort('off')}
                     >
                       <div className="leading-none flex flex-col justify-center text-[11px] text-center">
@@ -558,7 +585,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
                     <div
-                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-11"
+                      className="flex items-center cursor-pointer hover:text-white transition-colors ml-14"
                       onClick={() => handleSort('def')}
                     >
                       <div className="leading-none flex flex-col justify-center text-[11px] text-center">
@@ -614,6 +641,39 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
             if (hideDividers) {
               dividers = [] as [Number, any][]
             }
+
+            const handleClick = (
+              playerId: string,
+              e: React.MouseEvent<HTMLDivElement>
+            ) => {
+              if (e.ctrlKey) {
+                if (showExtendedStats) {
+                  setSelectedPlayerIds(prev => {
+                    if (prev.includes(playerId)) {
+                      // Remove it
+                      return prev.filter(id => id !== playerId);
+                    }
+
+                    // Add it
+                    return [...prev, playerId];
+                  });
+                  setExpandedPlayerId(null);
+                }
+              } else {
+                setSelectedPlayerIds([]);
+                setExpandedPlayerId(
+                  expandedPlayerId === playerId ? null : playerId
+                )
+              }
+            };
+
+            const checkSelectedPlayerIds = (playerId: string) => {
+              if (selectedPlayerIds.includes(playerId)) {
+                return true;
+              }
+
+              return false;
+            };
             
             return (
               <React.Fragment key={player.id}>
@@ -628,13 +688,10 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               ))}
 
               <div 
-                onClick={() =>
-                  setExpandedPlayerId(
-                    expandedPlayerId === player.id ? null : player.id
-                  )
-                }
+                onClick={(e) => handleClick(player.id, e)}
                 className={cn(
-                  "grid grid-cols-12 gap-0 px-2 py-2.5 items-center transition-colors group relative cursor-pointer bg-[#0d1117]", expandedPlayerId === player.id ? "bg-white/[0.02]" : "border-b border-[#30363d] hover:border-white hover:border" ,
+                  "grid grid-cols-12 gap-0 px-2 py-2.5 items-center transition-colors group relative cursor-pointer bg-[#0d1117]", expandedPlayerId === player.id ? "bg-white/[0.02]" : "border-b border-[#30363d] hover:border-white hover:border",
+                  checkSelectedPlayerIds(player.id) ? "border-primary border" : "",
                   isPicked && "opacity-40 grayscale-[0.5]"
                 )}
               >
@@ -799,63 +856,68 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
               {expandedPlayerId === player.id && (
                 <div className={cn("px-3 py-3 border-b border-[#30363d] bg-white/[0.02]")}>
-                  <div className="px-4 py-4 bg-[#161b22] border border-[#30363d] rounded-md">
+                  <div className="px-4 py-3 bg-[#161b22] border border-[#30363d] rounded-md">
 
                     {/* Player AI Stock / Insight */}
-                    <div className="flex items-start gap-3 mb-5">
+                    <div className="flex items-start gap-3 mb-3">
                       <div
                         className={cn(
-                          "flex flex-col items-center justify-center h-12 w-15 rounded-md shrink-0 gap-0.5 bg-gray-400/10",
+                          "flex flex-col items-center justify-center h-19 w-19 rounded-md shrink-0 gap-1 bg-gray-400/10 mt-1",
                         )}
                       >
                         {player.stock === "SUPERSTAR" && (
                           <>
-                            <Sparkles className="h-4 w-4 text-red-400" />
-                            <span className="text-[8px] font-bold text-red-400">
+                            <Sparkles className="h-6 w-6 text-red-400" />
+                            <span className="text-[10px] font-bold text-red-400">
                               SUPERSTAR
                             </span>
                           </>
                         )}
                         {player.stock === "STAR" && (
                           <>
-                            <Star className="h-4 w-4 text-yellow-400" />
-                            <span className="text-[8px] font-bold text-yellow-400">STAR</span>
+                            <Star className="h-6 w-6 text-yellow-400" />
+                            <span className="text-[10px] font-bold text-yellow-400">STAR</span>
                           </>
                         )}
                         {player.stock === "STARTER" && (
                           <>
-                            <ThumbsUp className="h-4 w-4 text-green-400" />
-                            <span className="text-[8px] font-bold text-green-400">STARTER</span>
+                            <ThumbsUp className="h-6 w-6 text-green-400" />
+                            <span className="text-[10px] font-bold text-green-400">STARTER</span>
                           </>
                         )}
                         {player.stock === "AVERAGE" && (
                           <>
-                            <Minus className="h-4 w-4 text-gray-400" />
-                            <span className="text-[8px] font-bold text-gray-400">AVERAGE</span>
+                            <Minus className="h-6 w-6 text-gray-400" />
+                            <span className="text-[10px] font-bold text-gray-400">AVERAGE</span>
                           </>
                         )}
                         {player.stock === "BENCH" && (
                           <>
-                            <Sofa className="h-4 w-4 text-amber-400" />
-                            <span className="text-[8px] font-bold text-amber-400">BENCH</span>
+                            <Sofa className="h-6 w-6 text-amber-400" />
+                            <span className="text-[10px] font-bold text-amber-400">BENCH</span>
                           </>
                         )}
                         {player.stock === "WAIVER" && (
                           <>
-                            <Eye className="h-4 w-4 text-orange-600" />
-                            <span className="text-[8px] font-bold text-orange-600">WAIVER</span>
+                            <Eye className="h-6 w-6 text-orange-600" />
+                            <span className="text-[10px] font-bold text-orange-600">WAIVER</span>
                           </>
                         )}
                         {player.stock === "AVOID" && (
                           <>
-                            <ThumbsDown className="h-4 w-4 text-red-500" />
-                            <span className="text-[8px] font-bold text-red-500">AVOID</span>
+                            <ThumbsDown className="h-6 w-6 text-red-500" />
+                            <span className="text-[10px] font-bold text-red-500">AVOID</span>
                           </>
                         )}
                       </div>
 
-                      <div>
-                        <p className="text-[12px] text-[#8b949e] leading-relaxed">
+                        <div>
+                          {player.position != 'DST' && (
+                          <span className="text-[12px] font-bold text-[#c9d1d9]/90">
+                            AGE = {player.age}&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;Experience = {player.experience} seasons
+                          </span>
+                        )}
+                        <p className={cn("text-[12px] text-[#8b949e] leading-relaxed mr-2", player.position == 'DST' ? "mt-6" : "")}>
                           {player.notes}
                         </p>
                       </div>
@@ -863,26 +925,26 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
 
                     {/* Previous Season */}
                     <div>
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center">
                         <span className="text-[12px] font-bold text-[#8b949e] uppercase tracking-wider">
                           Previous Season
                         </span>
-
-                        {!player.rookie && player.pastInfo.totalGames > 0 && (
-                          <span className="text-[12px] font-bold text-[#c9d1d9]/90">
-                            PPG = {player.pastInfo.ppg}&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;Games Played = {player.pastInfo.totalGames}
-                          </span>
-                        )}
                       </div>
 
+                      {!player.rookie && player.pastInfo.totalGames > 0 && (
+                        <span className="text-[12px] font-bold text-[#c9d1d9]/90">
+                          &nbsp;PPG = {player.pastInfo.ppg}&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;Games Played = {player.pastInfo.totalGames}
+                        </span>
+                      )}
+
                       {player.rookie || player.pastInfo.totalGames === 0 ? (
-                        <div className="h-[65px] border border-[#30363d] rounded-md flex items-center justify-center bg-[#0d1117]">
+                        <div className="h-[65px] border border-[#30363d] rounded-md flex items-center justify-center bg-[#0d1117] mt-1">
                           <span className="text-[12px] text-[#6e7681] italic">
                             No stats from last season
                           </span>
                         </div>
                       ) : (
-                        <div className="border border-[#30363d] rounded-md overflow-hidden">
+                        <div className="border border-[#30363d] rounded-md overflow-hidden mt-1">
 
                           {/* Week Headers */}
                           <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] bg-[#0d1117]">

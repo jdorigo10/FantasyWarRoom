@@ -435,9 +435,9 @@ export function TeamRoster() {
         <div className="text-sm font-bold font-display text-center mb-1 mt-0 shrink-0 tracking-[0.2em] text-primary uppercase">
           Suggested Picks for Round {Math.floor(nextUserPickIndex / settings.teamCount) + 1}
         </div>
-        <div className="flex items-center justify-between">
-          <span className="pl-13 text-[10px] text-[#8b949e] uppercase font-mono text-center tracking-wider">Live Strategy</span>
-          <span className="pr-13 text-[10px] text-[#8b949e] uppercase font-mono text-center tracking-wider">Saved Strategy</span>
+        <div className="grid grid-cols-2">
+          <span className="text-[10px] text-[#8b949e] uppercase font-mono text-center">Live Strategy</span>
+          <span className="text-[10px] text-[#8b949e] uppercase font-mono text-center">Saved Strategy</span>
         </div>
 
         <div className="grid grid-cols-2 gap-1.5 flex-1 min-h-0">

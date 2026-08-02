@@ -27,6 +27,7 @@ export function createBasePlayer(item: {playerId: string, name: string}):
     injury: 'NA',                                  // STEP 4
     trend: 'NORMAL',                               // STEP 5
     pastInfo: {ppg: 0, totalGames: 0, weeks: []},  // STEP 5
+    pastPPGs: [],                                  // STEP 5
     stock: 'NONE',                                 // STEP 6
     notes: 'No insight available'                  // STEP 4
   };
@@ -191,35 +192,52 @@ export async function loadSeasonPlayerInfo(
  * Step 5: Load Past Player Season Info
  */
 export async function loadPastPlayerInfo(players: Player[]): Promise<Player[]> {
-  const res =
-      await fetch(`http://localhost:8000/api/pastPlayers?year=${API_YEAR - 1}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch Past Player Information`);
-  }
-
-  const data = await res.json() as {players: any[]};
-
-  for (const p of data.players) {
-    const playerId = p.id;
-
-    let player = players.find(player => player.id === playerId);
-    if (!player) {
-      continue;
+  for (let i = 1; i <= 3; i++) {
+    const res = await fetch(
+        `http://localhost:8000/api/pastPlayers?year=${API_YEAR - i}`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch Past Player Information`);
     }
 
-    player.pastInfo.ppg = Number(parseFloat(p.ppg).toFixed(2));
-    player.pastInfo.totalGames = Number(p.games);
+    const data = await res.json() as {players: any[]};
 
-    if (player.ppg >= (player.pastInfo.ppg * 1.25)) {
-      player.trend = 'UP'
-    } else if (player.ppg <= (player.pastInfo.ppg * 0.75)) {
-      player.trend = 'DOWN'
+    for (const p of data.players) {
+      const playerId = p.id;
+
+      let player = players.find(player => player.id === playerId);
+      if (!player) {
+        continue;
+      }
+
+      // Only set for 1 year back
+      if (i == 1) {
+        player.pastInfo.ppg = Number(parseFloat(p.ppg).toFixed(2));
+        player.pastInfo.totalGames = Number(p.games);
+
+        player.pastInfo.weeks =
+            String(p.breakdown)
+                .split(', ')
+                .map(value => Number(parseFloat(value).toFixed(2)));
+      }
+
+      // Get the last 3 years of PPG
+      player.pastPPGs.push(Number(parseFloat(p.ppg).toFixed(2)));
+
+      // Check if they are trending up or down in their past 2 years PPG finish
+      if (player.pastPPGs.length >= 3) {
+        // Trending down if 5% worse for 2 straight years
+        if (Number(player.pastPPGs[2]) * 0.95 > Number(player.pastPPGs[1]) &&
+            Number(player.pastPPGs[1]) * 0.95 > Number(player.pastPPGs[0])) {
+          player.trend = 'DOWN';
+        }
+
+        // Trending up if 5% better for 2 straight years
+        if (Number(player.pastPPGs[2]) * 1.05 < Number(player.pastPPGs[1]) &&
+            Number(player.pastPPGs[1]) * 1.05 < Number(player.pastPPGs[0])) {
+          player.trend = 'UP';
+        }
+      }
     }
-
-    player.pastInfo.weeks =
-        String(p.breakdown)
-            .split(', ')
-            .map(value => Number(parseFloat(value).toFixed(2)));
   }
 
   await new Promise(resolve => setTimeout(resolve, 500));

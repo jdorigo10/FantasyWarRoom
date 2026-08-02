@@ -74,6 +74,7 @@ export interface Player {
   injury: 'NA'|'UNKNOWN'|'HEALTHY'|'HURT'|'IR';
   trend: 'UP'|'NORMAL'|'DOWN';
   pastInfo: PastPlayerInfo;
+  pastPPGs: Number[];
   stock: AI_Stock;
   notes: string;
 }
