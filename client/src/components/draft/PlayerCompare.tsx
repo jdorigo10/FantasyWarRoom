@@ -4,6 +4,7 @@ import { Sparkles, Sofa, Star, ThumbsUp, Eye, Minus, TrendingDown, ThumbsDown } 
 import { Search, Plus, Clock, Baby, TrendingUp, RefreshCcw, PlusSquare, Bandage, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { API_YEAR } from "@/lib/baseData";
+import { useDraftStore } from "@/lib/draftStore";
 
 type ComparePlayersModalProps = {
   players: any[];
@@ -17,6 +18,8 @@ export function ComparePlayersModal({
   onClose,
 }: ComparePlayersModalProps) {
   if (!isOpen) return null;
+
+    const { pickedPlayers, picks, settings } = useDraftStore();
 
     const getTagIcons = (player: any) => {
         const icons = [];
@@ -168,171 +171,183 @@ export function ComparePlayersModal({
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {players.map((player) => (
-            <div
-              key={player.id}
-              className="rounded-lg border border-[#30363d] bg-[#161b22] p-4"
-            >
-              <div className="flex justify-between mb-2 border-b border-[#30363d] pb-2">
-                <div className="">
-                    <div className="text-[18px] font-bold text-[#c9d1d9]">{player.name}</div>
-                    <div className="text-[14px] uppercase text-[#8b949e]">
-                    {player.position} • {player.teamInfo.teamAbbv}
-                    </div>
-                </div>
-                <div className={cn("flex flex-col items-center justify-center h-14 w-20 rounded-md shrink-0 gap-1 bg-gray-400/10 mt-0")}>
-                    {player.stock === "SUPERSTAR" && (
-                        <>
-                        <Sparkles className="h-5 w-5 text-red-400" />
-                        <span className="text-[10px] font-bold text-red-400">
-                            SUPERSTAR
-                        </span>
-                        </>
-                    )}
-                    {player.stock === "STAR" && (
-                        <>
-                        <Star className="h-5 w-5 text-yellow-400" />
-                        <span className="text-[10px] font-bold text-yellow-400">STAR</span>
-                        </>
-                    )}
-                    {player.stock === "STARTER" && (
-                        <>
-                        <ThumbsUp className="h-5 w-5 text-green-400" />
-                        <span className="text-[10px] font-bold text-green-400">STARTER</span>
-                        </>
-                    )}
-                    {player.stock === "AVERAGE" && (
-                        <>
-                        <Minus className="h-5 w-5 text-gray-400" />
-                        <span className="text-[10px] font-bold text-gray-400">AVERAGE</span>
-                        </>
-                    )}
-                    {player.stock === "BENCH" && (
-                        <>
-                        <Sofa className="h-5 w-5 text-amber-400" />
-                        <span className="text-[10px] font-bold text-amber-400">BENCH</span>
-                        </>
-                    )}
-                    {player.stock === "WAIVER" && (
-                        <>
-                        <Eye className="h-5 w-5 text-orange-600" />
-                        <span className="text-[10px] font-bold text-orange-600">WAIVER</span>
-                        </>
-                    )}
-                    {player.stock === "AVOID" && (
-                        <>
-                        <ThumbsDown className="h-5 w-5 text-red-500" />
-                        <span className="text-[10px] font-bold text-red-500">AVOID</span>
-                        </>
-                    )}
-                </div>
-              </div>
+          {players.map((player) => {
+            const isPicked = pickedPlayers.includes(player.id);
+            const pickInfo = picks.find(p => p.playerId === player.id);
 
-              <div className="space-y-1 text-[14px] text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-2">
-                <div className="flex justify-center">
-                    {player.position != 'DST' && (
-                        <span className="text-[14px] font-bold text-[#c9d1d9]/90">
-                            AGE = {player.age}&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;ADP = {player.adp} (#{player.rank})
-                        </span>
-                    )}
-                </div>
-              </div>
-
-              <div className="space-y-1 text-[14px] text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-2">
-                <div>
-                  <div className="flex justify-center">
-                    <span className="text-[#8b949e]">Projected PPG&nbsp;=&nbsp;</span>
-                    <span className={cn("font-bold", getPPGColor(player.ppg, player.position))}>
-                      {player.ppg}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-center ml-5 mr-5">
-                    <div>
-                      <span className="text-[#8b949e]">{API_YEAR-1}=</span>
-                      {(player.pastPPGs.length > 0) ? (
-                        <span className={cn("font-semibold", getPPGColor(player.pastPPGs[0], player.position))}>
-                          {player.pastPPGs[0]}
-                        </span>
-                      ) : (
-                        <span className="font-semibold text-[#484f58]">N/A</span>
-                      )}
-                    </div>
-                    <div>
-                      <span className="text-[#8b949e]">{API_YEAR-2}=</span>
-                      {(player.pastPPGs.length > 1) ? (
-                        <span className={cn("font-semibold", getPPGColor(player.pastPPGs[1], player.position))}>
-                          {player.pastPPGs[1]}
-                        </span>
-                      ) : (
-                        <span className="font-semibold text-[#484f58]">N/A</span>
-                      )}
-                    </div>
-                    <div>
-                      <span className="text-[#8b949e]">{API_YEAR-3}=</span>
-                      {(player.pastPPGs.length > 2) ? (
-                        <span className={cn("font-semibold", getPPGColor(player.pastPPGs[2], player.position))}>
-                          {player.pastPPGs[2]}
-                        </span>
-                      ) : (
-                        <span className="font-semibold text-[#484f58]">N/A</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-between space-y-2 text-[14px] text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-0">
-                <div className="col-span-1 text-center ml-10">
-                    <span className="text-[#8b949e]">SOS</span>
-                    <div className={cn("col-span-1 text-center font-bold text-[14px]", getSosColor(player.teamInfo.sos))}>
-                        {player.teamInfo.sos}
-                    </div>
-                </div>
-                <div className="col-span-1 text-center">
-                    <span className="text-[#8b949e]">OFF PPG</span>
-                    <div className={cn("col-span-1 text-center font-bold text-[14px]", getOffPpgColor(player.teamInfo.ppgOffense))}>
-                        {player.teamInfo.ppgOffense}
-                    </div>
-                </div>
-                <div className="col-span-1 text-center mr-10">
-                    <span className="text-[#8b949e]">DEF PPG</span>
-                    <div className={cn("col-span-1 text-center font-bold text-[14px]", getDefPpgColor(player.teamInfo.ppgDefense))}>
-                        {player.teamInfo.ppgDefense}
-                    </div>
-                </div>
-              </div>
-
-              <div className="space-y-0 text-[14px] text-[#c9d1d9]">
-                <TooltipProvider>
-                    <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                        <div className="flex justify-center gap-0.5 cursor-help hover:bg-white/5 rounded transition-colors w-full h-full min-h-[28px] items-center">
-                        {getTagIcons(player).slice(0, 5).map((tag, i) => (
-                            <tag.icon key={i} className={cn("h-6 w-6 mr-2 ml-2", tag.color)} />
-                        ))}
-                        {getTagIcons(player).length > 5 && <span className="text-[10px] text-[#484f58] font-bold">+{getTagIcons(player).length - 5}</span>}
+            return (
+              <div
+                key={player.id}
+                className={cn("rounded-lg border border-[#30363d] bg-[#161b22] p-4", isPicked && "opacity-40 grayscale-[0.5]")}
+              >
+                <div className={cn("flex justify-between mb-2 border-b border-[#30363d] pb-2")}>
+                  <div className="">
+                      <div className="text-[18px] font-bold text-[#c9d1d9]">{player.name}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-[14px] uppercase text-[#8b949e]">
+                          {player.position} • {player.teamInfo.teamAbbv}
                         </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="left" className="bg-[#161b22] border-[#30363d] p-3 shadow-2xl min-w-[200px] z-50">
-                        <div className="space-y-2.5">
-                        {getTagIcons(player).map((tag, i) => (
-                            <div key={i} className="flex items-start gap-3">
-                            <tag.icon className={cn("h-5 w-5 shrink-0 mt-0", tag.color)} />
-                            <span className="text-[12px] text-[#c9d1d9] leading-relaxed">{tag.label}</span>
-                            </div>
-                        ))}
-                        {getTagIcons(player).length === 0 && (
-                            <p className="text-[12px] text-[#8b949e] italic text-center py-1">No Tags</p>
+                        {isPicked && pickInfo && (
+                          <span className="h-6 text-[10px] font-mono text-primary border border-primary/20 px-2 py-1 rounded uppercase whitespace-nowrap">
+                            Drafted {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
+                          </span>
                         )}
-                        </div>
-                    </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                      </div>
+                  </div>
+                  <div className={cn("flex flex-col items-center justify-center h-14 w-20 rounded-md shrink-0 gap-1 bg-gray-400/10 mt-0")}>
+                      {player.stock === "SUPERSTAR" && (
+                          <>
+                          <Sparkles className="h-5 w-5 text-red-400" />
+                          <span className="text-[10px] font-bold text-red-400">
+                              SUPERSTAR
+                          </span>
+                          </>
+                      )}
+                      {player.stock === "STAR" && (
+                          <>
+                          <Star className="h-5 w-5 text-yellow-400" />
+                          <span className="text-[10px] font-bold text-yellow-400">STAR</span>
+                          </>
+                      )}
+                      {player.stock === "STARTER" && (
+                          <>
+                          <ThumbsUp className="h-5 w-5 text-green-400" />
+                          <span className="text-[10px] font-bold text-green-400">STARTER</span>
+                          </>
+                      )}
+                      {player.stock === "AVERAGE" && (
+                          <>
+                          <Minus className="h-5 w-5 text-gray-400" />
+                          <span className="text-[10px] font-bold text-gray-400">AVERAGE</span>
+                          </>
+                      )}
+                      {player.stock === "BENCH" && (
+                          <>
+                          <Sofa className="h-5 w-5 text-amber-400" />
+                          <span className="text-[10px] font-bold text-amber-400">BENCH</span>
+                          </>
+                      )}
+                      {player.stock === "WAIVER" && (
+                          <>
+                          <Eye className="h-5 w-5 text-orange-600" />
+                          <span className="text-[10px] font-bold text-orange-600">WAIVER</span>
+                          </>
+                      )}
+                      {player.stock === "AVOID" && (
+                          <>
+                          <ThumbsDown className="h-5 w-5 text-red-500" />
+                          <span className="text-[10px] font-bold text-red-500">AVOID</span>
+                          </>
+                      )}
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-[14px] text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-2">
+                  <div className="flex justify-center">
+                      {player.position != 'DST' && (
+                          <span className="text-[14px] font-bold text-[#c9d1d9]/90">
+                              AGE = {player.age}&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;ADP = {player.adp} (#{player.rank})
+                          </span>
+                      )}
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-[14px] text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-2">
+                  <div>
+                    <div className="flex justify-center">
+                      <span className="text-[#8b949e]">Projected PPG&nbsp;=&nbsp;</span>
+                      <span className={cn("font-bold", getPPGColor(player.ppg, player.position))}>
+                        {player.ppg}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-center ml-5 mr-5">
+                      <div>
+                        <span className="text-[#8b949e]">{API_YEAR-1}=</span>
+                        {(player.pastPPGs.length > 0) ? (
+                          <span className={cn("font-semibold", getPPGColor(player.pastPPGs[0], player.position))}>
+                            {player.pastPPGs[0]}
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-[#484f58]">N/A</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-[#8b949e]">{API_YEAR-2}=</span>
+                        {(player.pastPPGs.length > 1) ? (
+                          <span className={cn("font-semibold", getPPGColor(player.pastPPGs[1], player.position))}>
+                            {player.pastPPGs[1]}
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-[#484f58]">N/A</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-[#8b949e]">{API_YEAR-3}=</span>
+                        {(player.pastPPGs.length > 2) ? (
+                          <span className={cn("font-semibold", getPPGColor(player.pastPPGs[2], player.position))}>
+                            {player.pastPPGs[2]}
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-[#484f58]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between space-y-2 text-[14px] text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-0">
+                  <div className="col-span-1 text-center ml-10">
+                      <span className="text-[#8b949e]">SOS</span>
+                      <div className={cn("col-span-1 text-center font-bold text-[14px]", getSosColor(player.teamInfo.sos))}>
+                          {player.teamInfo.sos}
+                      </div>
+                  </div>
+                  <div className="col-span-1 text-center">
+                      <span className="text-[#8b949e]">OFF PPG</span>
+                      <div className={cn("col-span-1 text-center font-bold text-[14px]", getOffPpgColor(player.teamInfo.ppgOffense))}>
+                          {player.teamInfo.ppgOffense}
+                      </div>
+                  </div>
+                  <div className="col-span-1 text-center mr-10">
+                      <span className="text-[#8b949e]">DEF PPG</span>
+                      <div className={cn("col-span-1 text-center font-bold text-[14px]", getDefPpgColor(player.teamInfo.ppgDefense))}>
+                          {player.teamInfo.ppgDefense}
+                      </div>
+                  </div>
+                </div>
+
+                <div className="space-y-0 text-[14px] text-[#c9d1d9]">
+                  <TooltipProvider>
+                      <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                          <div className="flex justify-center gap-0.5 cursor-help hover:bg-white/5 rounded transition-colors w-full h-full min-h-[28px] items-center">
+                          {getTagIcons(player).slice(0, 5).map((tag, i) => (
+                              <tag.icon key={i} className={cn("h-6 w-6 mr-2 ml-2", tag.color)} />
+                          ))}
+                          {getTagIcons(player).length > 5 && <span className="text-[10px] text-[#484f58] font-bold">+{getTagIcons(player).length - 5}</span>}
+                          </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="bg-[#161b22] border-[#30363d] p-3 shadow-2xl min-w-[200px] z-50">
+                          <div className="space-y-2.5">
+                          {getTagIcons(player).map((tag, i) => (
+                              <div key={i} className="flex items-start gap-3">
+                              <tag.icon className={cn("h-5 w-5 shrink-0 mt-0", tag.color)} />
+                              <span className="text-[12px] text-[#c9d1d9] leading-relaxed">{tag.label}</span>
+                              </div>
+                          ))}
+                          {getTagIcons(player).length === 0 && (
+                              <p className="text-[12px] text-[#8b949e] italic text-center py-1">No Tags</p>
+                          )}
+                          </div>
+                      </TooltipContent>
+                      </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

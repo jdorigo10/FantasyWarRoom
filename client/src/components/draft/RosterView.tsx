@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Download, ArrowUpDown, ExternalLink } from "lucide-react";
 
 export function RosterView() {
-      const { picks, players, settings, currentPickIndex } = useDraftStore();
+      const { picks, pickedPlayers, players, settings, currentPickIndex } = useDraftStore();
       const isDetached = typeof window !== "undefined" && window.name === "roster-popup";
       const [refreshKey, setRefreshKey] = useState(0);
 
@@ -78,6 +78,7 @@ export function RosterView() {
           "BENCH",
           "BENCH",
           "BENCH",
+          "BENCH",
       ];
 
       const getRosterSlotsForTeam = (teamId: string) => {
@@ -91,6 +92,7 @@ export function RosterView() {
           { slot: "FLEX", pos: ["RB", "WR", "TE"], player: null as Player | null },
           { slot: "DST", pos: ["DST"], player: null as Player | null },
           { slot: "K", pos: ["K"], player: null as Player | null },
+          { slot: "BENCH", pos: ["ANY"], player: null as Player | null },
           { slot: "BENCH", pos: ["ANY"], player: null as Player | null },
           { slot: "BENCH", pos: ["ANY"], player: null as Player | null },
           { slot: "BENCH", pos: ["ANY"], player: null as Player | null },
@@ -240,14 +242,14 @@ export function RosterView() {
               <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto">
                 <div className="min-w-[720px] p-3">
                   <div className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${settings.teams.length}, minmax(140px, 1fr))` }}>
-                    <div className="sticky left-0 top-0 z-30 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
+                    <div className="sticky left-0 top-0 z-30 flex h-17 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
                       Pos
                     </div>
                     {settings.teams.map((team, index) => (
                       <div
                         key={team.id || index}
                         className={cn(
-                          "sticky top-0 z-20 flex h-16 items-center justify-center rounded-lg px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
+                          "sticky top-0 z-20 flex h-17 items-center justify-center rounded-lg px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
                           getTeamColumnClasses(team, true)
                         )}
                         style={getTeamColumnStyle(team, true)}
@@ -266,18 +268,25 @@ export function RosterView() {
                         {rowIndex === 9 && (
                           <div className="col-span-full my-1 h-0 border-t-2 border-dashed border-[#8b949e]" />
                         )}
-                        <div className="sticky left-0 z-10 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
+                        <div className="sticky left-0 z-10 flex h-17 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
                           {label}
                         </div>
                         {settings.teams.map((team, teamIndex) => {
                           const rosterSlots = getRosterSlotsForTeam(team.id);
                           const slot = rosterSlots[rowIndex];
 
+                          let isPicked = false;
+                          let pickInfo = null;
+                          if (slot && slot.player) {
+                            isPicked = pickedPlayers.includes(slot.player.id);
+                            pickInfo = picks.find(p => p.playerId === slot.player?.id);
+                          }
+
                           return (
                             <div
                               key={`${team.id || teamIndex}-row-${rowIndex}`}
                               className={cn(
-                                "flex h-16 items-center justify-center rounded-lg px-2 text-center text-xs",
+                                "flex h-17 items-center justify-center rounded-lg px-2 text-center text-xs",
                                 getTeamColumnClasses(team)
                               )}
                               style={getTeamColumnStyle(team)}
@@ -287,8 +296,13 @@ export function RosterView() {
                                   <div className="truncate text-[12px] font-bold text-white leading-snug">
                                     {slot.player.name}
                                   </div>
-                                  <div className="mt-0.5 truncate text-[11px] font-mono uppercase text-[#8b949e]">
+                                  <div className="mt-1 truncate text-[11px] font-mono uppercase text-[#8b949e]">
                                     <span className="font-bold">{slot.player.position} • {slot.player.teamInfo.teamAbbv}</span>
+                                    {isPicked && pickInfo && (
+                                      <span className="h-5 text-[10px] font-mono text-primary border border-primary/20 px-1 py-0.5 rounded uppercase whitespace-nowrap ml-2">
+                                        {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               ) : (
@@ -330,14 +344,14 @@ export function RosterView() {
                     <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-auto">
                         <div className="min-w-[720px] p-3">
                             <div className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${settings.teams.length}, minmax(140px, 1fr))` }}>
-                                <div className="sticky left-0 top-0 z-30 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
+                                <div className="sticky left-0 top-0 z-30 flex h-17 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b949e] shadow-[0_1px_0_0_#30363d]">
                                     Pos
                                 </div>
                                 {settings.teams.map((team, index) => (
                                     <div
                                         key={team.id || index}
                                         className={cn(
-                                            "sticky top-0 z-20 flex h-16 items-center justify-center rounded-lg px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
+                                            "sticky top-0 z-20 flex h-17 items-center justify-center rounded-lg px-2 text-center text-[12px] font-semibold uppercase tracking-[0.2em] shadow-[0_1px_0_0_#30363d]",
                                             getTeamColumnClasses(team, true)
                                         )}
                                         style={getTeamColumnStyle(team, true)}
@@ -356,18 +370,25 @@ export function RosterView() {
                                         {rowIndex === 9 && (
                                             <div className="col-span-full my-1 h-0 border-t-2 border-dashed border-[#8b949e]" />
                                         )}
-                                        <div className="sticky left-0 z-10 flex h-16 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
+                                        <div className="sticky left-0 z-10 flex h-17 items-center justify-center rounded-lg border border-[#30363d] bg-[#0f1419] px-2 text-center text-[12px] font-medium uppercase text-[#c9d1d9] shadow-[0_1px_0_0_#30363d]">
                                             {label}
                                         </div>
                                         {settings.teams.map((team, teamIndex) => {
                                             const rosterSlots = getRosterSlotsForTeam(team.id);
                                             const slot = rosterSlots[rowIndex];
 
+                                            let isPicked = false;
+                                            let pickInfo = null;
+                                            if (slot && slot.player) {
+                                              isPicked = pickedPlayers.includes(slot.player.id);
+                                              pickInfo = picks.find(p => p.playerId === slot.player?.id);
+                                            }
+
                                             return (
                                                 <div
                                                     key={`${team.id || teamIndex}-row-${rowIndex}`}
                                                     className={cn(
-                                                        "flex h-16 items-center justify-center rounded-lg px-2 text-center text-xs",
+                                                        "flex h-17 items-center justify-center rounded-lg px-2 text-center text-xs",
                                                         getTeamColumnClasses(team)
                                                     )}
                                                     style={getTeamColumnStyle(team)}
@@ -377,8 +398,13 @@ export function RosterView() {
                                                             <div className="truncate text-[12px] font-bold text-white leading-snug">
                                                                 {slot.player.name}
                                                             </div>
-                                                            <div className="mt-0.5 truncate text-[11px] font-mono uppercase text-[#8b949e]">
+                                                            <div className="mt-1 truncate text-[11px] font-mono uppercase text-[#8b949e]">
                                                                 <span className="font-bold">{slot.player.position} • {slot.player.teamInfo.teamAbbv}</span>
+                                                                {isPicked && pickInfo && (
+                                                                <span className="h-5 text-[10px] font-mono text-primary border border-primary/20 px-1 py-0.5 rounded uppercase whitespace-nowrap ml-2">
+                                                                  {pickInfo.round}.{pickInfo.pickOverall % settings.teamCount || settings.teamCount}
+                                                                </span>
+                                                              )}
                                                             </div>
                                                         </div>
                                                     ) : (

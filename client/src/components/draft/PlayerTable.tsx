@@ -855,7 +855,7 @@ export function PlayerTable({ showExtendedStats = false }: PlayerTableProps) {
               </div>
 
               {expandedPlayerId === player.id && (
-                <div className={cn("px-3 py-3 border-b border-[#30363d] bg-white/[0.02]")}>
+                <div className={cn("px-3 py-3 border-b border-[#30363d] bg-white/[0.02]", isPicked && "opacity-40 grayscale-[0.5]")}>
                   <div className="px-4 py-3 bg-[#161b22] border border-[#30363d] rounded-md">
 
                     {/* Player AI Stock / Insight */}
