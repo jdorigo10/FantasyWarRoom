@@ -4,11 +4,11 @@ export const POSITION_LIST: Position[] =
 
 export type NFLTeamAbbv = 'All'|'FA'|'ARI'|'ATL'|'BAL'|'BUF'|'CAR'|'CHI'|'CIN'|
     'CLE'|'DAL'|'DEN'|'DET'|'GB'|'HOU'|'IND'|'JAX'|'KC'|'LV'|'LAC'|'LAR'|'MIA'|
-    'MIN'|'NE'|'NO'|'NYG'|'NYJ'|'PHI'|'PIT'|'SEA'|'SF'|'TB'|'TEN'|'WAS';
+    'MIN'|'NE'|'NO'|'NYG'|'NYJ'|'PHI'|'PIT'|'SEA'|'SF'|'TB'|'TEN'|'WSH';
 export const NFL_ABBV_LIST: NFLTeamAbbv[] = [
   'ARI', 'ATL', 'BAL', 'BUF', 'CAR', 'CHI', 'CIN', 'CLE', 'DAL', 'DEN', 'DET',
   'GB',  'HOU', 'IND', 'JAX', 'KC',  'LV',  'LAC', 'LAR', 'MIA', 'MIN', 'NE',
-  'NO',  'NYG', 'NYJ', 'PHI', 'PIT', 'SEA', 'SF',  'TB',  'TEN', 'WAS'
+  'NO',  'NYG', 'NYJ', 'PHI', 'PIT', 'SEA', 'SF',  'TB',  'TEN', 'WSH'
 ];
 
 export const NFL_TEAM_MAP: Record<NFLTeamAbbv, string> = {
@@ -45,7 +45,7 @@ export const NFL_TEAM_MAP: Record<NFLTeamAbbv, string> = {
   'SF': 'San Francisco',
   'TB': 'Tampa Bay',
   'TEN': 'Tennessee',
-  'WAS': 'Washington'
+  'WSH': 'Washington'
 }
 
 export type AI_Stock = 'NONE' | 'SUPERSTAR' | 'STAR' | 'STARTER' | 'AVERAGE' |

@@ -130,19 +130,28 @@ export function TeamRoster() {
           : null;
   const savedSuggestions: (Player | null)[] = [];
   if (topStrategy) {
-    const round = topStrategy.rounds[Math.floor(nextUserPickIndex / settings.teamCount)];
+    const roundIndex = nextUserPickIndex >= 0
+      ? Math.floor(nextUserPickIndex / settings.teamCount)
+      : -1;
+    const round = roundIndex >= 0
+      ? topStrategy.rounds[roundIndex]
+      : undefined;
 
-    const pickedPlayerIds = new Set(
-        picks.map(pick => pick.playerId)
-    );
+    if (!round || !Array.isArray(round.players)) {
+      savedSuggestions.push(null);
+    } else {
+      const pickedPlayerIds = new Set(
+          picks.map(pick => pick.playerId)
+      );
 
-    const availablePlayers = round.players.filter(
-        player => !pickedPlayerIds.has(player.id)
-    );
+      const availablePlayers = round.players.filter(
+          player => !pickedPlayerIds.has(player.id)
+      );
 
-    savedSuggestions.push(...availablePlayers);
-    if (savedSuggestions.length === 0) {
-        savedSuggestions.push(null);
+      savedSuggestions.push(...availablePlayers);
+      if (savedSuggestions.length === 0) {
+          savedSuggestions.push(null);
+      }
     }
   } else {
       savedSuggestions.push(null);

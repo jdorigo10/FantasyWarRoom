@@ -28,6 +28,16 @@ import {
 } from "@/components/ui/popover";
 
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import {
     Command,
     CommandEmpty,
     CommandGroup,
@@ -68,6 +78,26 @@ function generateNewId(savedStrats: SavedStrategy[]): number {
     } while (existingIds.has(newId));
 
     return newId;
+}
+
+function getNextCopyName(sourceName: string, savedStrats: SavedStrategy[]) {
+    const trimmedSource = sourceName.trim();
+    const baseName = trimmedSource.replace(/\s*\(\d+\)\s*$/, "").trim();
+    const existingNumbers = savedStrats
+        .map((strat) => strat.name.trim())
+        .map((name) => {
+            const match = name.match(/^(.*)\s*\((\d+)\)\s*$/);
+            if (!match) return null;
+
+            const rootName = match[1].trim();
+            if (rootName !== baseName) return null;
+
+            return Number(match[2]);
+        })
+        .filter((value): value is number => value !== null);
+
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 2;
+    return `${baseName} (${nextNumber})`;
 }
 
 function SortableStrategyButton(
@@ -216,13 +246,12 @@ export function SavedStrategyView() {
         }
     }, []);
 
-    // Create a new Strategy
     function createStrategy() {
-        let newId = generateNewId(savedStrats);
-        let newRank = savedStrats.length+1;
+        const newId = generateNewId(savedStrats);
+        const newRank = savedStrats.length + 1;
 
-        let newStrat: SavedStrategy = {
-            id: (newId).toString(), 
+        const newStrat: SavedStrategy = {
+            id: newId.toString(),
             rank: newRank,
             name: "New Strategy",
             description: "Description",
@@ -232,7 +261,25 @@ export function SavedStrategyView() {
 
         setSavedStrats([...savedStrats, newStrat]);
         setSelectedStrat(newStrat);
-    };
+    }
+
+    function createCopiedStrategy(strategyToCopy: SavedStrategy) {
+        const newId = generateNewId(savedStrats);
+        const newRank = savedStrats.length + 1;
+
+        const copiedStrat: SavedStrategy = {
+            ...strategyToCopy,
+            id: newId.toString(),
+            rank: newRank,
+            name: getNextCopyName(strategyToCopy.name, savedStrats),
+            description: strategyToCopy.description,
+            rounds: structuredClone(strategyToCopy.rounds),
+            state: 'NOT_SAVED'
+        };
+
+        setSavedStrats([...savedStrats, copiedStrat]);
+        setSelectedStrat(copiedStrat);
+    }
 
     // Save changes of Strategy to DB
     async function saveChanges(strategy: SavedStrategy, updateDBOnly: Boolean) {
@@ -544,10 +591,51 @@ export function SavedStrategyView() {
                             <h2 className="text-m font-bold font-display tracking-[0.2em] text-primary uppercase">
                                 Strategy
                             </h2>
-                            <Button size="sm" className="absolute right-3 h-7 bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
-                                    onClick={() => createStrategy()}>
-                                <Plus className="mr-0 h-4 w-4" />
-                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        className="absolute right-3 h-7 bg-primary/10 text-primary hover:bg-primary hover:text-black font-bold text-[10px] uppercase border border-primary/30 shadow-[0_0_10px_rgba(46,160,67,0.05)]"
+                                    >
+                                        <Plus className="mr-0 h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-56 border-[#30363d] bg-[#0d1117] text-[#c9d1d9] shadow-2xl"
+                                >
+                                    <DropdownMenuItem
+                                        onSelect={() => createStrategy()}
+                                        className="cursor-pointer text-[#c9d1d9] focus:bg-primary/15 focus:text-primary data-[highlighted]:bg-primary/15 data-[highlighted]:text-primary"
+                                    >
+                                        New Strategy
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger
+                                            className="w-full cursor-pointer text-[#c9d1d9] focus:bg-primary/15 focus:text-primary data-[state=open]:bg-primary/15 data-[state=open]:text-primary"
+                                        >
+                                            Copy existing
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent className="w-64 max-h-80 overflow-y-auto border-[#30363d] bg-[#0d1117] text-[#c9d1d9] shadow-2xl">
+                                            {savedStrats.length > 0 ? (
+                                                savedStrats.map((strategy) => (
+                                                    <DropdownMenuItem
+                                                        key={strategy.id}
+                                                        onSelect={() => createCopiedStrategy(strategy)}
+                                                        className="cursor-pointer truncate text-[#c9d1d9] focus:bg-primary/15 focus:text-primary data-[highlighted]:bg-primary/15 data-[highlighted]:text-primary"
+                                                    >
+                                                        {strategy.name}
+                                                    </DropdownMenuItem>
+                                                ))
+                                            ) : (
+                                                <DropdownMenuItem disabled className="text-[#8b949e] cursor-default">
+                                                    No saved strategies
+                                                </DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuSub>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
                      <div className="flex flex-col gap-2 overflow-y-auto mt-5">
